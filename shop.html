@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>RoomPlanned Shop Furniture</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: sticky site header → page intro + search + chips → sidebar filters | product grid. Piece view and basket drawer reuse the same cards and buttons. */
+:root{
+  --bg:#f7f6f2;          /* page ground, warm off-white from the site */
+  --surface:#ffffff;     /* cards, header, drawer */
+  --img-bg:#ffffff;      /* product image well */
+  --soft:#efeee9;        /* search field, quiet fills */
+  --line:#e3e1da;        /* borders */
+  --ink:#16251f;         /* headings */
+  --text:#3b4641;        /* body */
+  --muted:#76807a;       /* retailer, captions */
+  --green:#2c4a3b;       /* primary buttons, active chip */
+  --green-ink:#ffffff;
+  --sage:#6b8068;        /* accent text ("real life.") */
+  --sage-soft:#e6ece3;   /* Roo tip panel */
+  --shadow:0 1px 2px rgba(22,37,31,.05),0 6px 20px rgba(22,37,31,.06);
+  --font:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r-card:14px;
+  --r-pill:999px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815;--surface:#1a221e;--img-bg:#e9e8e3;--soft:#222c27;--line:#2e3a34;
+  --ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;--green:#9cc0a4;--green-ink:#10201a;
+  --sage:#a9c0a5;--sage-soft:#22302a;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815;--surface:#1a221e;--img-bg:#e9e8e3;--soft:#222c27;--line:#2e3a34;
+  --ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;--green:#9cc0a4;--green-ink:#10201a;
+  --sage:#a9c0a5;--sage-soft:#22302a;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+h1,h2,h3{color:var(--ink);margin:0;text-wrap:balance;letter-spacing:-.025em}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* demo note */
+.demo{background:var(--sage-soft);color:var(--ink);font-size:13px;text-align:center}
+.demo .wrap{padding-block:8px}
+
+/* header */
+header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--surface);border-bottom:1px solid var(--line)}
+.site .wrap{display:flex;align-items:center;gap:24px;height:76px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:800;font-size:23px;letter-spacing:-.03em}
+.logo svg{width:30px;height:30px}
+.nav{display:flex;gap:34px;margin:0 auto;font-weight:500;font-size:15px}
+.nav a{text-decoration:none;color:var(--text);padding:6px 0;border-bottom:2px solid transparent}
+.nav a.on{color:var(--ink);border-bottom-color:var(--green)}
+.icons{display:flex;gap:8px;align-items:center;position:relative}
+.icon-btn{width:42px;height:42px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;position:relative;color:var(--ink)}
+.icon-btn:hover{background:var(--soft)}
+.icon-btn svg{width:22px;height:22px}
+.badge{position:absolute;top:4px;right:3px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--green);color:var(--green-ink);font-size:11px;font-weight:700;display:grid;place-items:center}
+.menu{position:absolute;right:0;top:54px;width:240px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:10px 0}
+.menu a{display:block;padding:10px 22px;text-decoration:none;color:var(--ink);font-weight:500}
+.menu a:hover,.menu a.on{background:var(--soft)}
+
+/* breadcrumb + intro */
+.crumbs{font-size:13px;color:var(--muted);padding-top:22px;display:flex;gap:8px}
+.crumbs a{text-decoration:none}.crumbs a:hover{color:var(--ink)}
+.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-block:14px 22px;flex-wrap:wrap}
+.intro h1{font-size:clamp(34px,5vw,48px);font-weight:700;line-height:1.05}
+.intro h1 em{font-style:normal;color:var(--sage)}
+.intro p{margin:8px 0 0;color:var(--muted);font-size:16px}
+.search{display:flex;align-items:center;gap:12px;background:var(--soft);border-radius:var(--r-pill);padding:0 18px;height:52px;max-width:760px}
+.search svg{width:20px;height:20px;color:var(--ink);flex:none}
+.search input{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:15px}
+.search input::placeholder{color:var(--muted)}
+.chipbar{display:flex;align-items:center;gap:10px;padding-block:18px 26px;flex-wrap:wrap}
+.chips{display:flex;gap:10px;flex-wrap:wrap;flex:1}
+.chip{height:40px;padding:0 20px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--surface);font-weight:500;font-size:14px;color:var(--ink)}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.filters-btn{display:none;align-items:center;gap:8px;border:0;background:transparent;font-weight:600;color:var(--ink);padding:8px 4px}
+.filters-btn svg{width:20px;height:20px}
+
+/* shop layout */
+.shop{display:grid;grid-template-columns:240px 1fr;gap:36px;padding-bottom:64px}
+aside.side{display:flex;flex-direction:column;gap:26px;align-self:start;position:sticky;top:calc(96px + env(safe-area-inset-top,0px))}
+.fgroup h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:10px}
+.check{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:14px;color:var(--ink);cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--green);margin:0}
+.check span.n{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px}
+.range-row{display:flex;justify-content:space-between;font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums;margin-bottom:6px}
+input[type=range]{width:100%;accent-color:var(--green)}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.sw{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);padding:0;position:relative}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--green)}
+.clear{border:0;background:none;padding:0;text-decoration:underline;color:var(--muted);font-size:14px;align-self:flex-start}
+
+.results-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.results-bar .count{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.sort{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.sort select{height:38px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--surface);padding:0 14px;color:var(--ink);font-weight:500}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:8px;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.card .img{position:relative;background:var(--img-bg);border-radius:10px;aspect-ratio:4/3;max-width:100%;display:grid;place-items:center;overflow:hidden;cursor:pointer}
+.card .img svg.art{width:86%;height:auto;transition:transform .35s ease}
+.card:hover .img svg.art{transform:scale(1.04)}
+.save{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e3e1da;display:grid;place-items:center;color:#16251f}
+.save svg{width:18px;height:18px}
+.save[aria-pressed="true"] svg{fill:#2c4a3b;color:#2c4a3b}
+.view{position:absolute;bottom:10px;right:12px;font-size:12px;font-weight:600;color:#16251f;display:flex;gap:6px;align-items:center;border:0;background:none;padding:4px}
+.view svg{width:14px;height:14px}
+.card .body{padding:16px 8px 8px;display:flex;flex-direction:column;gap:4px;flex:1}
+.retailer{font-size:12px;color:var(--muted)}
+.card h3{font-size:15px;font-weight:700;letter-spacing:-.01em;line-height:1.3;min-height:2.6em}
+.price{font-size:18px;font-weight:700;color:var(--ink);margin-top:10px;font-variant-numeric:tabular-nums}
+.price.check-p{font-size:16px}
+.dots{display:flex;gap:6px;margin:8px 0 12px}
+.dot{width:16px;height:16px;border-radius:50%;border:1px solid var(--line)}
+.btn{height:44px;border-radius:var(--r-pill);font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:0 22px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none}
+.btn svg{width:16px;height:16px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.primary:hover{filter:brightness(1.12)}
+.btn.block{width:100%}
+.card .btn{margin-top:auto}
+.empty{grid-column:1/-1;text-align:center;padding:60px 16px;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r-card)}
+
+/* piece page */
+.piece{display:grid;grid-template-columns:1.15fr 1fr;gap:48px;padding-block:8px 56px}
+.gallery{display:flex;flex-direction:column;gap:12px;min-width:0}
+.hero-img{background:var(--img-bg);border-radius:18px;border:1px solid var(--line);aspect-ratio:4/3;max-width:100%;display:grid;place-items:center;position:relative}
+.hero-img svg.art{width:84%;height:auto}
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.thumb{background:var(--img-bg);border:1px solid var(--line);border-radius:10px;aspect-ratio:4/3;display:grid;place-items:center;padding:6px}
+.thumb[aria-pressed="true"]{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.thumb svg{width:100%;height:auto}
+.info{display:flex;flex-direction:column;gap:18px;min-width:0}
+.info h1{font-size:clamp(28px,3.4vw,38px);font-weight:700;line-height:1.1}
+.info .big-price{font-size:28px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.info .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.pill{font-size:12px;font-weight:600;border-radius:var(--r-pill);padding:4px 10px;background:var(--sage-soft);color:var(--ink)}
+.label{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:8px}
+.colour-opts{display:flex;gap:10px;flex-wrap:wrap}
+.colour-opts .sw{width:36px;height:36px}
+.dims{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.dims div{padding:12px 14px;background:var(--surface)}
+.dims div+div{border-left:1px solid var(--line)}
+.dims b{display:block;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
+.dims span{font-size:12px;color:var(--muted)}
+.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:var(--r-pill);height:44px;background:var(--surface)}
+.qty button{width:42px;height:42px;border:0;background:none;font-size:18px;color:var(--ink)}
+.qty output{min-width:28px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+.buy-row{display:flex;gap:10px;flex-wrap:wrap}
+.buy-row .btn.primary{flex:1;min-width:180px}
+.roo{background:var(--sage-soft);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
+.roo .av{width:36px;height:36px;border-radius:50%;background:var(--green);color:var(--green-ink);display:grid;place-items:center;font-weight:800;flex:none;font-size:14px}
+.roo p{margin:2px 0 0;color:var(--ink);font-size:14px}
+.roo label{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.roo input{width:80px;height:32px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 8px;font-variant-numeric:tabular-nums}
+.facts{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.facts li{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.facts li span:first-child{color:var(--muted)}
+.facts li span:last-child{color:var(--ink);text-align:right}
+.back{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--ink);text-decoration:none;font-size:14px;padding-top:22px}
+.back svg{width:16px;height:16px}
+.related h2{font-size:26px;font-weight:700;margin-bottom:16px}
+.related{padding-bottom:64px}
+
+/* basket drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,18,14,.38);z-index:80}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surface);z-index:90;display:flex;flex-direction:column;box-shadow:-10px 0 30px rgba(0,0,0,.12);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.drawer header{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--line)}
+.drawer h2{font-size:22px;font-weight:700}
+.lines{flex:1;overflow:auto;padding:8px 22px}
+.line{display:grid;grid-template-columns:72px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.line .mini{background:var(--img-bg);border:1px solid var(--line);border-radius:8px;aspect-ratio:4/3;display:grid;place-items:center;padding:4px}
+.line .mini svg{width:100%;height:auto}
+.line b{color:var(--ink);font-size:14px;display:block;line-height:1.3}
+.line small{color:var(--muted);font-size:12px}
+.line .lp{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+.line .rm{border:0;background:none;color:var(--muted);font-size:12px;text-decoration:underline;padding:0}
+.drawer footer{padding:18px 22px 22px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.sum{display:flex;justify-content:space-between;font-size:14px;font-variant-numeric:tabular-nums}
+.sum.total{font-size:18px;font-weight:700;color:var(--ink)}
+.note{font-size:12px;color:var(--muted);margin:0}
+.drawer .empty-b{padding:40px 0;text-align:center;color:var(--muted)}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:var(--r-pill);font-weight:600;font-size:14px;z-index:100;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+
+footer.site-foot{border-top:1px solid var(--line);background:var(--surface)}
+footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+
+@media (max-width:960px){
+  .nav{display:none}
+  .icons{margin-left:auto}
+  .shop{grid-template-columns:1fr}
+  aside.side{position:static;display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:18px}
+  aside.side.open{display:flex}
+  .filters-btn{display:inline-flex}
+  .piece{grid-template-columns:1fr;gap:28px}
+}
+@media (max-width:520px){
+  .site .wrap{height:64px;gap:12px}
+  .logo{font-size:20px}
+  .grid{grid-template-columns:1fr 1fr;gap:10px}
+  .card{padding:6px}
+  .card h3{font-size:13px}
+  .price{font-size:15px}
+  .card .btn{height:38px;font-size:12px;padding:0 10px}
+  .view{display:none}
+  .save{width:32px;height:32px;top:6px;right:6px}
+  .chip{height:36px;padding:0 14px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="demo"><div class="wrap">Example page: products, prices and retailers below are sample data for this design.</div></div>
+
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="#shop" aria-label="RoomPlanned home">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="28" height="28" rx="3"/><path d="M8 26V8h6a4 4 0 0 1 0 8H8m6 0 3 10M18 8h4a4 4 0 0 1 0 8h-4v10"/></svg>
+      <span>RoomPlanned.</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#shop" class="on">Shop</a><a href="#shop">Plan</a><a href="#shop">Inspiration</a><a href="#shop">Community</a>
+    </nav>
+    <div class="icons">
+      <button class="icon-btn" id="searchJump" aria-label="Search furniture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="bagBtn" aria-label="Open basket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 12a3 3 0 0 0 6 0"/></svg><span class="badge" id="bagCount" hidden>0</span></button>
+      <button class="icon-btn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="menu" id="menu" hidden>
+        <a href="#shop" class="on">Shop furniture</a><a href="#shop">Plan a room</a><a href="#shop">Inspiration</a><a href="#shop">Community preview</a><a href="#shop">My Home</a><a href="#shop">My Renders</a><a href="#shop">Account</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="site-foot"><div class="wrap"><span>RoomPlanned. Your home, planned for real life.</span><span>Prices and stock are checked with each retailer at checkout.</span></div></footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-label="Basket">
+  <header><h2>Your basket</h2><button class="icon-btn" id="closeBag" aria-label="Close basket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <div class="lines" id="lines"></div>
+  <footer id="bagFoot"></footer>
+</aside>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
+const BOOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg>';
+
+/* ---------- product illustrations (stand-ins for retailer photos) ---------- */
+function shade(hex, amt){const n=parseInt(hex.slice(1),16);let r=(n>>16)+amt,g=(n>>8&255)+amt,b=(n&255)+amt;const c=v=>Math.max(0,Math.min(255,v));return '#'+((1<<24)+(c(r)<<16)+(c(g)<<8)+c(b)).toString(16).slice(1)}
+const LEG='#4a4643';
+const ART = {
+  sofa(c){const d=shade(c,-22),l=shade(c,14);let ch='';for(let x=52;x<200;x+=19)ch+=`<path d="M${x} 50v40" stroke="${d}" stroke-width="2.5"/>`;
+    return `<ellipse cx="120" cy="136" rx="104" ry="7" fill="#000" opacity=".07"/><rect x="34" y="40" width="172" height="62" rx="20" fill="${c}"/>${ch}<rect x="30" y="88" width="180" height="34" rx="12" fill="${l}"/><path d="M60 90v30M95 90v30M130 90v30M165 90v30" stroke="${d}" stroke-width="1.5" opacity=".5"/><rect x="16" y="66" width="30" height="62" rx="14" fill="${c}"/><rect x="194" y="66" width="30" height="62" rx="14" fill="${c}"/><rect x="30" y="127" width="6" height="8" fill="${LEG}"/><rect x="204" y="127" width="6" height="8" fill="${LEG}"/>`},
+  corner(c){const d=shade(c,-20),l=shade(c,12);return `<ellipse cx="120" cy="138" rx="108" ry="7" fill="#000" opacity=".07"/><rect x="20" y="44" width="200" height="50" rx="14" fill="${c}"/><rect x="20" y="86" width="140" height="34" rx="10" fill="${l}"/><rect x="150" y="80" width="70" height="52" rx="10" fill="${l}"/><path d="M150 92v28M80 90v28M115 90v28" stroke="${d}" stroke-width="1.5" opacity=".6"/><rect x="10" y="70" width="24" height="58" rx="10" fill="${c}"/><circle cx="60" cy="72" r="14" fill="${shade(c,-35)}"/><circle cx="190" cy="68" r="13" fill="#d9cfbd"/>`},
+  armchair(c){const d=shade(c,-14);return `<ellipse cx="120" cy="140" rx="64" ry="6" fill="#000" opacity=".07"/><path d="M70 40q50-22 100 0v60H70Z" fill="${c}"/><rect x="72" y="92" width="96" height="32" rx="12" fill="${shade(c,8)}"/><rect x="56" y="70" width="26" height="58" rx="13" fill="${d}"/><rect x="158" y="70" width="26" height="58" rx="13" fill="${d}"/><path d="M76 128l-4 10M164 128l4 10" stroke="#8a6440" stroke-width="4" stroke-linecap="round"/><g fill="${shade(c,-8)}" opacity=".5"><circle cx="100" cy="60" r="2"/><circle cx="120" cy="54" r="2"/><circle cx="140" cy="60" r="2"/><circle cx="110" cy="76" r="2"/><circle cx="130" cy="76" r="2"/></g>`},
+  coffee(c){return `<ellipse cx="120" cy="128" rx="96" ry="6" fill="#000" opacity=".07"/><rect x="28" y="64" width="184" height="14" rx="3" fill="${c}"/><path d="M28 70h184" stroke="${shade(c,-25)}" stroke-width="1" opacity=".5"/><path d="M40 72q10 0 6 18" stroke="${shade(c,-30)}" opacity=".3"/><path d="M58 78l-6 46h10l6-46M182 78l6 46h-10l-6-46" fill="#55524e"/>`},
+  dining(c){return `<ellipse cx="120" cy="140" rx="100" ry="6" fill="#000" opacity=".07"/><rect x="22" y="56" width="196" height="12" rx="2" fill="${c}"/><rect x="30" y="68" width="180" height="8" fill="${shade(c,-18)}"/><path d="M36 76h10l-2 60h-6ZM194 76h10l-2 60h-6Z" fill="${shade(c,-12)}"/><path d="M60 76h8l-2 54h-4ZM172 76h8l-2 54h-4Z" fill="${shade(c,-30)}"/>`},
+  bed(c){const d=shade(c,-18);return `<ellipse cx="120" cy="140" rx="104" ry="6" fill="#000" opacity=".07"/><rect x="40" y="22" width="160" height="78" rx="6" fill="${c}"/><path d="M56 22v78M72 22v78M88 22v78M104 22v78M120 22v78M136 22v78M152 22v78M168 22v78M184 22v78" stroke="${d}" stroke-width="1.4" opacity=".6"/><rect x="32" y="82" width="176" height="24" rx="6" fill="#f6f5f1" stroke="#dcdad3"/><path d="M40 94h160" stroke="#e5e3dc"/><rect x="58" y="70" width="52" height="18" rx="8" fill="#fbfaf7" stroke="#e1dfd8"/><rect x="130" y="70" width="52" height="18" rx="8" fill="#fbfaf7" stroke="#e1dfd8"/><rect x="28" y="104" width="184" height="28" rx="4" fill="${c}"/><rect x="32" y="132" width="8" height="6" fill="${LEG}"/><rect x="200" y="132" width="8" height="6" fill="${LEG}"/>`},
+  chest(c){const d=shade(c,-28);let r='';for(let i=0;i<3;i++){const y=40+i*30;r+=`<rect x="54" y="${y}" width="64" height="26" rx="2" fill="${shade(c,4)}" stroke="${d}" stroke-width="1.2"/><rect x="122" y="${y}" width="64" height="26" rx="2" fill="${shade(c,4)}" stroke="${d}" stroke-width="1.2"/><circle cx="86" cy="${y+13}" r="3" fill="#b9b4aa"/><circle cx="154" cy="${y+13}" r="3" fill="#b9b4aa"/>`}
+    return `<ellipse cx="120" cy="142" rx="80" ry="6" fill="#000" opacity=".07"/><rect x="46" y="30" width="148" height="104" rx="3" fill="${c}" stroke="${d}" stroke-width="1.2"/><rect x="42" y="26" width="156" height="8" rx="2" fill="${shade(c,8)}" stroke="${d}" stroke-width="1.2"/>${r}<rect x="50" y="134" width="8" height="6" fill="${d}"/><rect x="182" y="134" width="8" height="6" fill="${d}"/>`},
+  bedside(c){const d=shade(c,-30);return `<ellipse cx="120" cy="142" rx="52" ry="5" fill="#000" opacity=".07"/><rect x="78" y="54" width="84" height="74" rx="3" fill="${c}"/><rect x="84" y="62" width="72" height="26" rx="2" fill="${shade(c,8)}" stroke="${d}" stroke-width="1"/><rect x="84" y="94" width="72" height="26" rx="2" fill="${shade(c,8)}" stroke="${d}" stroke-width="1"/><rect x="108" y="73" width="24" height="4" rx="2" fill="${d}"/><rect x="108" y="105" width="24" height="4" rx="2" fill="${d}"/><path d="M84 128l-3 12M156 128l3 12" stroke="${d}" stroke-width="4"/><rect x="104" y="40" width="18" height="14" rx="3" fill="#e5e0d6"/><path d="M113 40c0-10 8-16 14-20" stroke="#6f8a62" stroke-width="2" fill="none"/>`},
+  bookcase(c){const d=shade(c,-30);const bk=['#6f8a62','#c9b48e','#3f5a57','#b45f3f','#d8d2c4','#8a6440'];let b='';[[30,40],[64,74],[98,108]].forEach(([y],i)=>{let x=86;for(let k=0;k<5;k++){const w=6+((k+i)%3)*3,h=22-((k*7+i)%8);b+=`<rect x="${x}" y="${y+30-h}" width="${w}" height="${h}" fill="${bk[(k+i*2)%6]}"/>`;x+=w+2}});
+    return `<ellipse cx="120" cy="148" rx="58" ry="5" fill="#000" opacity=".07"/><rect x="76" y="18" width="88" height="128" rx="2" fill="${c}" stroke="${d}"/><rect x="82" y="24" width="76" height="116" fill="${shade(c,-12)}"/><path d="M82 60h76M82 94h76M82 128h76" stroke="${c}" stroke-width="4"/>${b}<circle cx="142" cy="120" r="8" fill="#e5e0d6"/>`},
+  pendant(c){return `<path d="M120 0v52" stroke="#3b3835" stroke-width="2"/><rect x="114" y="48" width="12" height="10" rx="2" fill="#b38b4d"/><path d="M72 106q0-48 48-48t48 48Z" fill="${c}"/><path d="M72 106h96" stroke="${shade(c,-25)}" stroke-width="2"/><ellipse cx="120" cy="110" rx="16" ry="6" fill="#ffe8a8"/><ellipse cx="120" cy="140" rx="70" ry="8" fill="#ffe8a8" opacity=".35"/>`},
+  vase(c){return `<ellipse cx="120" cy="142" rx="46" ry="5" fill="#000" opacity=".07"/><g stroke="#6f8a62" stroke-width="2" fill="none"><path d="M120 70C114 40 96 26 80 16M120 70c4-26 20-42 42-50M120 70c-2-20 0-40 4-56"/></g><g fill="#7f9a70"><ellipse cx="92" cy="26" rx="7" ry="3" transform="rotate(-30 92 26)"/><ellipse cx="104" cy="38" rx="7" ry="3" transform="rotate(-50 104 38)"/><ellipse cx="148" cy="28" rx="7" ry="3" transform="rotate(30 148 28)"/><ellipse cx="136" cy="42" rx="7" ry="3" transform="rotate(50 136 42)"/><ellipse cx="124" cy="22" rx="6" ry="3" transform="rotate(80 124 22)"/></g><path d="M106 70h28c0 10 16 22 16 42 0 18-14 28-30 28s-30-10-30-28c0-20 16-32 16-42Z" fill="${c}"/><path d="M96 100c10 4 38 4 48 0" stroke="${shade(c,-20)}" opacity=".5" fill="none"/>`}
+};
+const art = (p, colour, cls='art') => `<svg class="${cls}" viewBox="0 0 240 160" role="img" aria-label="${p.name}">${ART[p.shape](colour||p.colours[0].hex)}</svg>`;
+
+/* ---------- catalogue (sample data) ---------- */
+const PRODUCTS = [
+  {id:'rhianna-sofa',name:'Rhianna 3 Seater Fabric Sofa',retailer:'Furniture Village',cat:'Sofas',room:'Living room',price:1095,shape:'sofa',colours:[{n:'Teal',hex:'#3f5a57'},{n:'Oatmeal',hex:'#d6cbb7'},{n:'Charcoal',hex:'#55595a'}],dims:[222,95,78],material:'Velvet-touch fabric, hardwood frame',delivery:'4–6 weeks',popular:9},
+  {id:'earth-coffee-table',name:'Earth Coffee Table',retailer:'Furniture Village',cat:'Tables',room:'Living room',price:299,shape:'coffee',colours:[{n:'Natural oak',hex:'#c39a62'}],dims:[120,60,45],material:'Solid oak top, powder-coated steel legs',delivery:'1–2 weeks',popular:7},
+  {id:'veron-ottoman-bed',name:'Duo+ Collection Veron End Lift Ottoman Bed Frame',retailer:'Furniture Village',cat:'Beds',room:'Bedroom',price:549,shape:'bed',colours:[{n:'Silver grey',hex:'#a7a9ad'},{n:'Mink',hex:'#b5a593'}],dims:[150,210,120],material:'Woven fabric, gas-lift storage base',delivery:'3–4 weeks',popular:8},
+  {id:'grace-chest',name:'Grace 6 Drawer Wide Chest',retailer:'Furniture Village',cat:'Storage',room:'Bedroom',price:null,shape:'chest',colours:[{n:'White',hex:'#efeee8'},{n:'Sage',hex:'#a9b8a2'}],dims:[140,45,85],material:'Painted hardwood, soft-close runners',delivery:'Check with retailer',popular:5},
+  {id:'mabel-armchair',name:'Mabel Bouclé Armchair',retailer:'Linden & Co',cat:'Sofas',room:'Living room',price:449,shape:'armchair',colours:[{n:'Cream bouclé',hex:'#e6dfd2'},{n:'Moss',hex:'#7d8a63'}],dims:[82,86,80],material:'Bouclé, beech legs',delivery:'2–3 weeks',popular:10},
+  {id:'sienna-corner-sofa',name:'Sienna Velvet Corner Sofa',retailer:'Linden & Co',cat:'Sofas',room:'Living room',price:1499,shape:'corner',colours:[{n:'Olive',hex:'#6d6b3c'},{n:'Dusk blue',hex:'#4f6178'}],dims:[268,180,84],material:'Recycled velvet, pocket-sprung seat',delivery:'6–8 weeks',popular:6},
+  {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',retailer:'Oakhaven Home',cat:'Tables',room:'Dining room',price:649,shape:'dining',colours:[{n:'Walnut',hex:'#8a6440'},{n:'Light oak',hex:'#c9a777'}],dims:[160,90,76],material:'Walnut veneer, solid legs',delivery:'2–4 weeks',popular:6},
+  {id:'hollis-bedside',name:'Hollis Oak Bedside Table',retailer:'Oakhaven Home',cat:'Storage',room:'Bedroom',price:179,shape:'bedside',colours:[{n:'Oak',hex:'#c49a6c'},{n:'Black',hex:'#3a3836'}],dims:[48,40,58],material:'Solid oak, two drawers',delivery:'1–2 weeks',popular:8},
+  {id:'wren-bookcase',name:'Wren Tall Bookcase',retailer:'Oakhaven Home',cat:'Storage',room:'Living room',price:259,shape:'bookcase',colours:[{n:'Ash',hex:'#d7c2a0'}],dims:[80,32,180],material:'Ash veneer, adjustable shelves',delivery:'1–2 weeks',popular:4},
+  {id:'arlo-pendant',name:'Arlo Linen Pendant Light',retailer:'Harbour Living',cat:'Lighting',room:'Dining room',price:89,shape:'pendant',colours:[{n:'Natural linen',hex:'#ddd4c3'},{n:'Sage',hex:'#9aab92'}],dims:[45,45,32],material:'Linen shade, brass fittings',delivery:'3–5 days',popular:9},
+  {id:'ida-vase',name:'Ida Stoneware Vase',retailer:'Harbour Living',cat:'Decor',room:'Living room',price:34,shape:'vase',colours:[{n:'Speckled stone',hex:'#d8d1c4'},{n:'Clay',hex:'#c08d6b'}],dims:[18,18,26],material:'Hand-glazed stoneware',delivery:'3–5 days',popular:7},
+  {id:'rowan-bed',name:'Rowan Upholstered Double Bed',retailer:'Linden & Co',cat:'Beds',room:'Bedroom',price:699,shape:'bed',colours:[{n:'Stone',hex:'#bdb5a6'},{n:'Forest',hex:'#3d5545'}],dims:[145,205,115],material:'Linen blend, slatted base',delivery:'3–5 weeks',popular:5}
+];
+const CATS = ['All','Sofas','Beds','Tables','Storage','Lighting','Decor'];
+const RETAILERS = [...new Set(PRODUCTS.map(p=>p.retailer))];
+const ROOMS = [...new Set(PRODUCTS.map(p=>p.room))];
+const PALETTE = [{n:'Neutral',hex:'#e6dfd2'},{n:'Green',hex:'#6d7f5f'},{n:'Grey',hex:'#a7a9ad'},{n:'Wood',hex:'#b98d55'},{n:'Blue',hex:'#4f6178'},{n:'Dark',hex:'#3a3836'}];
+const family = hex => {const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255,mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+  if(mx<90)return'Dark';if(mx-mn<14)return mx>200?'Neutral':'Grey';if(b>r&&b>g)return'Blue';if(g>=r&&g>b)return'Green';if(r-b>55&&mx<215)return'Wood';return'Neutral'};
+const fmt = n => '£'+n.toLocaleString('en-GB');
+
+/* ---------- state ---------- */
+const state = {cat:'All',q:'',retailers:new Set(),rooms:new Set(),colour:null,max:1500,sort:'popular',saved:new Set(),bag:[]};
+try{const s=JSON.parse(localStorage.getItem('rp-shop')||'{}');if(s.bag)state.bag=s.bag;if(s.saved)state.saved=new Set(s.saved)}catch(e){}
+const persist=()=>{try{localStorage.setItem('rp-shop',JSON.stringify({bag:state.bag,saved:[...state.saved]}))}catch(e){}};
+
+function filtered(){
+  let list = PRODUCTS.filter(p=>
+    (state.cat==='All'||p.cat===state.cat) &&
+    (!state.q || (p.name+' '+p.retailer+' '+p.cat+' '+p.room+' '+p.colours.map(c=>c.n).join(' ')).toLowerCase().includes(state.q.toLowerCase())) &&
+    (!state.retailers.size||state.retailers.has(p.retailer)) &&
+    (!state.rooms.size||state.rooms.has(p.room)) &&
+    (!state.colour||p.colours.some(c=>family(c.hex)===state.colour)) &&
+    (p.price===null||p.price<=state.max));
+  const by={popular:(a,b)=>b.popular-a.popular,low:(a,b)=>(a.price??1e9)-(b.price??1e9),high:(a,b)=>(b.price??-1)-(a.price??-1),az:(a,b)=>a.name.localeCompare(b.name)};
+  return list.sort(by[state.sort]);
+}
+
+function card(p){
+  const saved=state.saved.has(p.id);
+  return `<article class="card">
+    <div class="img" data-open="${p.id}">${art(p)}
+      <button class="save" data-save="${p.id}" aria-pressed="${saved}" aria-label="Save ${p.name}">${BOOK}</button>
+      <button class="view" data-open="${p.id}">View piece ${ARROW}</button>
+    </div>
+    <div class="body">
+      <span class="retailer">${p.retailer}</span>
+      <h3>${p.name}</h3>
+      <div class="price ${p.price===null?'check-p':''}">${p.price===null?'Price to check':fmt(p.price)}</div>
+      <div class="dots">${p.colours.map(c=>`<span class="dot" title="${c.n}" style="background:${c.hex}"></span>`).join('')}</div>
+      <button class="btn block" data-room="${p.id}">Add to room ${ARROW}</button>
+    </div></article>`;
+}
+
+/* ---------- views ---------- */
+function shopView(){
+  const count=(k,v)=>PRODUCTS.filter(p=>p[k]===v).length;
+  $('#app').innerHTML = `
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="#shop">Home</a><span>/</span><span>Shop furniture</span></nav>
+    <div class="intro"><div><h1>Shop <em>furniture.</em></h1><p>From the UK’s top retailers, all in one place.</p></div></div>
+    <form class="search" id="searchForm" role="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search furniture, brands or styles" value="${state.q.replace(/"/g,'&quot;')}" aria-label="Search furniture"></form>
+    <div class="chipbar">
+      <div class="chips" role="group" aria-label="Category">${CATS.map(c=>`<button class="chip" data-cat="${c}" aria-pressed="${state.cat===c}">${c}</button>`).join('')}</div>
+      <button class="filters-btn" id="filtersBtn" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Filters</button>
+    </div>
+    <div class="shop">
+      <aside class="side" id="side" aria-label="Filters">
+        <div class="fgroup"><h3>Retailer</h3>${RETAILERS.map(r=>`<label class="check"><input type="checkbox" id="ret-${r.replace(/\W/g,'')}" data-ret="${r}" ${state.retailers.has(r)?'checked':''}>${r}<span class="n">${count('retailer',r)}</span></label>`).join('')}</div>
+        <div class="fgroup"><h3>Max price</h3><div class="range-row"><span>£0</span><span id="maxOut">${state.max>=1500?'Any':fmt(state.max)}</span></div><input type="range" id="max" min="50" max="1500" step="50" value="${state.max}" aria-label="Maximum price"></div>
+        <div class="fgroup"><h3>Colour</h3><div class="swatches">${PALETTE.map(c=>`<button class="sw" data-col="${c.n}" title="${c.n}" aria-label="${c.n}" aria-pressed="${state.colour===c.n}" style="background:${c.hex}"></button>`).join('')}</div></div>
+        <div class="fgroup"><h3>Room</h3>${ROOMS.map(r=>`<label class="check"><input type="checkbox" id="room-${r.replace(/\W/g,'')}" data-rm="${r}" ${state.rooms.has(r)?'checked':''}>${r}<span class="n">${count('room',r)}</span></label>`).join('')}</div>
+        <button class="clear" id="clear">Clear all filters</button>
+      </aside>
+      <section aria-label="Products">
+        <div class="results-bar"><span class="count" id="count"></span>
+          <label class="sort" for="sort">Sort by <select id="sort">
+            <option value="popular">Most popular</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="az">Name A–Z</option></select></label></div>
+        <div class="grid" id="grid"></div>
+      </section>
+    </div>
+  </div>`;
+  $('#sort').value=state.sort;
+  renderGrid();
+  $('#q').addEventListener('input',e=>{state.q=e.target.value;renderGrid()});
+  $('#searchForm').addEventListener('submit',e=>e.preventDefault());
+  $('#sort').addEventListener('change',e=>{state.sort=e.target.value;renderGrid()});
+  $('#max').addEventListener('input',e=>{state.max=+e.target.value;$('#maxOut').textContent=state.max>=1500?'Any':fmt(state.max);renderGrid()});
+  $('#filtersBtn').addEventListener('click',e=>{const o=$('#side').classList.toggle('open');e.currentTarget.setAttribute('aria-expanded',o)});
+  $('#clear').addEventListener('click',()=>{Object.assign(state,{cat:'All',q:'',colour:null,max:1500});state.retailers.clear();state.rooms.clear();shopView()});
+}
+function renderGrid(){
+  const list=filtered();
+  $('#count').textContent=`${list.length} ${list.length===1?'piece':'pieces'}`;
+  $('#grid').innerHTML=list.length?list.map(card).join(''):`<div class="empty">No pieces match these filters. Try a higher price or clear a filter.</div>`;
+  document.querySelectorAll('[data-cat]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cat===state.cat));
+  document.querySelectorAll('[data-col]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.col===state.colour));
+}
+
+function pieceView(id){
+  const p=PRODUCTS.find(x=>x.id===id); if(!p){location.hash='shop';return}
+  let ci=0, qty=1;
+  const related=PRODUCTS.filter(x=>x.id!==p.id&&(x.room===p.room||x.cat===p.cat)).slice(0,4);
+  const [w,d,h]=p.dims;
+  $('#app').innerHTML=`
+  <div class="wrap">
+    <a class="back" href="#shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m6-6-6 6 6 6"/></svg>Back to shop</a>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="#shop">Shop furniture</a><span>/</span><a href="#shop" data-cat-link="${p.cat}">${p.cat}</a><span>/</span><span>${p.name}</span></nav>
+    <div class="piece" style="margin-top:18px">
+      <div class="gallery">
+        <div class="hero-img" id="hero">${art(p)}<button class="save" data-save="${p.id}" aria-pressed="${state.saved.has(p.id)}" aria-label="Save ${p.name}">${BOOK}</button></div>
+        <div class="thumbs" id="thumbs">${p.colours.concat(p.colours.length<4?[p.colours[0]]:[]).slice(0,4).map((c,i)=>`<button class="thumb" data-thumb="${i%p.colours.length}" aria-pressed="${i===0}" aria-label="${c.n} view">${art(p,c.hex,'')}</button>`).join('')}</div>
+      </div>
+      <div class="info">
+        <div class="meta"><span>${p.retailer}</span><span class="pill">${p.room}</span></div>
+        <h1>${p.name}</h1>
+        <div class="big-price">${p.price===null?'Price to check':fmt(p.price)}</div>
+        <div><div class="label">Colour: <span id="cname" style="color:var(--ink);text-transform:none;letter-spacing:0">${p.colours[0].n}</span></div>
+          <div class="colour-opts">${p.colours.map((c,i)=>`<button class="sw" data-ci="${i}" aria-pressed="${i===0}" aria-label="${c.n}" title="${c.n}" style="background:${c.hex}"></button>`).join('')}</div></div>
+        <div><div class="label">Dimensions</div>
+          <div class="dims"><div><b>${w}</b><span>Width, cm</span></div><div><b>${d}</b><span>Depth, cm</span></div><div><b>${h}</b><span>Height, cm</span></div></div></div>
+        <div class="roo"><span class="av">Roo</span><div><b style="color:var(--ink)">Will it fit?</b>
+          <p id="fit"></p>
+          <label for="wall">Your wall length <input id="wall" type="number" min="50" max="2000" value="340"> cm</label></div></div>
+        <div class="buy-row">
+          <div class="qty"><button id="minus" aria-label="Fewer">−</button><output id="qty">1</output><button id="plus" aria-label="More">+</button></div>
+          <button class="btn primary" id="addBag" ${p.price===null?'disabled style="opacity:.5;cursor:not-allowed"':''}>${p.price===null?'Price to check':'Add to basket'}</button>
+        </div>
+        <button class="btn block" data-room="${p.id}">Add to room ${ARROW}</button>
+        <ul class="facts">
+          <li><span>Sold by</span><span>${p.retailer}</span></li>
+          <li><span>Material</span><span>${p.material}</span></li>
+          <li><span>Delivery</span><span>${p.delivery}</span></li>
+          <li><span>Returns</span><span>Handled by ${p.retailer}</span></li>
+        </ul>
+      </div>
+    </div>
+    ${related.length?`<section class="related"><h2>Goes well with</h2><div class="grid">${related.map(card).join('')}</div></section>`:''}
+  </div>`;
+  const setColour=i=>{ci=i;const c=p.colours[i];
+    $('#hero').firstElementChild.outerHTML=art(p,c.hex);$('#cname').textContent=c.n;
+    document.querySelectorAll('[data-ci]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.ci===i));
+    document.querySelectorAll('[data-thumb]').forEach((b,k)=>b.setAttribute('aria-pressed',k===i));};
+  document.querySelectorAll('[data-ci]').forEach(b=>b.addEventListener('click',()=>setColour(+b.dataset.ci)));
+  document.querySelectorAll('[data-thumb]').forEach(b=>b.addEventListener('click',()=>setColour(+b.dataset.thumb)));
+  const fit=()=>{const wall=+$('#wall').value||0,spare=wall-w;
+    $('#fit').textContent=wall<=0?'Enter a wall length to check.':spare>=60?`Yes. At ${w} cm wide it leaves ${spare} cm on a ${wall} cm wall, enough for a side table.`:spare>=0?`Just. It leaves ${spare} cm on a ${wall} cm wall, so there’s no room for a side table.`:`No. It’s ${-spare} cm wider than a ${wall} cm wall.`};
+  $('#wall').addEventListener('input',fit);fit();
+  $('#minus').addEventListener('click',()=>{qty=Math.max(1,qty-1);$('#qty').textContent=qty});
+  $('#plus').addEventListener('click',()=>{qty=Math.min(9,qty+1);$('#qty').textContent=qty});
+  if(p.price!==null)$('#addBag').addEventListener('click',()=>{
+    const c=p.colours[ci].n,ex=state.bag.find(l=>l.id===p.id&&l.colour===c);
+    ex?ex.qty+=qty:state.bag.push({id:p.id,colour:c,hex:p.colours[ci].hex,qty});
+    persist();updateBag();openBag();});
+  const cl=document.querySelector('[data-cat-link]');cl&&cl.addEventListener('click',()=>{state.cat=cl.dataset.catLink});
+}
+
+/* ---------- basket ---------- */
+function updateBag(){
+  const n=state.bag.reduce((a,l)=>a+l.qty,0);
+  $('#bagCount').hidden=!n;$('#bagCount').textContent=n;
+  if(!state.bag.length){$('#lines').innerHTML='<p class="empty-b">Your basket is empty.<br>Add pieces from the shop to see them here.</p>';$('#bagFoot').innerHTML=`<a class="btn primary block" href="#shop" id="keep">Browse furniture</a>`;$('#keep').onclick=closeBag;return}
+  $('#lines').innerHTML=state.bag.map((l,i)=>{const p=PRODUCTS.find(x=>x.id===l.id);return `<div class="line"><div class="mini">${art(p,l.hex,'')}</div><div><b>${p.name}</b><small>${p.retailer} · ${l.colour} · Qty ${l.qty}</small><br><button class="rm" data-rm-line="${i}">Remove</button></div><div class="lp">${fmt(p.price*l.qty)}</div></div>`}).join('');
+  const sub=state.bag.reduce((a,l)=>a+PRODUCTS.find(x=>x.id===l.id).price*l.qty,0);
+  const shops=new Set(state.bag.map(l=>PRODUCTS.find(x=>x.id===l.id).retailer));
+  $('#bagFoot').innerHTML=`<div class="sum"><span>Subtotal</span><span>${fmt(sub)}</span></div><div class="sum"><span>Delivery</span><span>Set by each retailer</span></div><div class="sum total"><span>Total</span><span>${fmt(sub)}</span></div>
+    <button class="btn primary block" id="checkout">Checkout with ${shops.size} ${shops.size===1?'retailer':'retailers'} ${ARROW}</button>
+    <p class="note">RoomPlanned passes your basket to ${[...shops].join(', ')}. You pay each retailer directly.</p>`;
+  $('#checkout').onclick=()=>toast('Example only: this is where checkout hands over to each retailer.');
+  document.querySelectorAll('[data-rm-line]').forEach(b=>b.onclick=()=>{state.bag.splice(+b.dataset.rmLine,1);persist();updateBag()});
+}
+const openBag=()=>{$('#drawer').hidden=false;$('#scrim').hidden=false};
+const closeBag=()=>{$('#drawer').hidden=true;$('#scrim').hidden=true};
+$('#bagBtn').onclick=openBag;$('#closeBag').onclick=closeBag;$('#scrim').onclick=closeBag;
+
+/* ---------- shared events ---------- */
+let tt;function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+document.addEventListener('click',e=>{
+  const s=e.target.closest('[data-save]');if(s){e.stopPropagation();const id=s.dataset.save;state.saved.has(id)?state.saved.delete(id):state.saved.add(id);persist();
+    document.querySelectorAll(`[data-save="${id}"]`).forEach(b=>b.setAttribute('aria-pressed',state.saved.has(id)));toast(state.saved.has(id)?'Saved to My Home':'Removed from My Home');return}
+  const o=e.target.closest('[data-open]');if(o){location.hash='piece-'+o.dataset.open;return}
+  const r=e.target.closest('[data-room]');if(r){const p=PRODUCTS.find(x=>x.id===r.dataset.room);toast(`Added to your ${p.room.toLowerCase()} plan`);return}
+  const c=e.target.closest('[data-cat]');if(c){state.cat=c.dataset.cat;renderGrid();return}
+  const col=e.target.closest('[data-col]');if(col){state.colour=state.colour===col.dataset.col?null:col.dataset.col;renderGrid();return}
+  if(!e.target.closest('#menu,#menuBtn')){$('#menu').hidden=true;$('#menuBtn').setAttribute('aria-expanded','false')}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;if(t.dataset.ret){t.checked?state.retailers.add(t.dataset.ret):state.retailers.delete(t.dataset.ret);renderGrid()}
+  if(t.dataset.rm){t.checked?state.rooms.add(t.dataset.rm):state.rooms.delete(t.dataset.rm);renderGrid()}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeBag();$('#menu').hidden=true}});
+$('#menuBtn').onclick=()=>{const m=$('#menu');m.hidden=!m.hidden;$('#menuBtn').setAttribute('aria-expanded',!m.hidden)};
+$('#searchJump').onclick=()=>{if(!location.hash.startsWith('#piece-')){$('#q')&&$('#q').focus()}else{location.hash='shop';setTimeout(()=>$('#q').focus(),0)}};
+
+function route(){const h=location.hash.slice(1);h.startsWith('piece-')?pieceView(h.slice(6)):shopView();window.scrollTo(0,0)}
+window.addEventListener('hashchange',route);
+updateBag();route();
+</script>
+</body>
+</html>
