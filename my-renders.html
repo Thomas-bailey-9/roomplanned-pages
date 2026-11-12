@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>RoomPlanned My Renders</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: site header → dark "screening room" band: studio controls (left) beside a large live preview (right) with render progress → gallery of saved renders with filters → lightbox with plan, pieces and actions. */
+:root{
+  --bg:#f7f6f2;--surface:#ffffff;--soft:#efeee9;--line:#e3e1da;
+  --ink:#16251f;--text:#3b4641;--muted:#76807a;
+  --green:#2c4a3b;--green-ink:#ffffff;--sage:#6b8068;--sage-soft:#e6ece3;
+  --stage:#121a16;--stage-2:#1b2620;--stage-line:#2c3832;--stage-ink:#f4f1ea;--stage-muted:#9fb0a5;--cream:#efe4cf;--clay:#c98a63;--gold:#e0b25c;
+  --wall:#16251f;--floor:#fbfaf7;--grid:#ecebe5;--clay-soft:#f6e6da;
+  --shadow:0 1px 2px rgba(22,37,31,.05),0 6px 20px rgba(22,37,31,.06);
+  --lift:0 30px 60px -24px rgba(0,0,0,.6);
+  --font:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --r-card:16px;--r-pill:999px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815;--surface:#1a221e;--soft:#222c27;--line:#2e3a34;--ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;
+  --green:#9cc0a4;--green-ink:#10201a;--sage:#a9c0a5;--sage-soft:#22302a;--stage:#0b110e;--stage-2:#141d18;--stage-line:#25302a;
+  --wall:#dfe5e0;--floor:#1e2723;--grid:#25302a;--clay-soft:#3a2a20;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815;--surface:#1a221e;--soft:#222c27;--line:#2e3a34;--ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;
+  --green:#9cc0a4;--green-ink:#10201a;--sage:#a9c0a5;--sage-soft:#22302a;--stage:#0b110e;--stage-2:#141d18;--stage-line:#25302a;
+  --wall:#dfe5e0;--floor:#1e2723;--grid:#25302a;--clay-soft:#3a2a20;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+h1,h2,h3{color:var(--ink);margin:0;text-wrap:balance;letter-spacing:-.03em}
+.serif{font-family:var(--serif);font-weight:400;font-style:italic;letter-spacing:-.01em}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.demo{background:var(--sage-soft);color:var(--ink);font-size:13px;text-align:center}
+.demo .wrap{padding-block:8px}
+
+header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--surface);border-bottom:1px solid var(--line)}
+.site .wrap{display:flex;align-items:center;gap:24px;height:76px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:800;font-size:23px;letter-spacing:-.03em}
+.logo svg{width:30px;height:30px}
+.nav{display:flex;gap:34px;margin:0 auto;font-weight:500}
+.nav a{text-decoration:none;color:var(--text);padding:6px 0}
+.icons{display:flex;gap:8px;align-items:center;position:relative}
+.icon-btn{width:42px;height:42px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;color:var(--ink);text-decoration:none}
+.icon-btn:hover{background:var(--soft)}
+.icon-btn svg{width:22px;height:22px}
+.menu{position:absolute;right:0;top:54px;width:240px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:10px 0}
+.menu a{display:block;padding:10px 22px;text-decoration:none;color:var(--ink);font-weight:500}
+.menu a:hover,.menu a.on{background:var(--soft)}
+
+.btn{height:46px;border-radius:var(--r-pill);font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 22px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;white-space:nowrap}
+.btn svg{width:16px;height:16px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.small{height:34px;font-size:13px;padding:0 14px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* studio band */
+.studio{background:var(--stage);color:var(--stage-ink);position:relative;overflow:hidden;isolation:isolate}
+.studio::before{content:"";position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(224,178,92,.22),rgba(224,178,92,0) 65%);right:-120px;top:-200px;z-index:-1}
+.studio::after{content:"";position:absolute;inset:0;z-index:-1;opacity:.1;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.studio .wrap{padding-block:44px 56px}
+.crumbs{font-size:13px;color:var(--stage-muted);display:flex;gap:8px;margin-bottom:12px}
+.crumbs a{text-decoration:none}
+.studio h1{color:var(--stage-ink);font-size:clamp(40px,6vw,76px);font-weight:800;line-height:.98}
+.studio h1 .serif{color:var(--gold);font-size:1.08em}
+.studio .lead{color:var(--stage-muted);font-size:17px;max-width:56ch;margin:12px 0 30px}
+.studio-grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:28px;align-items:start}
+.controls{background:var(--stage-2);border:1px solid var(--stage-line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:20px}
+.ctl h3{color:var(--stage-muted);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between}
+.ctl h3 span{letter-spacing:0;text-transform:none;font-weight:600;color:var(--gold)}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{border:1px solid var(--stage-line);background:transparent;color:var(--stage-ink);border-radius:12px;padding:9px 12px;font-size:13px;font-weight:600;text-align:left;display:flex;align-items:center;gap:8px}
+.opt small{display:block;font-weight:500;color:var(--stage-muted);font-size:11px}
+.opt:hover{border-color:var(--stage-muted)}
+.opt[aria-pressed="true"]{background:var(--cream);border-color:var(--cream);color:#16251f}
+.opt[aria-pressed="true"] small{color:#55605a}
+.opt.room{flex:1 1 100%}
+.mini{width:44px;height:36px;flex:none;border-radius:6px;overflow:hidden;background:#fbfaf7}
+.mini svg{width:100%;height:100%;display:block}
+.sw{width:30px;height:30px;border-radius:50%;padding:0;border:2px solid var(--stage-line);display:flex;overflow:hidden}
+.sw i{flex:1}
+.sw[aria-pressed="true"]{border-color:var(--cream);box-shadow:0 0 0 3px rgba(239,228,207,.25)}
+.sun{width:18px;height:18px;border-radius:50%;flex:none}
+.go{height:52px;border:0;border-radius:var(--r-pill);background:var(--gold);color:#1a1408;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px}
+.go:hover{filter:brightness(1.06)}
+.go:disabled{opacity:.6;cursor:progress}
+.go svg{width:18px;height:18px}
+.source{font-size:12px;color:var(--stage-muted);margin:-8px 0 0}
+.source a{color:var(--cream)}
+
+.screen{position:relative;border-radius:22px;overflow:hidden;box-shadow:var(--lift);border:1px solid var(--stage-line);background:#000;min-width:0}
+.screen svg{display:block;width:100%;height:auto;transition:filter .4s ease}
+.screen.busy svg{filter:blur(6px) saturate(.6) brightness(.8)}
+.chip-tl{position:absolute;top:14px;left:14px;display:flex;gap:6px;flex-wrap:wrap}
+.chip-tl span{background:rgba(10,16,13,.72);color:#f4f1ea;font-size:12px;font-weight:600;border-radius:var(--r-pill);padding:5px 12px;backdrop-filter:blur(6px)}
+.chip-tl span.live{background:var(--gold);color:#1a1408}
+.prog{position:absolute;left:0;right:0;bottom:0;padding:18px 20px;background:linear-gradient(to top,rgba(8,12,10,.85),rgba(8,12,10,0));color:#f4f1ea}
+.prog .row{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.prog .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.2);overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:var(--gold);border-radius:3px;transition:width .2s linear}
+.scan{position:absolute;inset:0;background:linear-gradient(90deg,rgba(224,178,92,0),rgba(224,178,92,.35),rgba(224,178,92,0));width:30%;animation:scan 1.1s linear infinite;mix-blend-mode:screen}
+@keyframes scan{from{transform:translateX(-100%)}to{transform:translateX(400%)}}
+.screen-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;font-size:13px;color:var(--stage-muted)}
+.screen-foot b{color:var(--stage-ink)}
+
+/* gallery */
+.gal{padding-block:56px 72px}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.sec-head h2{font-size:clamp(30px,3.8vw,46px);font-weight:800;line-height:1;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sec-head h2 .serif{color:var(--sage)}
+.sec-head p{margin:8px 0 0;color:var(--muted)}
+.ex{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--clay-soft);color:var(--ink);border-radius:var(--r-pill);padding:3px 10px;font-family:var(--font);font-style:normal}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.chip{height:38px;padding:0 16px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--surface);font-weight:500;font-size:14px;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
+.rc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.rc .img{position:relative;cursor:pointer;overflow:hidden;border:0;padding:0;background:none;display:block;width:100%}
+.rc .img svg{display:block;width:100%;height:auto;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.rc:hover .img svg{transform:scale(1.04)}
+.rc .new{position:absolute;top:10px;left:10px;background:var(--gold);color:#1a1408;font-size:11px;font-weight:800;border-radius:var(--r-pill);padding:3px 10px}
+.rc .body{padding:14px 16px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.rc b{display:block;color:var(--ink);font-size:15px;line-height:1.25}
+.rc small{color:var(--muted);font-size:12px}
+.rc .acts{display:flex;gap:2px;flex:none}
+.ic{width:36px;height:36px;border-radius:50%;border:0;background:none;display:grid;place-items:center;color:var(--text)}
+.ic:hover{background:var(--soft)}
+.ic svg{width:18px;height:18px}
+.ic[aria-pressed="true"]{color:var(--gold)}
+.ic[aria-pressed="true"] svg{fill:var(--gold)}
+.empty{grid-column:1/-1;padding:44px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r-card)}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:90;background:rgba(6,10,8,.84);backdrop-filter:blur(6px);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lb-card{background:var(--surface);border-radius:22px;max-width:1100px;width:100%;max-height:100%;overflow:auto;display:grid;grid-template-columns:1.5fr 1fr}
+.lb-img{position:relative;background:#000;display:flex;align-items:center}
+.lb-img svg{display:block;width:100%;height:auto}
+.cmp{position:absolute;bottom:14px;left:14px;display:flex;background:rgba(10,16,13,.75);border-radius:var(--r-pill);padding:4px;gap:2px}
+.cmp button{border:0;background:none;color:#f4f1ea;font-size:12px;font-weight:700;padding:6px 12px;border-radius:var(--r-pill)}
+.cmp button[aria-pressed="true"]{background:var(--cream);color:#16251f}
+.lb-info{padding:24px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.lb-info small.k{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sage)}
+.lb-info h3{font-size:26px;font-weight:800;line-height:1.1}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.specs div{background:var(--soft);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--muted)}
+.specs b{display:block;color:var(--ink);font-size:14px}
+.plist{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.plist li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.plist a{color:var(--ink);text-decoration:none;font-weight:500}
+.plist a:hover{text-decoration:underline}
+.plist span{font-weight:700;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.lb-acts{display:flex;gap:8px;flex-wrap:wrap}
+.lb-close{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:calc(16px + env(safe-area-inset-right,0px));width:44px;height:44px;border-radius:50%;border:0;background:#fff;color:#16251f;font-size:20px;font-weight:700}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:var(--r-pill);font-weight:600;font-size:14px;z-index:100;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+footer.site-foot{border-top:1px solid var(--line);background:var(--surface)}
+footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+
+@media (max-width:1000px){.nav{display:none}.icons{margin-left:auto}.studio-grid,.lb-card{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.site .wrap{height:64px;gap:12px}.logo{font-size:20px}.grid{grid-template-columns:1fr}.controls{padding:16px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="demo"><div class="wrap">Example page: renders are illustrations made from your room plans. Prices and products are sample data.</div></div>
+
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="shop.html" aria-label="RoomPlanned home">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="28" height="28" rx="3"/><path d="M8 26V8h6a4 4 0 0 1 0 8H8m6 0 3 10M18 8h4a4 4 0 0 1 0 8h-4v10"/></svg>
+      <span>RoomPlanned.</span>
+    </a>
+    <nav class="nav" aria-label="Main"><a href="shop.html">Shop</a><a href="plan.html">Plan</a><a href="inspiration.html">Inspiration</a><a href="community.html">Community</a></nav>
+    <div class="icons">
+      <a class="icon-btn" href="shop.html" aria-label="Search furniture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></a>
+      <a class="icon-btn" href="my-home.html" aria-label="My Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></a>
+      <button class="icon-btn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="menu" id="menu" hidden><a href="shop.html">Shop furniture</a><a href="plan.html">Plan a room</a><a href="inspiration.html">Inspiration</a><a href="community.html">Community preview</a><a href="my-home.html">My Home</a><a href="my-renders.html" class="on">My Renders</a><a href="#gallery">Account</a></div>
+    </div>
+  </div>
+</header>
+
+<section class="studio" aria-label="Render studio">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="my-home.html">My Home</a><span>/</span><span>My Renders</span></nav>
+    <h1>Your rooms, <span class="serif">rendered.</span></h1>
+    <p class="lead">Roo turns your floor plan into a picture of the finished room, using the pieces you placed. Try a different style or time of day before you buy anything.</p>
+    <div class="studio-grid">
+      <div class="controls">
+        <div class="ctl"><h3>Room <span id="planSrc"></span></h3><div class="opts" id="roomOpts" role="group" aria-label="Room"></div></div>
+        <div class="ctl"><h3>Style <span id="styleName"></span></h3><div class="opts" id="styleOpts" role="group" aria-label="Style"></div></div>
+        <div class="ctl"><h3>Light</h3><div class="opts" id="lightOpts" role="group" aria-label="Time of day"></div></div>
+        <div class="ctl"><h3>Format</h3><div class="opts" id="fmtOpts" role="group" aria-label="Format"></div></div>
+        <button class="go" id="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Create render</button>
+        <p class="source" id="srcNote"></p>
+      </div>
+      <div>
+        <div class="screen" id="screen"></div>
+        <div class="screen-foot" id="screenFoot"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap gal" id="gallery">
+  <div class="sec-head"><div><h2>Saved <span class="serif">renders.</span> <span id="galTag"></span></h2><p>Tap a render to compare it with its floor plan and shop what’s in it.</p></div>
+    <div class="filters" id="filters" role="group" aria-label="Filter renders"></div></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer class="site-foot"><div class="wrap"><span>RoomPlanned. Your home, planned for real life.</span><span>Renders are a guide. Colours vary between screens and real fabrics.</span></div></footer>
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Render details"><button class="lb-close" id="lbClose" aria-label="Close">✕</button><div class="lb-card" id="lbCard"></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const fmt=n=>'£'+Math.round(n).toLocaleString('en-GB');
+const STAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9Z"/></svg>';
+const BIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+const SHARE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.6M8.2 13.2l7.6 4.6"/></svg>';
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);const c=v=>Math.max(0,Math.min(255,v));return'#'+((1<<24)+(c((n>>16)+amt)<<16)+(c((n>>8&255)+amt)<<8)+c((n&255)+amt)).toString(16).slice(1)}
+const lum=hex=>{const n=parseInt(hex.slice(1),16);return .299*(n>>16)+.587*(n>>8&255)+.114*(n&255)};
+
+/* ===== shared data copied from the other pages ===== */
+const CATALOGUE=[
+  {id:'rhianna-sofa',name:'Rhianna 3 Seater Fabric Sofa',short:'Sofa',retailer:'Furniture Village',room:'Living room',price:1095,colour:'#3f5a57',dims:[222,95,78]},
+  {id:'sienna-corner-sofa',name:'Sienna Velvet Corner Sofa',short:'Corner sofa',retailer:'Linden & Co',room:'Living room',price:1499,colour:'#6d6b3c',dims:[268,180,84]},
+  {id:'mabel-armchair',name:'Mabel Bouclé Armchair',short:'Armchair',retailer:'Linden & Co',room:'Living room',price:449,colour:'#e6dfd2',dims:[82,86,80]},
+  {id:'earth-coffee-table',name:'Earth Coffee Table',short:'Coffee table',retailer:'Furniture Village',room:'Living room',price:299,colour:'#c39a62',dims:[120,60,45]},
+  {id:'wren-bookcase',name:'Wren Tall Bookcase',short:'Bookcase',retailer:'Oakhaven Home',room:'Living room',price:259,colour:'#d7c2a0',dims:[80,32,180]},
+  {id:'veron-ottoman-bed',name:'Duo+ Collection Veron End Lift Ottoman Bed Frame',short:'Ottoman bed',retailer:'Furniture Village',room:'Bedroom',price:549,colour:'#a7a9ad',dims:[150,210,120]},
+  {id:'rowan-bed',name:'Rowan Upholstered Double Bed',short:'Double bed',retailer:'Linden & Co',room:'Bedroom',price:699,colour:'#bdb5a6',dims:[145,205,115]},
+  {id:'hollis-bedside',name:'Hollis Oak Bedside Table',short:'Bedside',retailer:'Oakhaven Home',room:'Bedroom',price:179,colour:'#c49a6c',dims:[48,40,58]},
+  {id:'grace-chest',name:'Grace 6 Drawer Wide Chest',short:'Chest',retailer:'Furniture Village',room:'Bedroom',price:null,colour:'#efeee8',dims:[140,45,85]},
+  {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',short:'Dining table',retailer:'Oakhaven Home',room:'Dining room',price:649,colour:'#8a6440',dims:[160,90,76]}
+];
+const byId=id=>CATALOGUE.find(c=>c.id===id);
+
+/* Door on the left wall, window on the top wall, positions in cm. */
+const DEFAULTS={
+  'Living room':{w:420,l:360,door:{y:262,size:80},win:{x:110,size:200},items:[
+    {id:'rhianna-sofa',x:99,y:6,r:0},{id:'earth-coffee-table',x:150,y:146,r:0},{id:'mabel-armchair',x:300,y:250,r:0},{id:'wren-bookcase',x:382,y:150,r:90}]},
+  'Bedroom':{w:360,l:400,door:{y:300,size:80},win:{x:100,size:160},items:[
+    {id:'veron-ottoman-bed',x:105,y:6,r:0},{id:'hollis-bedside',x:52,y:6,r:0},{id:'hollis-bedside',x:260,y:6,r:0},{id:'grace-chest',x:150,y:349,r:0}]},
+  'Dining room':{w:380,l:340,door:{y:240,size:80},win:{x:110,size:160},items:[
+    {id:'fenwick-dining-table',x:110,y:125,r:0}]}
+};
+
+/* Style presets drive every illustrated room */
+const STYLES={
+  'Japandi':{blurb:'Pale oak, linen and one sculptural branch. Calm, low and uncluttered.',wall:'#e9e3d8',floor:'#cfae83',sofa:'#d9d0c1',accent:'#6b8068',wood:'#8a6440',rug:'#efe9de',sky:'#dbe7e3',art:'arch',lamp:'pendant',plant:'olive',win:'arch',panel:false,paint:['Rice paper','Pale oak','Moss','Walnut','Linen']},
+  'Warm minimal':{blurb:'Sand and caramel tones with soft curves and nothing on show that doesn’t earn it.',wall:'#efe5d8',floor:'#d9c3a2',sofa:'#c9b79f',accent:'#b07a58',wood:'#a77b52',rug:'#e6d8c4',sky:'#e8e4da',art:'abstract',lamp:'arc',plant:'tall',win:'square',panel:false,paint:['Oat','Sand','Terracotta','Caramel','Bone']},
+  'Cottage':{blurb:'Panelled walls, sage paint and pieces that look like they’ve always been there.',wall:'#d9e0d0',floor:'#a8825a',sofa:'#7d8a63',accent:'#c98f7a',wood:'#8a6440',rug:'#c9b48e',sky:'#d7e4e8',art:'landscape',lamp:'table',plant:'fern',win:'square',panel:true,paint:['Sage','Honey oak','Rose clay','Fern','Straw']},
+  'Mid-century':{blurb:'Teak, mustard and teal with tapered legs and confident shapes.',wall:'#ebe1cc',floor:'#a0734b',sofa:'#c9973a',accent:'#3f5a57',wood:'#7a5233',rug:'#3f5a57',sky:'#d5e3e6',art:'abstract',lamp:'arc',plant:'tall',win:'square',panel:false,paint:['Cream','Mustard','Teal','Teak','Rust']},
+  'Coastal':{blurb:'Washed blues, white linen and pale timber, like a room that smells of salt.',wall:'#e5ecee',floor:'#d8ccb6',sofa:'#f1eee8',accent:'#4f6178',wood:'#c9b48e',rug:'#cfd8dc',sky:'#cfe2ec',art:'landscape',lamp:'table',plant:'olive',win:'arch',panel:false,paint:['Sea mist','Driftwood','Harbour blue','Sand','Shell']},
+  'Dark & moody':{blurb:'Deep green walls, rust velvet and brass. Built for evenings.',wall:'#2d3a35',floor:'#5a4130',sofa:'#8a3f2c',accent:'#c9973a',wood:'#3a2a20',rug:'#4a4035',sky:'#9fb3b5',art:'arch',lamp:'pendant',plant:'fern',win:'arch',panel:true,paint:['Forest','Rust velvet','Brass','Espresso','Smoke']}
+};
+const STYLE_NAMES=Object.keys(STYLES);
+
+/* ---------- room illustration ---------- */
+let gid=0;
+function scene(styleName,room,H,opts={}){
+  const s=STYLES[styleName],W=400,fy=Math.round(H*.68),id='s'+(gid++),bare=!!opts.bare,spots=[],P=[];
+  const dark=lum(s.wall)<110;
+  P.push(`<defs><linearGradient id="${id}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(s.wall,dark?-14:10)}"/><stop offset="1" stop-color="${shade(s.wall,dark?6:-8)}"/></linearGradient>
+  <linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(s.floor,-18)}"/><stop offset="1" stop-color="${shade(s.floor,8)}"/></linearGradient>
+  <radialGradient id="${id}l" cx=".78" cy=".3" r=".7"><stop offset="0" stop-color="#fff8e6" stop-opacity="${dark?.28:.45}"/><stop offset="1" stop-color="#fff8e6" stop-opacity="0"/></radialGradient>
+  <linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(s.sky,12)}"/><stop offset="1" stop-color="${s.sky}"/></linearGradient></defs>`);
+  P.push(`<rect width="${W}" height="${fy}" fill="url(#${id}w)"/>`);
+  if(s.panel){let l='';for(let x=20;x<W;x+=40)l+=`<rect x="${x-14}" y="${fy*.5}" width="28" height="${fy*.44}" rx="2" fill="none" stroke="${shade(s.wall,dark?14:-16)}" stroke-width="1.5"/>`;P.push(`<rect y="${fy*.46}" width="${W}" height="3" fill="${shade(s.wall,dark?20:-18)}"/>`+l)}
+  /* floor + planks */
+  P.push(`<rect y="${fy}" width="${W}" height="${H-fy}" fill="url(#${id}f)"/>`);
+  for(let k=1,y=fy;y<H;k++){y+=6+k*4;P.push(`<path d="M0 ${y}H${W}" stroke="${shade(s.floor,-26)}" stroke-width=".8" opacity=".5"/>`);
+    for(let x=(k*37)%90;x<W;x+=90+k*6)P.push(`<path d="M${x} ${y-6-(k)*4}V${y}" stroke="${shade(s.floor,-26)}" stroke-width=".8" opacity=".4"/>`)}
+  P.push(`<rect y="${fy-5}" width="${W}" height="7" fill="${shade(s.wall,dark?18:-22)}"/>`);
+  /* window (placement depends on room) */
+  const wx=room==='Bedroom'?298:room==='Dining room'?284:268,ww=78,wt=Math.round(H*.1),wb=room==='Bedroom'?fy-70:fy-28;
+  const wpath=s.win==='arch'?`M${wx} ${wb}V${wt+ww/2}a${ww/2} ${ww/2} 0 0 1 ${ww} 0V${wb}Z`:`M${wx} ${wb}V${wt}H${wx+ww}V${wb}Z`;
+  P.push(`<path d="${wpath}" fill="url(#${id}s)" stroke="${dark?'#c9c2b2':'#fbfaf6'}" stroke-width="6"/>`);
+  P.push(`<path d="M${wx+ww/2} ${s.win==='arch'?wt:wt}V${wb}M${wx} ${(wt+wb)/2+10}H${wx+ww}" stroke="${dark?'#c9c2b2':'#fbfaf6'}" stroke-width="3"/>`);
+  P.push(`<path d="M${wx+4} ${wt+40}q30-18 70 4" stroke="#fff" stroke-width="10" opacity=".25" fill="none"/>`);
+  P.push(`<path d="M${wx-6} ${fy+2}L${wx+ww+6} ${fy+2}L${wx+ww+80} ${H}L${wx-60} ${H}Z" fill="#fff8e6" opacity="${dark?.06:.14}"/>`);
+  /* art */
+  const ax=room==='Bedroom'?150:room==='Dining room'?60:110,aw=room==='Dining room'?82:100,ay=room==='Bedroom'?fy-165:fy-155,ah=62;
+  if(!bare){
+    P.push(`<rect x="${ax-5}" y="${ay-5}" width="${aw+10}" height="${ah+10}" fill="${shade(s.wood,-10)}"/><rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="#f5f0e6"/>`);
+    if(s.art==='arch')P.push(`<path d="M${ax+aw/2-18} ${ay+ah-8}v-22a18 18 0 0 1 36 0v22Z" fill="${s.accent}"/><circle cx="${ax+aw/2+22}" cy="${ay+18}" r="7" fill="${s.sofa}"/>`);
+    else if(s.art==='abstract')P.push(`<circle cx="${ax+aw*.38}" cy="${ay+ah*.52}" r="17" fill="${s.accent}"/><path d="M${ax+aw*.5} ${ay+ah-8}a22 22 0 0 1 36 -24" stroke="${s.sofa}" stroke-width="7" fill="none"/><rect x="${ax+aw*.62}" y="${ay+10}" width="14" height="14" fill="${shade(s.wood,20)}"/>`);
+    else P.push(`<path d="M${ax} ${ay+ah}L${ax+30} ${ay+28}L${ax+55} ${ay+44}L${ax+80} ${ay+22}L${ax+aw} ${ay+40}V${ay+ah}Z" fill="${s.accent}" opacity=".85"/><circle cx="${ax+aw-22}" cy="${ay+16}" r="7" fill="${s.sofa==='#f1eee8'?'#e6c38c':s.sofa}"/>`);
+  }
+  /* sunlight wash */
+  const light=`<rect width="${W}" height="${H}" fill="url(#${id}l)"/>`;
+  if(bare){P.push(light,`<rect x="40" y="${fy+12}" width="44" height="34" fill="#d8c3a0" stroke="#b39a74"/><path d="M40 ${fy+22}h44" stroke="#b39a74"/>`);return{svg:wrapSvg(W,H,P,styleName,room,bare),spots}}
+  /* rug */
+  const ry1=fy+26,ry2=Math.min(H-8,fy+(H-fy)*.82);
+  P.push(`<path d="M60 ${ry1}H340L382 ${ry2}H18Z" fill="${s.rug}"/><path d="M70 ${ry1+6}H330M50 ${ry2-8}H350" stroke="${shade(s.rug,lum(s.rug)<110?30:-24)}" stroke-width="2" stroke-dasharray="${s.rug===STYLES['Mid-century'].rug?'0':'6 4'}"/>`);
+  const shadow=(cx,cy,rx)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${rx*.12}" fill="#000" opacity=".16"/>`;
+  const plant=x=>{const by=fy+22;let o=shadow(x,by+2,26)+`<path d="M${x-16} ${by-30}h32l-5 30h-22Z" fill="${dark?'#8f7a64':'#d8cbb6'}"/>`;
+    if(s.plant==='olive'){o+=`<g stroke="${shade(s.wood,-10)}" stroke-width="2" fill="none"><path d="M${x} ${by-30}C${x-8} ${by-80} ${x-30} ${by-110} ${x-44} ${by-128}M${x} ${by-30}C${x+6} ${by-90} ${x+26} ${by-120} ${x+34} ${by-140}"/></g>`;
+      for(let k=0;k<14;k++){const t=k/13,lx=k%2?x-44*t+(1-t)*2:x+34*t,ly=by-30-(k%2?98:110)*t;o+=`<ellipse cx="${lx+(k%3-1)*6}" cy="${ly}" rx="8" ry="3" transform="rotate(${k%2?-35:35} ${lx} ${ly})" fill="${k%3?'#7f9a70':'#6b8068'}"/>`}}
+    else if(s.plant==='fern'){for(let k=-3;k<=3;k++)o+=`<path d="M${x} ${by-30}q${k*12} -40 ${k*24} -${50-Math.abs(k)*4}" stroke="#4f7a4a" stroke-width="5" fill="none" stroke-linecap="round"/>`}
+    else{o+=`<path d="M${x} ${by-30}V${by-150}" stroke="#5b4a38" stroke-width="3"/>`;for(let k=0;k<7;k++){const ly=by-60-k*14,d=k%2?-1:1;o+=`<ellipse cx="${x+d*14}" cy="${ly}" rx="16" ry="8" transform="rotate(${d*-28} ${x+d*14} ${ly})" fill="${k%2?'#5f8a55':'#4c7444'}"/>`}}
+    return o};
+  const pendant=(x,y)=>`<path d="M${x} 0V${y}" stroke="${dark?'#d8c39a':'#3b3835'}" stroke-width="1.5"/><path d="M${x-26} ${y+24}q0-26 26-26t26 26Z" fill="${s.lamp==='pendant'&&dark?s.accent:'#e3d8c5'}"/><ellipse cx="${x}" cy="${y+26}" rx="9" ry="4" fill="#ffe8a8"/><path d="M${x-40} ${y+30}L${x-90} ${fy}H${x+90}L${x+40} ${y+30}Z" fill="#ffe8a8" opacity="${dark?.1:.06}"/>`;
+  if(room==='Living room'){
+    const sx=60,sw=210,sy=fy-58;
+    P.push(shadow(sx+sw/2,fy+30,130));
+    P.push(`<rect x="${sx}" y="${sy}" width="${sw}" height="62" rx="14" fill="${s.sofa}"/>`);
+    for(let x=sx+30;x<sx+sw;x+=30)P.push(`<path d="M${x} ${sy+6}v50" stroke="${shade(s.sofa,-16)}" stroke-width="1.5" opacity=".6"/>`);
+    P.push(`<rect x="${sx-8}" y="${fy-6}" width="${sw+16}" height="30" rx="9" fill="${shade(s.sofa,10)}"/><rect x="${sx-20}" y="${fy-30}" width="28" height="56" rx="12" fill="${shade(s.sofa,-8)}"/><rect x="${sx+sw-8}" y="${fy-30}" width="28" height="56" rx="12" fill="${shade(s.sofa,-8)}"/>`);
+    P.push(`<rect x="${sx+22}" y="${sy+10}" width="44" height="38" rx="9" transform="rotate(-6 ${sx+44} ${sy+29})" fill="${s.accent}"/><rect x="${sx+sw-70}" y="${sy+12}" width="44" height="38" rx="9" transform="rotate(7 ${sx+sw-48} ${sy+31})" fill="${shade(s.accent,30)}"/>`);
+    P.push(`<rect x="${sx-4}" y="${fy+24}" width="5" height="9" fill="${s.wood}"/><rect x="${sx+sw-1}" y="${fy+24}" width="5" height="9" fill="${s.wood}"/>`);
+    const tx=165,ty=fy+(H-fy)*.52;
+    P.push(shadow(tx,ty+30,64),`<path d="M${tx-46} ${ty+4}l-6 28M${tx+46} ${ty+4}l6 28M${tx-20} ${ty+8}l-3 26M${tx+20} ${ty+8}l3 26" stroke="${shade(s.wood,-18)}" stroke-width="4" stroke-linecap="round"/><ellipse cx="${tx}" cy="${ty}" rx="62" ry="13" fill="${s.wood}"/><ellipse cx="${tx}" cy="${ty-2}" rx="62" ry="12" fill="${shade(s.wood,14)}"/>`);
+    P.push(`<path d="M${tx+18} ${ty-4}c-6-10 2-18 2-26h10c0 8 8 16 2 26Z" fill="${dark?'#c8b9a2':'#cfc8bb'}"/><path d="M${tx+25} ${ty-30}c-2-14 6-22 12-28" stroke="#6f8a62" stroke-width="1.6" fill="none"/><rect x="${tx-34}" y="${ty-9}" width="26" height="6" rx="1" fill="${s.accent}"/><rect x="${tx-32}" y="${ty-14}" width="22" height="5" rx="1" fill="${shade(s.sofa,-20)}"/>`);
+    let lampSpot;
+    if(s.lamp==='arc'){P.push(`<path d="M352 ${fy+24}C352 ${fy-120} 300 ${fy-170} 240 ${fy-150}" stroke="${dark?'#c9973a':'#2f2c29'}" stroke-width="3" fill="none"/><ellipse cx="352" cy="${fy+24}" rx="14" ry="4" fill="#2f2c29"/><path d="M220 ${fy-132}q20-30 40 0Z" fill="${shade(s.accent,10)}"/><ellipse cx="240" cy="${fy-132}" rx="20" ry="4" fill="#ffe8a8"/>`);lampSpot=[240,fy-142]}
+    else if(s.lamp==='table'){P.push(`<rect x="318" y="${fy-26}" width="56" height="52" rx="3" fill="${s.wood}"/><path d="M346 ${fy-26}v-24" stroke="${s.accent}" stroke-width="7" stroke-linecap="round"/><path d="M326 ${fy-50}l8-26h24l8 26Z" fill="#f2ead9"/>`);lampSpot=[346,fy-64]}
+    else{P.push(pendant(240,Math.round(fy*.22)));lampSpot=[240,Math.round(fy*.22)+14]}
+    if(s.lamp!=='table')P.push(plant(350));
+    spots.push({x:sx+sw/2,y:sy+30,id:styleName==='Dark & moody'||styleName==='Mid-century'?'sienna-corner-sofa':'rhianna-sofa'},{x:tx,y:ty+12,id:'earth-coffee-table'},{x:tx+25,y:ty-18,id:'ida-vase'},{x:lampSpot[0],y:lampSpot[1],id:'arlo-pendant'});
+  } else if(room==='Bedroom'){
+    const bx=96,bw=196;
+    P.push(shadow(bx+bw/2,fy+72,140));
+    P.push(`<rect x="${bx}" y="${fy-96}" width="${bw}" height="110" rx="12" fill="${s.sofa}"/>`);
+    for(let x=bx+22;x<bx+bw;x+=22)P.push(`<path d="M${x} ${fy-90}v96" stroke="${shade(s.sofa,-16)}" stroke-width="1.4" opacity=".6"/>`);
+    P.push(`<path d="M${bx-6} ${fy-12}H${bx+bw+6}L${bx+bw+22} ${fy+56}H${bx-22}Z" fill="#f6f2ea"/><rect x="${bx+12}" y="${fy-34}" width="78" height="30" rx="10" fill="#fbfaf6" stroke="#e2ddd2"/><rect x="${bx+bw-90}" y="${fy-34}" width="78" height="30" rx="10" fill="#fbfaf6" stroke="#e2ddd2"/><rect x="${bx+50}" y="${fy-28}" width="40" height="26" rx="8" fill="${s.accent}"/>`);
+    P.push(`<path d="M${bx-14} ${fy+24}H${bx+bw+14}L${bx+bw+20} ${fy+50}H${bx-20}Z" fill="${s.accent}"/><rect x="${bx-22}" y="${fy+56}" width="${bw+44}" height="20" rx="4" fill="${shade(s.sofa,-10)}"/>`);
+    const side=x=>shadow(x+24,fy+28,30)+`<rect x="${x}" y="${fy-30}" width="48" height="56" rx="3" fill="${s.wood}"/><path d="M${x+4} ${fy-2}h40" stroke="${shade(s.wood,-25)}"/><rect x="${x+18}" y="${fy-18}" width="12" height="3" rx="1.5" fill="${shade(s.wood,-30)}"/><path d="M${x+24} ${fy-30}v-18" stroke="${s.accent}" stroke-width="6" stroke-linecap="round"/><path d="M${x+8} ${fy-48}l6-22h20l6 22Z" fill="#f2ead9"/><ellipse cx="${x+24}" cy="${fy-48}" rx="16" ry="3" fill="#ffe8a8" opacity=".8"/>`;
+    P.push(side(30),side(320));
+    spots.push({x:bx+bw/2,y:fy+20,id:styleName==='Cottage'||styleName==='Dark & moody'?'rowan-bed':'veron-ottoman-bed'},{x:54,y:fy-6,id:'hollis-bedside'},{x:54,y:fy-60,id:'arlo-pendant'});
+  } else {
+    const tx=200,ty=fy+28;
+    const chairBack=x=>`<path d="M${x-20} ${ty+4}V${fy-36}a20 20 0 0 1 40 0V${ty+4}" fill="none" stroke="${s.accent}" stroke-width="7"/><path d="M${x-20} ${ty+4}v40M${x+20} ${ty+4}v40" stroke="${shade(s.wood,-10)}" stroke-width="4"/>`;
+    P.push(shadow(tx,ty+66,130),chairBack(150),chairBack(250));
+    P.push(`<path d="M${tx-120} ${ty}H${tx+120}L${tx+132} ${ty+16}H${tx-132}Z" fill="${shade(s.wood,14)}"/><rect x="${tx-132}" y="${ty+16}" width="264" height="10" fill="${s.wood}"/><path d="M${tx-118} ${ty+26}l-4 50M${tx+118} ${ty+26}l4 50M${tx-80} ${ty+26}l-2 40M${tx+80} ${ty+26}l2 40" stroke="${shade(s.wood,-14)}" stroke-width="6"/>`);
+    P.push(`<path d="M${tx+30} ${ty+4}c-6-10 2-18 2-26h10c0 8 8 16 2 26Z" fill="${dark?'#c8b9a2':'#cfc8bb'}"/><path d="M${tx+37} ${ty-22}c-2-16 8-24 14-30M${tx+37} ${ty-22}c0-14-8-22-14-26" stroke="#6f8a62" stroke-width="1.6" fill="none"/><ellipse cx="${tx-40}" cy="${ty+6}" rx="16" ry="4" fill="#f5f0e6" stroke="#ddd5c6"/><ellipse cx="${tx-70}" cy="${ty+8}" rx="10" ry="3" fill="${s.accent}" opacity=".7"/>`);
+    const py=Math.round(fy*.3);P.push(pendant(tx,py));
+    const sideChair=(x,flip)=>`<path d="M${x} ${ty+44}V${ty-6}" stroke="${s.accent}" stroke-width="7"/><path d="M${x} ${ty+18}H${x+(flip?-30:30)}V${ty+50}" stroke="${shade(s.wood,-10)}" stroke-width="5" fill="none"/>`;
+    P.push(sideChair(54,false),sideChair(346,true));
+    if(H>420)P.push(plant(362));
+    spots.push({x:tx,y:ty+20,id:'fenwick-dining-table'},{x:tx,y:py+12,id:'arlo-pendant'},{x:tx+37,y:ty-6,id:'ida-vase'});
+  }
+  P.push(light);
+  return{svg:wrapSvg(W,H,P,styleName,room,bare),spots:spots.map(p=>({...p,x:p.x/W*100,y:p.y/H*100}))};
+}
+const wrapSvg=(W,H,P,st,room,bare)=>`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${bare?'Empty':st} ${room.toLowerCase()} illustration">${P.join('')}</svg>`;
+
+
+
+/* ===== your plans and style, saved by plan.html and inspiration.html ===== */
+const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}};
+const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const savedPlan=read('rp-plan'),insp=read('rp-insp');
+const livePlans=!!(savedPlan&&savedPlan.plans);
+const PLANS=livePlans?savedPlan.plans:JSON.parse(JSON.stringify(DEFAULTS));
+const ROOMS=Object.keys(PLANS);
+const cat=id=>CATALOGUE.find(c=>c.id===id);
+
+const LIGHTS={
+  'Morning':{sub:'Cool, bright',dot:'linear-gradient(135deg,#dfeeff,#9fc3e8)'},
+  'Golden hour':{sub:'Warm, low sun',dot:'linear-gradient(135deg,#ffd38a,#e0874a)'},
+  'Evening':{sub:'Lamps on',dot:'linear-gradient(135deg,#3a4466,#141a2e)'}
+};
+const FORMATS={'Landscape':{sub:'4 : 3',h:300},'Portrait':{sub:'4 : 5',h:500}};
+
+/* Snapshot of what a render was made from: the pieces in the plan at that moment */
+function snapshot(room){const p=PLANS[room];return{items:(p.items||[]).map(i=>i.id).filter(cat),w:p.w,l:p.l}}
+/* Colours come from your plan: seating/bed sets the upholstery, tables set the timber */
+function paletteFor(style,items){const s={...STYLES[style]};
+  const soft=items.map(cat).find(c=>/sofa|armchair|bed/.test(c.id));if(soft)s.sofa=soft.colour;
+  const wood=items.map(cat).find(c=>/table/.test(c.id));if(wood)s.wood=wood.colour;return s}
+function lightLayer(light,H){const W=400;
+  if(light==='Morning')return `<rect width="${W}" height="${H}" fill="#dcebff" opacity=".16"/><rect width="${W}" height="${H}" fill="#ffffff" opacity=".06"/>`;
+  if(light==='Golden hour')return `<defs><radialGradient id="gh${H}" cx=".8" cy=".35" r=".9"><stop offset="0" stop-color="#ffd590" stop-opacity=".4"/><stop offset="1" stop-color="#e0874a" stop-opacity=".18"/></radialGradient></defs><rect width="${W}" height="${H}" fill="url(#gh${H})" style="mix-blend-mode:multiply"/><rect width="${W}" height="${H}" fill="#ffb25c" opacity=".08"/>`;
+  return `<defs><radialGradient id="ev${H}" cx=".55" cy=".35" r=".55"><stop offset="0" stop-color="#ffcf7a" stop-opacity=".55"/><stop offset="1" stop-color="#ffcf7a" stop-opacity="0"/></radialGradient></defs><rect width="${W}" height="${H}" fill="#1b2440" opacity=".62" style="mix-blend-mode:multiply"/><rect width="${W}" height="${H}" fill="url(#ev${H})" style="mix-blend-mode:screen"/>`}
+let rk=0;
+function renderSvg(r){
+  const key='__render'+(rk++);STYLES[key]=paletteFor(r.style,r.snap.items);
+  let svg=scene(key,r.room,FORMATS[r.fmt].h).svg;delete STYLES[key];
+  svg=svg.replace(/aria-label="[^"]*"/,`aria-label="${r.style} ${r.room.toLowerCase()} render, ${r.light.toLowerCase()}"`);
+  const i=svg.lastIndexOf('</svg>');return svg.slice(0,i)+lightLayer(r.light,FORMATS[r.fmt].h)+svg.slice(i)}
+function miniPlan(p,stroke=6){
+  const it=(p.items||[]).filter(i=>cat(i.id)),pad=10;const foot=i=>{const c=cat(i.id);return i.r%180?[c.dims[1],c.dims[0]]:[c.dims[0],c.dims[1]]};
+  let s=`<svg viewBox="${-pad} ${-pad} ${p.w+pad*2} ${p.l+pad*2}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Floor plan"><rect width="${p.w}" height="${p.l}" fill="#fbfaf7"/>`;
+  for(let x=50;x<p.w;x+=50)s+=`<path d="M${x} 0V${p.l}" stroke="#ecebe5" stroke-width="1.5"/>`;for(let y=50;y<p.l;y+=50)s+=`<path d="M0 ${y}H${p.w}" stroke="#ecebe5" stroke-width="1.5"/>`;
+  s+=`<rect x="${-stroke/2}" y="${-stroke/2}" width="${p.w+stroke}" height="${p.l+stroke}" fill="none" stroke="#16251f" stroke-width="${stroke}"/>`;
+  if(p.door)s+=`<path d="M0 ${p.door.y}L${p.door.size} ${p.door.y}A${p.door.size} ${p.door.size} 0 0 1 0 ${p.door.y+p.door.size}Z" fill="#e6ece3" stroke="#6b8068" stroke-dasharray="5 5" stroke-width="2"/>`;
+  it.forEach(i=>{const [w,d]=foot(i);s+=`<rect x="${i.x}" y="${i.y}" width="${w}" height="${d}" rx="4" fill="${cat(i.id).colour}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`});
+  return s+'</svg>'}
+
+/* ===== state ===== */
+const stored=read('rp-renders');
+const liveRenders=!!(stored&&stored.length);
+const exampleRenders=()=>[
+  {id:'ex1',room:'Living room',style:'Japandi',light:'Golden hour',fmt:'Landscape',at:Date.now()-864e5*2,fav:true},
+  {id:'ex2',room:'Bedroom',style:'Coastal',light:'Morning',fmt:'Portrait',at:Date.now()-864e5*3,fav:false},
+  {id:'ex3',room:'Living room',style:'Dark & moody',light:'Evening',fmt:'Landscape',at:Date.now()-864e5*5,fav:true},
+  {id:'ex4',room:'Dining room',style:'Cottage',light:'Golden hour',fmt:'Landscape',at:Date.now()-864e5*6,fav:false},
+  {id:'ex5',room:'Bedroom',style:'Warm minimal',light:'Evening',fmt:'Landscape',at:Date.now()-864e5*8,fav:false},
+  {id:'ex6',room:'Dining room',style:'Mid-century',light:'Morning',fmt:'Portrait',at:Date.now()-864e5*9,fav:false}
+].filter(r=>PLANS[r.room]).map(r=>({...r,snap:snapshot(r.room),example:true}));
+let renders=liveRenders?stored:exampleRenders();
+const save=()=>write('rp-renders',renders.filter(r=>!r.example));
+const pick={room:ROOMS[0],style:(insp&&insp.style&&STYLES[insp.style])?insp.style:'Japandi',light:'Golden hour',fmt:'Landscape'};
+let filter='All',busy=false,newest=null;
+
+/* ===== studio ===== */
+function current(){return{room:pick.room,style:pick.style,light:pick.light,fmt:pick.fmt,snap:snapshot(pick.room)}}
+function renderControls(){
+  $('#planSrc').textContent=livePlans?'from your plans':'example plans';
+  $('#roomOpts').innerHTML=ROOMS.map(r=>{const n=snapshot(r).items.length;return `<button class="opt room" data-room="${r}" aria-pressed="${pick.room===r}"><span class="mini">${miniPlan(PLANS[r],10)}</span><span>${r}<small>${PLANS[r].w/100} × ${PLANS[r].l/100} m · ${n} ${n===1?'piece':'pieces'}</small></span></button>`}).join('');
+  $('#styleName').textContent=pick.style;
+  $('#styleOpts').innerHTML=STYLE_NAMES.map(n=>{const s=STYLES[n];return `<button class="sw" data-style="${n}" aria-pressed="${pick.style===n}" aria-label="${n}" title="${n}"><i style="background:${s.wall}"></i><i style="background:${s.accent}"></i><i style="background:${s.wood}"></i></button>`}).join('');
+  $('#lightOpts').innerHTML=Object.entries(LIGHTS).map(([n,l])=>`<button class="opt" data-light="${n}" aria-pressed="${pick.light===n}"><span class="sun" style="background:${l.dot}"></span><span>${n}<small>${l.sub}</small></span></button>`).join('');
+  $('#fmtOpts').innerHTML=Object.entries(FORMATS).map(([n,f])=>`<button class="opt" data-fmt="${n}" aria-pressed="${pick.fmt===n}"><span>${n}<small>${f.sub}</small></span></button>`).join('');
+  $('#srcNote').innerHTML=livePlans?`Using the ${pick.room.toLowerCase()} you planned. <a href="plan.html">Edit the plan</a>`:`Using an example plan. <a href="plan.html">Plan your own room</a> and it will show here.`;
+}
+function renderScreen(){
+  const r=current();
+  $('#screen').innerHTML=renderSvg(r)+`<div class="chip-tl"><span class="live">Preview</span><span>${r.style}</span><span>${r.light}</span></div>`;
+  const cost=r.snap.items.reduce((s,id)=>s+(cat(id).price||0),0);
+  $('#screenFoot').innerHTML=`<span><b>${r.room}</b> · ${r.snap.w/100} × ${r.snap.l/100} m</span><span>${r.snap.items.length} pieces from your plan · <b>${fmt(cost)}</b></span>`;
+}
+const STEPS=['Reading your floor plan','Placing your pieces','Matching fabrics and timber','Lighting the room','Finishing touches'];
+function create(){
+  if(busy)return;busy=true;$('#go').disabled=true;
+  const sc=$('#screen');sc.classList.add('busy');
+  sc.insertAdjacentHTML('beforeend',`<div class="scan"></div><div class="prog"><div class="row"><span id="step">${STEPS[0]}…</span><span id="pct">0%</span></div><div class="bar"><i id="pbar"></i></div></div>`);
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,total=reduce?300:2600,t0=performance.now();
+  (function frame(t){const p=Math.min(1,(t-t0)/total);
+    $('#pbar').style.width=(p*100)+'%';$('#pct').textContent=Math.round(p*100)+'%';$('#step').textContent=STEPS[Math.min(STEPS.length-1,Math.floor(p*STEPS.length))]+'…';
+    if(p<1)return requestAnimationFrame(frame);
+    const r={...current(),id:'r'+Date.now(),at:Date.now(),fav:false};
+    if(renders.length&&renders[0].example)renders=[];
+    renders.unshift(r);newest=r.id;save();busy=false;$('#go').disabled=false;filter='All';
+    renderScreen();renderGallery();toast(`Render saved: ${r.style} ${r.room.toLowerCase()}`);
+    document.getElementById('gallery').scrollIntoView({behavior:reduce?'auto':'smooth'});
+  })(t0);
+}
+
+/* ===== gallery ===== */
+const when=t=>{const d=Math.round((Date.now()-t)/864e5);return d<=0?'Today':d===1?'Yesterday':d+' days ago'};
+function renderGallery(){
+  const ex=renders.length&&renders[0].example;
+  $('#galTag').innerHTML=ex?'<span class="ex">Example</span>':'';
+  const rooms=[...new Set(renders.map(r=>r.room))];
+  $('#filters').innerHTML=['All','Favourites',...rooms].map(f=>`<button class="chip" data-filter="${f}" aria-pressed="${filter===f}">${f}</button>`).join('');
+  const list=renders.filter(r=>filter==='All'||(filter==='Favourites'?r.fav:r.room===filter));
+  $('#grid').innerHTML=list.length?list.map(r=>`<article class="rc"><button class="img" data-open="${r.id}" aria-label="Open ${r.style} ${r.room} render">${renderSvg(r)}${r.id===newest?'<span class="new">New</span>':''}</button>
+    <div class="body"><div><b>${r.style} ${r.room.toLowerCase()}</b><small>${r.light} · ${r.fmt} · ${when(r.at)}</small></div>
+    <div class="acts"><button class="ic" data-fav="${r.id}" aria-pressed="${!!r.fav}" aria-label="Favourite">${STAR}</button><button class="ic" data-share="${r.id}" aria-label="Share">${SHARE}</button><button class="ic" data-del="${r.id}" aria-label="Delete">${BIN}</button></div></div></article>`).join('')
+    :`<div class="empty">${filter==='Favourites'?'Star a render to keep it here.':'No renders yet. Pick a room above and create your first one.'}</div>`;
+}
+function openLb(id){
+  const r=renders.find(x=>x.id===id);if(!r)return;
+  const items=r.snap.items.map(cat),cost=items.reduce((s,c)=>s+(c.price||0),0),counts={};items.forEach(c=>counts[c.id]=(counts[c.id]||0)+1);
+  const plan=PLANS[r.room];
+  $('#lbCard').innerHTML=`<div class="lb-img" id="lbImg"><div id="lbView" style="width:100%">${renderSvg(r)}</div><div class="cmp" role="group" aria-label="View"><button data-view="render" aria-pressed="true">Render</button><button data-view="plan" aria-pressed="false">Floor plan</button></div></div>
+    <div class="lb-info"><small class="k">${r.example?'Example render':'Your render'} · ${when(r.at)}</small><h3>${r.style} ${r.room.toLowerCase()}</h3>
+      <div class="specs"><div><b>${r.light}</b>Light</div><div><b>${r.fmt}</b>Format</div><div><b>${r.snap.w/100} × ${r.snap.l/100} m</b>Room size</div><div><b>${fmt(cost)}</b>${items.length} pieces</div></div>
+      <ul class="plist">${Object.keys(counts).map(id=>{const c=cat(id);return `<li><a href="shop.html#piece-${id}">${counts[id]>1?counts[id]+' × ':''}${c.name}</a><span>${c.price===null?'Price to check':fmt(c.price*counts[id])}</span></li>`}).join('')}</ul>
+      <div class="lb-acts"><a class="btn primary" href="shop.html">Shop this room</a><a class="btn" href="plan.html">Edit the plan</a><button class="btn" data-share="${r.id}">Share</button></div></div>`;
+  $('#lb').hidden=false;$('#lbClose').focus();
+  $('#lbCard').querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{
+    const showPlan=b.dataset.view==='plan';
+    $('#lbView').innerHTML=showPlan?`<div style="background:#fbfaf7;padding:24px">${miniPlan(plan)}</div>`:renderSvg(r);
+    $('#lbCard').querySelectorAll('[data-view]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+}
+const closeLb=()=>{$('#lb').hidden=true};
+
+/* ===== events ===== */
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2800)}
+document.addEventListener('click',e=>{
+  const g=k=>e.target.closest(`[data-${k}]`);let b;
+  if(busy&&(g('room')||g('style')||g('light')||g('fmt')))return;
+  if(b=g('room')){pick.room=b.dataset.room;renderControls();renderScreen();return}
+  if(b=g('style')){pick.style=b.dataset.style;renderControls();renderScreen();return}
+  if(b=g('light')){pick.light=b.dataset.light;renderControls();renderScreen();return}
+  if(b=g('fmt')){pick.fmt=b.dataset.fmt;renderControls();renderScreen();return}
+  if(b=g('filter')){filter=b.dataset.filter;renderGallery();return}
+  if(b=g('fav')){const r=renders.find(x=>x.id===b.dataset.fav);r.fav=!r.fav;save();renderGallery();toast(r.fav?'Added to favourites':'Removed from favourites');return}
+  if(b=g('del')){renders=renders.filter(x=>x.id!==b.dataset.del);save();renderGallery();toast('Render deleted');return}
+  if(b=g('share')){toast('Sharing to Community opens at launch. Your render is saved here until then.');return}
+  if(b=g('open')){openLb(b.dataset.open);return}
+  if(e.target===$('#lb')||e.target.closest('#lbClose')){closeLb();return}
+  if(!e.target.closest('#menu,#menuBtn')){$('#menu').hidden=true;$('#menuBtn').setAttribute('aria-expanded','false')}
+});
+$('#go').addEventListener('click',create);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLb();$('#menu').hidden=true}});
+$('#menuBtn').onclick=()=>{const m=$('#menu');m.hidden=!m.hidden;$('#menuBtn').setAttribute('aria-expanded',!m.hidden)};
+
+renderControls();renderScreen();renderGallery();
+</script>
+</body>
+</html>
