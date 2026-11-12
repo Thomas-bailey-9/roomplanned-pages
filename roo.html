@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>Plan with Roo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: site header → short intro with progress steps → two panels: Roo chat (left, quick replies + text box) | live floor plan with budget, pieces and checks (right). */
+:root{
+  --bg:#f7f6f2;--surface:#ffffff;--soft:#efeee9;--line:#e3e1da;
+  --ink:#16251f;--text:#3b4641;--muted:#76807a;
+  --green:#2c4a3b;--green-ink:#ffffff;--sage:#6b8068;--sage-soft:#e6ece3;--cream:#efe4cf;--clay:#c98a63;
+  --ok:#3f7a52;--ok-soft:#e3f0e6;--warn:#a26a12;--warn-soft:#f8eedb;--bad:#b3412f;--bad-soft:#f7e3df;
+  --wall:#16251f;--floor:#fbfaf7;--grid:#ecebe5;
+  --shadow:0 1px 2px rgba(22,37,31,.05),0 6px 20px rgba(22,37,31,.06);
+  --font:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --r-card:18px;--r-pill:999px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815;--surface:#1a221e;--soft:#222c27;--line:#2e3a34;--ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;
+  --green:#9cc0a4;--green-ink:#10201a;--sage:#a9c0a5;--sage-soft:#22302a;
+  --ok:#8cc79c;--ok-soft:#1f3326;--warn:#e2b25e;--warn-soft:#3a2f1a;--bad:#ee8d7c;--bad-soft:#3d221d;
+  --wall:#dfe5e0;--floor:#1e2723;--grid:#25302a;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815;--surface:#1a221e;--soft:#222c27;--line:#2e3a34;--ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;
+  --green:#9cc0a4;--green-ink:#10201a;--sage:#a9c0a5;--sage-soft:#22302a;
+  --ok:#8cc79c;--ok-soft:#1f3326;--warn:#e2b25e;--warn-soft:#3a2f1a;--bad:#ee8d7c;--bad-soft:#3d221d;
+  --wall:#dfe5e0;--floor:#1e2723;--grid:#25302a;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+h1,h2,h3{color:var(--ink);margin:0;text-wrap:balance;letter-spacing:-.03em}
+.serif{font-family:var(--serif);font-weight:400;font-style:italic;letter-spacing:-.01em}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.demo{background:var(--sage-soft);color:var(--ink);font-size:13px;text-align:center}
+.demo .wrap{padding-block:8px}
+
+header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--surface);border-bottom:1px solid var(--line)}
+.site .wrap{display:flex;align-items:center;gap:24px;height:76px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:800;font-size:23px;letter-spacing:-.03em}
+.logo svg{width:30px;height:30px}
+.nav{display:flex;gap:34px;margin:0 auto;font-weight:500}
+.nav a{text-decoration:none;color:var(--text);padding:6px 0;border-bottom:2px solid transparent}
+.nav a.on{color:var(--ink);border-bottom-color:var(--green)}
+.icons{display:flex;gap:8px;align-items:center;position:relative}
+.icon-btn{width:42px;height:42px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;color:var(--ink);text-decoration:none}
+.icon-btn:hover{background:var(--soft)}
+.icon-btn svg{width:22px;height:22px}
+.menu{position:absolute;right:0;top:54px;width:240px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:10px 0}
+.menu a{display:block;padding:10px 22px;text-decoration:none;color:var(--ink);font-weight:500}
+.menu a:hover{background:var(--soft)}
+
+.crumbs{font-size:13px;color:var(--muted);padding-top:22px;display:flex;gap:8px}
+.crumbs a{text-decoration:none}
+.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding-block:12px 22px}
+.intro h1{font-size:clamp(36px,5vw,52px);font-weight:700;line-height:1.02;letter-spacing:-.04em}
+.intro h1 .serif{color:var(--sage);font-size:1.08em}
+.intro p{margin:8px 0 0;color:var(--muted);font-size:16px;max-width:52ch}
+.steps{display:flex;gap:6px;list-style:none;margin:0;padding:0;flex-wrap:wrap}
+.steps li{font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--line);background:var(--surface);border-radius:var(--r-pill);padding:6px 12px;display:flex;align-items:center;gap:6px}
+.steps li i{width:16px;height:16px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-style:normal;font-size:10px}
+.steps li.on{color:var(--ink);border-color:var(--ink)}
+.steps li.done{background:var(--sage-soft);border-color:var(--sage-soft);color:var(--ink)}
+.steps li.done i{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+
+.app{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;padding-bottom:64px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow);min-width:0;overflow:hidden}
+
+/* chat */
+.chat{display:flex;flex-direction:column;height:min(720px,calc(100vh - 140px));min-height:520px}
+.chat-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.rav{width:40px;height:40px;border-radius:50%;background:var(--green);color:var(--green-ink);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none;position:relative}
+.rav::after{content:"";position:absolute;right:0;bottom:0;width:10px;height:10px;border-radius:50%;background:#58b06b;border:2px solid var(--surface)}
+.chat-head b{display:block;color:var(--ink);font-size:15px}
+.chat-head small{color:var(--muted);font-size:12px}
+.restart{margin-left:auto;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-pill);height:34px;padding:0 14px;font-size:13px;font-weight:600;color:var(--ink)}
+.restart:hover{border-color:var(--ink)}
+.log{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.m{max-width:84%;padding:11px 15px;border-radius:18px;font-size:14.5px;line-height:1.45;animation:pop .25s ease both}
+.m.roo{align-self:flex-start;background:var(--soft);color:var(--ink);border-bottom-left-radius:6px}
+.m.me{align-self:flex-end;background:var(--green);color:var(--green-ink);border-bottom-right-radius:6px}
+.m.roo b{font-weight:700}
+.m .note{display:block;margin-top:6px;font-size:12.5px;color:var(--muted)}
+.typing{align-self:flex-start;background:var(--soft);border-radius:18px;border-bottom-left-radius:6px;padding:13px 16px;display:flex;gap:4px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.replies{padding:12px 18px 6px;display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line)}
+.qr{height:38px;padding:0 15px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:13.5px;color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+.qr:hover{border-color:var(--ink)}
+.qr[aria-pressed="true"]{background:var(--sage-soft);border-color:var(--sage)}
+.qr.go{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.qr .sw{display:inline-flex;width:28px;height:14px;border-radius:7px;overflow:hidden}
+.qr .sw i{flex:1}
+.compose{display:flex;gap:8px;padding:8px 18px 16px}
+.compose input{flex:1;min-width:0;height:44px;border:1px solid var(--line);border-radius:var(--r-pill);background:var(--bg);padding:0 16px;outline:none;font-size:14.5px}
+.compose input:focus{border-color:var(--sage);background:var(--surface)}
+.send{width:44px;height:44px;border-radius:50%;border:0;background:var(--green);color:var(--green-ink);display:grid;place-items:center;flex:none}
+.send svg{width:18px;height:18px}
+
+/* plan side */
+.plan-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.plan-head h2{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.plan-head small{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.badge{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--r-pill);padding:4px 10px;background:var(--soft);color:var(--muted)}
+.badge.live{background:var(--ok-soft);color:var(--ok)}
+.stage{background:var(--bg);padding:16px;position:relative}
+.stage svg{display:block;width:100%;height:auto;max-height:420px}
+.stage .wait{position:absolute;inset:16px;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:14px;pointer-events:none}
+.stage .wait span{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow)}
+.piece-in{animation:drop .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes drop{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.facts div{padding:12px 16px;font-size:12px;color:var(--muted)}
+.facts div+div{border-left:1px solid var(--line)}
+.facts b{display:block;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.budget{padding:14px 18px;border-top:1px solid var(--line)}
+.budget .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.budget .row b{color:var(--ink)}
+.bar{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);border-radius:5px;transition:width .5s ease}
+.bar i.over{background:var(--bad)}
+.lists{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.lists>div{padding:14px 18px;min-width:0}
+.lists>div+div{border-left:1px solid var(--line)}
+.lists h3{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.plist li{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:start;font-size:13px}
+.plist i{width:12px;height:12px;border-radius:3px;margin-top:3px;border:1px solid rgba(0,0,0,.15)}
+.plist a{color:var(--ink);text-decoration:none;font-weight:500;line-height:1.3}
+.plist a:hover{text-decoration:underline}
+.plist small{display:block;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
+.plist span.p{font-weight:700;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:grid;grid-template-columns:auto 1fr;gap:8px;font-size:13px;color:var(--ink);line-height:1.4}
+.tag{font-size:10px;font-weight:800;border-radius:var(--r-pill);padding:2px 7px;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;height:fit-content}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}.tag.warn{background:var(--warn-soft);color:var(--warn)}.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.empty-s{font-size:13px;color:var(--muted);margin:0}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:var(--r-pill);font-weight:600;font-size:14px;z-index:100;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+footer.site-foot{border-top:1px solid var(--line);background:var(--surface)}
+footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+
+@media (max-width:1000px){.nav{display:none}.icons{margin-left:auto}.app{grid-template-columns:1fr}.chat{height:560px}}
+@media (max-width:600px){.site .wrap{height:64px;gap:12px}.logo{font-size:20px}.lists{grid-template-columns:1fr}.lists>div+div{border-left:0;border-top:1px solid var(--line)}.steps{display:none}.m{max-width:92%}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.log{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="demo"><div class="wrap">Example page: Roo’s answers follow simple rules and use the sample catalogue. Nothing is sent anywhere.</div></div>
+
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="index.html" aria-label="RoomPlanned home">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="28" height="28" rx="3"/><path d="M8 26V8h6a4 4 0 0 1 0 8H8m6 0 3 10M18 8h4a4 4 0 0 1 0 8h-4v10"/></svg>
+      <span>RoomPlanned.</span>
+    </a>
+    <nav class="nav" aria-label="Main"><a href="shop.html">Shop</a><a href="plan.html" class="on">Plan</a><a href="inspiration.html">Inspiration</a><a href="community.html">Community</a></nav>
+    <div class="icons">
+      <a class="icon-btn" href="shop.html" aria-label="Search furniture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></a>
+      <a class="icon-btn" href="my-home.html" aria-label="My Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></a>
+      <button class="icon-btn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="menu" id="menu" hidden><a href="shop.html">Shop furniture</a><a href="plan.html">Plan a room</a><a href="inspiration.html">Inspiration</a><a href="community.html">Community preview</a><a href="my-home.html">My Home</a><a href="my-renders.html">My Renders</a><a href="account.html">Account</a></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><a href="plan.html">Plan</a><span>/</span><span>Plan with Roo</span></nav>
+  <div class="intro">
+    <div><h1>Plan with <span class="serif">Roo.</span></h1><p>Answer five quick questions and Roo lays out your room, checks every gap and keeps it on budget.</p></div>
+    <ol class="steps" id="steps" aria-label="Progress"></ol>
+  </div>
+
+  <div class="app">
+    <section class="panel chat" aria-label="Chat with Roo">
+      <div class="chat-head"><span class="rav">Roo</span><div><b>Roo</b><small>Your home assistant</small></div><button class="restart" id="restart">Start again</button></div>
+      <div class="log" id="log" aria-live="polite"></div>
+      <div class="replies" id="replies" role="group" aria-label="Quick replies"></div>
+      <form class="compose" id="compose"><label for="say" style="position:absolute;width:1px;height:1px;overflow:hidden">Message Roo</label><input id="say" placeholder="Or type an answer, like 4.2 x 3.6" autocomplete="off"><button class="send" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></form>
+    </section>
+
+    <section class="panel" aria-label="Your room">
+      <div class="plan-head"><div><h2 id="planTitle">Your room</h2><small id="planSub">Answer Roo to start</small></div><span class="badge" id="planBadge">Waiting</span></div>
+      <div class="stage"><svg id="plan" role="img" aria-label="Floor plan"></svg><div class="wait" id="wait"><span>Your floor plan appears here as you answer.</span></div></div>
+      <div class="facts" id="facts"></div>
+      <div class="budget" id="budget"></div>
+      <div class="lists"><div><h3>Pieces</h3><ul class="plist" id="pieces"></ul></div><div><h3>Roo’s checks</h3><ul class="checks" id="checks"></ul></div></div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-foot"><div class="wrap"><span>RoomPlanned. Your home, planned for real life.</span><span>Measurements are from each retailer. Check before you order.</span></div></footer>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const fmt=n=>'£'+Math.round(n).toLocaleString('en-GB');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ===== shared data copied from the other pages ===== */
+const CATALOGUE=[
+  {id:'rhianna-sofa',name:'Rhianna 3 Seater Fabric Sofa',short:'Sofa',retailer:'Furniture Village',room:'Living room',price:1095,colour:'#3f5a57',dims:[222,95,78]},
+  {id:'sienna-corner-sofa',name:'Sienna Velvet Corner Sofa',short:'Corner sofa',retailer:'Linden & Co',room:'Living room',price:1499,colour:'#6d6b3c',dims:[268,180,84]},
+  {id:'mabel-armchair',name:'Mabel Bouclé Armchair',short:'Armchair',retailer:'Linden & Co',room:'Living room',price:449,colour:'#e6dfd2',dims:[82,86,80]},
+  {id:'earth-coffee-table',name:'Earth Coffee Table',short:'Coffee table',retailer:'Furniture Village',room:'Living room',price:299,colour:'#c39a62',dims:[120,60,45]},
+  {id:'wren-bookcase',name:'Wren Tall Bookcase',short:'Bookcase',retailer:'Oakhaven Home',room:'Living room',price:259,colour:'#d7c2a0',dims:[80,32,180]},
+  {id:'veron-ottoman-bed',name:'Duo+ Collection Veron End Lift Ottoman Bed Frame',short:'Ottoman bed',retailer:'Furniture Village',room:'Bedroom',price:549,colour:'#a7a9ad',dims:[150,210,120]},
+  {id:'rowan-bed',name:'Rowan Upholstered Double Bed',short:'Double bed',retailer:'Linden & Co',room:'Bedroom',price:699,colour:'#bdb5a6',dims:[145,205,115]},
+  {id:'hollis-bedside',name:'Hollis Oak Bedside Table',short:'Bedside',retailer:'Oakhaven Home',room:'Bedroom',price:179,colour:'#c49a6c',dims:[48,40,58]},
+  {id:'grace-chest',name:'Grace 6 Drawer Wide Chest',short:'Chest',retailer:'Furniture Village',room:'Bedroom',price:null,colour:'#efeee8',dims:[140,45,85]},
+  {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',short:'Dining table',retailer:'Oakhaven Home',room:'Dining room',price:649,colour:'#8a6440',dims:[160,90,76]}
+];
+const byId=id=>CATALOGUE.find(c=>c.id===id);
+
+/* Door on the left wall, window on the top wall, positions in cm. */
+const DEFAULTS={
+  'Living room':{w:420,l:360,door:{y:262,size:80},win:{x:110,size:200},items:[
+    {id:'rhianna-sofa',x:99,y:6,r:0},{id:'earth-coffee-table',x:150,y:146,r:0},{id:'mabel-armchair',x:300,y:250,r:0},{id:'wren-bookcase',x:382,y:150,r:90}]},
+  'Bedroom':{w:360,l:400,door:{y:300,size:80},win:{x:100,size:160},items:[
+    {id:'veron-ottoman-bed',x:105,y:6,r:0},{id:'hollis-bedside',x:52,y:6,r:0},{id:'hollis-bedside',x:260,y:6,r:0},{id:'grace-chest',x:150,y:349,r:0}]},
+  'Dining room':{w:380,l:340,door:{y:240,size:80},win:{x:110,size:160},items:[
+    {id:'fenwick-dining-table',x:110,y:125,r:0}]}
+};
+
+const STYLES={
+  'Japandi':{blurb:'Pale oak, linen and one sculptural branch. Calm, low and uncluttered.',wall:'#e9e3d8',floor:'#cfae83',sofa:'#d9d0c1',accent:'#6b8068',wood:'#8a6440',rug:'#efe9de',sky:'#dbe7e3',art:'arch',lamp:'pendant',plant:'olive',win:'arch',panel:false,paint:['Rice paper','Pale oak','Moss','Walnut','Linen']},
+  'Warm minimal':{blurb:'Sand and caramel tones with soft curves and nothing on show that doesn’t earn it.',wall:'#efe5d8',floor:'#d9c3a2',sofa:'#c9b79f',accent:'#b07a58',wood:'#a77b52',rug:'#e6d8c4',sky:'#e8e4da',art:'abstract',lamp:'arc',plant:'tall',win:'square',panel:false,paint:['Oat','Sand','Terracotta','Caramel','Bone']},
+  'Cottage':{blurb:'Panelled walls, sage paint and pieces that look like they’ve always been there.',wall:'#d9e0d0',floor:'#a8825a',sofa:'#7d8a63',accent:'#c98f7a',wood:'#8a6440',rug:'#c9b48e',sky:'#d7e4e8',art:'landscape',lamp:'table',plant:'fern',win:'square',panel:true,paint:['Sage','Honey oak','Rose clay','Fern','Straw']},
+  'Mid-century':{blurb:'Teak, mustard and teal with tapered legs and confident shapes.',wall:'#ebe1cc',floor:'#a0734b',sofa:'#c9973a',accent:'#3f5a57',wood:'#7a5233',rug:'#3f5a57',sky:'#d5e3e6',art:'abstract',lamp:'arc',plant:'tall',win:'square',panel:false,paint:['Cream','Mustard','Teal','Teak','Rust']},
+  'Coastal':{blurb:'Washed blues, white linen and pale timber, like a room that smells of salt.',wall:'#e5ecee',floor:'#d8ccb6',sofa:'#f1eee8',accent:'#4f6178',wood:'#c9b48e',rug:'#cfd8dc',sky:'#cfe2ec',art:'landscape',lamp:'table',plant:'olive',win:'arch',panel:false,paint:['Sea mist','Driftwood','Harbour blue','Sand','Shell']},
+  'Dark & moody':{blurb:'Deep green walls, rust velvet and brass. Built for evenings.',wall:'#2d3a35',floor:'#5a4130',sofa:'#8a3f2c',accent:'#c9973a',wood:'#3a2a20',rug:'#4a4035',sky:'#9fb3b5',art:'arch',lamp:'pendant',plant:'fern',win:'arch',panel:true,paint:['Forest','Rust velvet','Brass','Espresso','Smoke']}
+};
+
+const cat=id=>CATALOGUE.find(c=>c.id===id);
+
+/* ===== what Roo asks ===== */
+const NEEDS={
+  'Living room':[['sofa','Sofa'],['armchair','Armchair'],['coffee','Coffee table'],['bookcase','Bookcase']],
+  'Bedroom':[['bed','Double bed'],['bedsides','Bedside tables'],['chest','Chest of drawers']],
+  'Dining room':[['table','Dining table'],['bookcase','Bookcase']]
+};
+const DEFAULT_NEEDS={'Living room':['sofa','coffee','armchair'],'Bedroom':['bed','bedsides','chest'],'Dining room':['table']};
+const SIZES={'Living room':[[340,300,'Cosy'],[420,360,'Typical'],[500,420,'Roomy']],'Bedroom':[[300,320,'Cosy'],[360,400,'Typical'],[420,450,'Roomy']],'Dining room':[[300,280,'Cosy'],[380,340,'Typical'],[460,400,'Roomy']]};
+const STEP_NAMES=['Room','Size','Pieces','Budget','Style'];
+let S,busy=false;
+function reset(){S={step:0,room:null,w:null,l:null,needs:[],budget:null,style:null,items:[],checks:[],done:false}}
+
+/* ===== layout rules ===== */
+function pickPiece(need){
+  const dark=['Dark & moody','Mid-century'].includes(S.style),cosy=['Cottage','Dark & moody'].includes(S.style);
+  return {sofa:(dark&&S.w>=420&&S.l>=380)?'sienna-corner-sofa':'rhianna-sofa',armchair:'mabel-armchair',coffee:'earth-coffee-table',bookcase:'wren-bookcase',
+    bed:cosy?'rowan-bed':'veron-ottoman-bed',bedsides:'hollis-bedside',chest:'grace-chest',table:'fenwick-dining-table'}[need]}
+const door=()=>({y:S.l-98,size:80});
+const win=()=>({x:Math.round(S.w*.25),size:Math.round(S.w*.45)});
+function foot(i){const c=cat(i.id);return i.r%180?{w:c.dims[1],d:c.dims[0]}:{w:c.dims[0],d:c.dims[1]}}
+const box=i=>{const f=foot(i);return{x:i.x,y:i.y,w:f.w,d:f.d}};
+const ov=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.d&&b.y<a.y+a.d;
+function layout(){
+  const W=S.w,L=S.l,items=[],notes=[];const add=(id,x,y,r=0)=>{const it={id,x:Math.round(x),y:Math.round(y),r};items.push(it);return it};
+  const has=n=>S.needs.includes(n);
+  if(S.room==='Living room'){
+    let sofa=null;if(has('sofa')){const id=pickPiece('sofa'),c=cat(id);sofa=add(id,(W-c.dims[0])/2,6)}
+    const sofaBottom=sofa?sofa.y+foot(sofa).d:6;
+    if(has('coffee')){const c=cat('earth-coffee-table');add('earth-coffee-table',(W-c.dims[0])/2,sofaBottom+45)}
+    if(has('armchair')){const c=cat('mabel-armchair');add('mabel-armchair',W-c.dims[0]-20,L-c.dims[1]-30)}
+    if(has('bookcase')){const c=cat('wren-bookcase');add('wren-bookcase',W-c.dims[1]-4,Math.max(sofaBottom+10,120),90)}
+  }else if(S.room==='Bedroom'){
+    const bid=pickPiece('bed'),bc=cat(bid);const bed=has('bed')?add(bid,(W-bc.dims[0])/2,6):null;
+    if(has('bedsides')){const sc=cat('hollis-bedside'),bx=bed?bed.x:(W-bc.dims[0])/2,bw=bed?bc.dims[0]:bc.dims[0];
+      if(bx-sc.dims[0]-4>=0){add('hollis-bedside',bx-sc.dims[0]-4,6);add('hollis-bedside',bx+bw+4,6)}
+      else notes.push({t:'warn',m:`There’s only ${Math.max(0,Math.round(bx))} cm either side of the bed, so I left the bedside tables out. A wall shelf would work.`})}
+    if(has('chest')){const c=cat('grace-chest');add('grace-chest',Math.max(90,(W-c.dims[0])/2),L-c.dims[1]-4)}
+  }else{
+    if(has('table')){const c=cat('fenwick-dining-table');const t=add('fenwick-dining-table',(W-c.dims[0])/2,(L-c.dims[1])/2-10);
+      const side=Math.min(t.x,W-t.x-c.dims[0]),end=Math.min(t.y,L-t.y-c.dims[1]);
+      const tight=Math.min(side,end);notes.push(tight>=90?{t:'ok',m:`There’s ${Math.round(tight)} cm around the table, enough to pull chairs out and walk behind.`}:{t:'warn',m:`Only ${Math.round(tight)} cm around the table. Aim for 90 cm so people can get past seated guests.`})}
+    if(has('bookcase')){const c=cat('wren-bookcase');add('wren-bookcase',W-c.dims[1]-4,20,90)}
+  }
+  /* clamp, then drop anything that still clashes */
+  items.forEach(i=>{const f=foot(i);i.x=Math.max(0,Math.min(W-f.w,i.x));i.y=Math.max(0,Math.min(L-f.d,i.y))});
+  const kept=[],dz={x:0,y:door().y,w:80,d:80};
+  items.forEach(i=>{const f=foot(i);if(f.w>W||f.d>L){notes.push({t:'bad',m:`The ${cat(i.id).short.toLowerCase()} is bigger than the room, so I left it out.`});return}
+    if(kept.some(k=>ov(box(k),box(i)))||ov(box(i),dz)){notes.push({t:'warn',m:`The ${cat(i.id).short.toLowerCase()} didn’t fit without blocking something, so I left it out.`});return}kept.push(i)});
+  /* budget: drop the least essential pieces until it fits */
+  const order=['wren-bookcase','mabel-armchair','grace-chest','hollis-bedside','earth-coffee-table'];
+  const cost=()=>kept.reduce((s,i)=>s+(cat(i.id).price||0),0);
+  for(const id of order){if(cost()<=S.budget)break;const idx=kept.map(k=>k.id).lastIndexOf(id);if(idx>-1){kept.splice(idx,1);notes.push({t:'warn',m:`I dropped the ${cat(id).short.toLowerCase()} to keep you under ${fmt(S.budget)}. Add it back later if the budget stretches.`})}}
+  if(cost()>S.budget&&kept.some(k=>k.id==='sienna-corner-sofa')){kept.find(k=>k.id==='sienna-corner-sofa').id='rhianna-sofa';notes.push({t:'warn',m:'I swapped the corner sofa for the Rhianna 3 seater to stay on budget.'})}
+  /* walkway check */
+  for(let a=0;a<kept.length;a++)for(let b=a+1;b<kept.length;b++){const A=box(kept[a]),B=box(kept[b]);
+    const pair=[kept[a].id,kept[b].id].join();if(/sofa/.test(pair)&&/coffee/.test(pair))continue;
+    const xo=A.x<B.x+B.w&&B.x<A.x+A.w,yo=A.y<B.y+B.d&&B.y<A.y+A.d;let g=null;
+    if(xo)g=Math.max(B.y-(A.y+A.d),A.y-(B.y+B.d));else if(yo)g=Math.max(B.x-(A.x+A.w),A.x-(B.x+B.w));
+    if(g!==null&&g>15&&g<60)notes.push({t:'warn',m:`Only ${g} cm between the ${cat(kept[a].id).short.toLowerCase()} and ${cat(kept[b].id).short.toLowerCase()}. 60 cm is comfier to walk through.`})}
+  const used=kept.reduce((s,i)=>{const f=foot(i);return s+f.w*f.d},0),free=Math.round(100-used/(W*L)*100);
+  if(!notes.some(n=>n.t!=='ok'))notes.unshift({t:'ok',m:'Everything fits, the door opens fully and the walkways are clear.'});
+  notes.push(free<45?{t:'warn',m:`${free}% of the floor is free. It may feel tight.`}:{t:'ok',m:`${free}% of the floor is free.`});
+  S.items=kept;S.checks=notes;S.free=free;
+}
+
+/* ===== drawing ===== */
+function draw(animate){
+  const svg=$('#plan');$('#wait').hidden=!!S.w;
+  const W=S.w||420,L=S.l||360,pad=40,WALL=10;
+  let s=`<rect width="${W}" height="${L}" style="fill:var(--floor)"/>`;
+  for(let x=50;x<W;x+=50)s+=`<path d="M${x} 0V${L}" style="stroke:var(--grid)" stroke-width="1.2"/>`;
+  for(let y=50;y<L;y+=50)s+=`<path d="M0 ${y}H${W}" style="stroke:var(--grid)" stroke-width="1.2"/>`;
+  s+=`<rect x="${-WALL/2}" y="${-WALL/2}" width="${W+WALL}" height="${L+WALL}" fill="none" style="stroke:var(--wall);${S.w?'':'opacity:.25'}" stroke-width="${WALL}"/>`;
+  if(S.w){const d=door(),w=win();
+    s+=`<rect x="${-WALL}" y="${d.y}" width="${WALL}" height="${d.size}" style="fill:var(--bg)"/><path d="M0 ${d.y}L${d.size} ${d.y}A${d.size} ${d.size} 0 0 1 0 ${d.y+d.size}Z" style="fill:var(--sage-soft);stroke:var(--sage)" stroke-dasharray="4 4" stroke-width="1.5"/>`;
+    s+=`<rect x="${w.x}" y="${-WALL}" width="${w.size}" height="${WALL}" style="fill:var(--bg)"/><path d="M${w.x} ${-WALL/2}h${w.size}" style="stroke:var(--sage)" stroke-width="3"/>`;
+    const lab=(x,y,t,rot)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="13" font-weight="600" font-family="Figtree, sans-serif" style="fill:var(--muted)" ${rot?`transform="rotate(-90 ${x} ${y})"`:''}>${t}</text>`;
+    s+=lab(W/2,L+30,`${W} cm`)+lab(-24,L/2,`${L} cm`,true);
+    S.items.forEach((i,k)=>{const c=cat(i.id),f=foot(i),light=parseInt(c.colour.slice(1),16),l=.299*(light>>16)+.587*(light>>8&255)+.114*(light&255);
+      const fs=Math.min(13,Math.max(9,Math.min(f.w,f.d)/5)),tw=c.short.length*fs*.58,fits=tw<f.w-8||(f.d>f.w&&tw<f.d-8),vert=tw>f.w-8;
+      s+=`<g class="${animate?'piece-in':''}" style="animation-delay:${k*120}ms"><rect x="${i.x}" y="${i.y}" width="${f.w}" height="${f.d}" rx="5" fill="${c.colour}" stroke="rgba(0,0,0,.25)"/>`+
+        (fits?`<text x="${i.x+f.w/2}" y="${i.y+f.d/2+fs/3}" text-anchor="middle" font-size="${fs}" font-weight="700" font-family="Figtree, sans-serif" fill="${l>150?'#16251f':'#ffffff'}" ${vert?`transform="rotate(-90 ${i.x+f.w/2} ${i.y+f.d/2})"`:''}>${c.short}</text>`:'')+`</g>`});
+  }
+  svg.setAttribute('viewBox',`${-pad} ${-pad} ${W+pad*2} ${L+pad*2}`);svg.innerHTML=s;
+  /* side info */
+  $('#planTitle').textContent=S.room?`Your ${S.room.toLowerCase()}`:'Your room';
+  $('#planSub').textContent=S.w?`${S.w/100} × ${S.l/100} m · ${(S.w*S.l/10000).toFixed(1)} m²${S.style?' · '+S.style:''}`:'Answer Roo to start';
+  $('#planBadge').textContent=S.done?'Ready':S.step>0?'In progress':'Waiting';$('#planBadge').className='badge'+(S.done?' live':'');
+  const cost=S.items.reduce((s,i)=>s+(cat(i.id).price||0),0),unp=S.items.some(i=>cat(i.id).price===null);
+  $('#facts').innerHTML=`<div><b>${S.items.length}</b>pieces placed</div><div><b>${S.done?S.free+'%':'–'}</b>floor free</div><div><b>${S.items.length?fmt(cost):'–'}</b>${unp?'plus 1 to check':'total'}</div>`;
+  $('#budget').innerHTML=S.budget?`<div class="row"><span>Budget used</span><span><b>${fmt(cost)}</b> of ${fmt(S.budget)}</span></div><div class="bar"><i class="${cost>S.budget?'over':''}" style="width:${Math.min(100,cost/S.budget*100)}%"></i></div>`:`<div class="row"><span>Budget</span><span>Roo will ask</span></div><div class="bar"><i style="width:0"></i></div>`;
+  const counts={};S.items.forEach(i=>counts[i.id]=(counts[i.id]||0)+1);
+  $('#pieces').innerHTML=Object.keys(counts).length?Object.keys(counts).map(id=>{const c=cat(id),n=counts[id];return `<li><i style="background:${c.colour}"></i><span><a href="shop.html#piece-${id}">${n>1?n+' × ':''}${c.name}</a><small>${c.dims[0]} × ${c.dims[1]} cm</small></span><span class="p">${c.price===null?'Check':fmt(c.price*n)}</span></li>`}).join(''):'<p class="empty-s">Roo picks pieces once it knows what you need.</p>';
+  $('#checks').innerHTML=S.done?S.checks.map(o=>`<li><span class="tag ${o.t}">${o.t==='ok'?'Good':o.t==='warn'?'Check':'Fix'}</span><span>${o.m}</span></li>`).join(''):'<p class="empty-s">Checks run when the layout is ready.</p>';
+  $('#steps').innerHTML=STEP_NAMES.map((n,i)=>`<li class="${i<S.step||S.done?'done':i===S.step?'on':''}"><i>${i<S.step||S.done?'✓':i+1}</i>${n}</li>`).join('');
+}
+
+/* ===== conversation ===== */
+const log=$('#log');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const toEnd=()=>{log.scrollTop=log.scrollHeight;requestAnimationFrame(()=>log.scrollTop=log.scrollHeight)};
+function bubble(who,html){const d=document.createElement('div');d.className='m '+who;d.innerHTML=html;log.appendChild(d);toEnd()}
+function roo(lines,then){busy=true;setReplies([]);let i=0;
+  (function next(){if(i>=lines.length){busy=false;then&&then();return}
+    const t=document.createElement('div');t.className='typing';t.innerHTML='<i></i><i></i><i></i>';log.appendChild(t);log.scrollTop=log.scrollHeight;
+    setTimeout(()=>{t.remove();bubble('roo',lines[i++]);next()},reduce?0:Math.min(1100,380+lines[i].length*6))})()}
+function setReplies(list){setTimeout(toEnd,0);$('#replies').innerHTML=list.map(r=>`<button class="qr${r.go?' go':''}" data-v="${esc(r.v)}" ${r.pressed!==undefined?`aria-pressed="${r.pressed}"`:''}>${r.html||esc(r.v)}</button>`).join('')}
+function me(text){bubble('me',esc(text))}
+
+function ask(){
+  draw(false);
+  if(S.step===0)return roo(['Hi, I’m Roo. I’ll lay out a room for you in about a minute.','Which room are we planning?'],()=>setReplies(Object.keys(NEEDS).map(v=>({v}))));
+  if(S.step===1)return roo([`Great. How big is your ${S.room.toLowerCase()}? Measure wall to wall, or pick the closest size.`],()=>setReplies(SIZES[S.room].map(([w,l,n])=>({v:`${n}: ${w/100} × ${l/100} m`}))));
+  if(S.step===2){if(!S.needs.length)S.needs=[...DEFAULT_NEEDS[S.room]];return roo(['What do you need in there? Tap to add or remove, then press Done.'],needsReplies)}
+  if(S.step===3){const min=S.room==='Dining room'?800:S.room==='Bedroom'?1000:1500;return roo(['What’s your budget for this room?'],()=>setReplies([min,min+1000,min+2000].map(v=>({v:fmt(v)})).concat([{v:'No limit'}])))}
+  if(S.step===4)return roo(['Last one. Which style feels like you?'],()=>setReplies(Object.keys(STYLES).map(n=>{const s=STYLES[n];return{v:n,html:`<span class="sw"><i style="background:${s.wall}"></i><i style="background:${s.accent}"></i><i style="background:${s.wood}"></i></span>${n}`}})));
+}
+function needsReplies(){setReplies(NEEDS[S.room].map(([k,l])=>({v:l,pressed:S.needs.includes(k)})).concat([{v:'Done',go:true}]))}
+function finish(){
+  layout();S.done=true;
+  roo([`Give me a second while I measure up…`],()=>{draw(true);
+    const cost=S.items.reduce((s,i)=>s+(cat(i.id).price||0),0),left=S.budget-cost,issues=S.checks.filter(c=>c.t!=='ok').length;
+    const pieces=S.items.map(i=>cat(i.id).short.toLowerCase());const list=pieces.length>1?pieces.slice(0,-1).join(', ')+' and '+pieces.slice(-1):pieces[0]||'nothing';
+    roo([`Here’s your ${S.style} ${S.room.toLowerCase()}. I’ve placed the ${list}.`,
+      `It comes to <b>${fmt(cost)}</b>${S.budget<99999?`, ${left>=0?fmt(left)+' under':fmt(-left)+' over'} budget`:''}, with ${S.free}% of the floor free.${issues?`<span class="note">I’ve noted ${issues} ${issues===1?'thing':'things'} to check on the right.</span>`:'<span class="note">Everything fits and the door opens fully.</span>'}`,
+      'What would you like to do next?'],()=>setReplies([{v:'Open in the planner',go:true},{v:'Save pieces to My Home'},{v:'Render it'},{v:'Start again'}]))});
+}
+function handle(text){
+  if(busy)return;const t=text.trim();if(!t)return;const low=t.toLowerCase();
+  if(S.done){
+    if(/planner|open/.test(low)){me(t);savePlan();return roo(['Done. Opening it in the planner so you can fine-tune it.'],()=>setTimeout(()=>location.href='plan.html',reduce?0:700))}
+    if(/save|home/.test(low)){me(t);saveToHome();return roo([`Saved ${S.items.length} pieces to My Home. <a href="my-home.html">Have a look</a>.`],()=>setReplies([{v:'Open in the planner',go:true},{v:'Render it'},{v:'Start again'}]))}
+    if(/render/.test(low)){me(t);savePlan();const insp=read('rp-insp')||{};insp.style=S.style;write('rp-insp',insp);return roo(['Saved. Taking you to My Renders with your room ready to go.'],()=>setTimeout(()=>location.href='my-renders.html',reduce?0:700))}
+    if(/again|restart|new/.test(low)){me(t);return restart()}
+    me(t);return roo(['I can open this in the planner, save the pieces to My Home or render it. Which would you like?'],()=>setReplies([{v:'Open in the planner',go:true},{v:'Save pieces to My Home'},{v:'Render it'},{v:'Start again'}]))}
+  if(S.step===0){const r=Object.keys(NEEDS).find(n=>low.includes(n.split(' ')[0].toLowerCase()));me(t);
+    if(!r)return roo(['I can plan a living room, bedroom or dining room. Which one?'],()=>setReplies(Object.keys(NEEDS).map(v=>({v}))));S.room=r;S.step=1;return ask()}
+  if(S.step===1){me(t);const m=low.match(/(\d+(?:\.\d+)?)\s*(?:m|cm)?\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)/);
+    if(!m)return roo(['Try width × length, like 4.2 × 3.6 or 420 × 360.'],()=>setReplies(SIZES[S.room].map(([w,l,n])=>({v:`${n}: ${w/100} × ${l/100} m`}))));
+    let w=+m[1],l=+m[2];if(w<20)w*=100;if(l<20)l*=100;w=Math.round(w/10)*10;l=Math.round(l/10)*10;
+    if(w<200||l<200||w>900||l>900)return roo(['That size looks unusual. Rooms between 2 m and 9 m each way work best here.'],()=>setReplies(SIZES[S.room].map(([w,l,n])=>({v:`${n}: ${w/100} × ${l/100} m`}))));
+    S.w=w;S.l=l;S.step=2;draw(false);return roo([`${w/100} × ${l/100} m, that’s ${(w*l/10000).toFixed(1)} m². I’ve drawn the walls with the door on the left.`],ask)}
+  if(S.step===2){const opt=NEEDS[S.room].find(([k,l])=>low===l.toLowerCase());
+    if(opt){const k=opt[0];S.needs=S.needs.includes(k)?S.needs.filter(x=>x!==k):S.needs.concat(k);return needsReplies()}
+    if(/done|that'?s it|next|ok/.test(low)){if(!S.needs.length)return roo(['Pick at least one piece first.'],needsReplies);
+      me(NEEDS[S.room].filter(([k])=>S.needs.includes(k)).map(([,l])=>l).join(', '));S.step=3;return ask()}
+    me(t);return roo(['Tap the pieces you need, then press Done.'],needsReplies)}
+  if(S.step===3){me(t);if(/no limit|any|unlimited/.test(low))S.budget=99999;else{const n=+low.replace(/[^\d.k]/g,'').replace(/k$/,'000');if(!n||n<100)return roo(['Give me a number, like £2,000.'],ask);S.budget=n}
+    S.step=4;return ask()}
+  if(S.step===4){const st=Object.keys(STYLES).find(n=>low.includes(n.toLowerCase().split(' ')[0]));me(t);
+    if(!st)return roo(['Pick one of the styles below.'],ask);S.style=st;S.step=5;draw(false);return finish()}
+}
+
+/* ===== handing off to the other pages ===== */
+const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}};
+const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+function savePlan(){const p=read('rp-plan')||{};p.plans=p.plans||JSON.parse(JSON.stringify(DEFAULTS));let uid=1000;
+  p.plans[S.room]={w:S.w,l:S.l,door:door(),win:win(),items:S.items.map(i=>({...i,uid:uid++}))};p.current=S.room;write('rp-plan',p)}
+function saveToHome(){const s=read('rp-shop')||{};s.saved=[...new Set((s.saved||[]).concat(S.items.map(i=>i.id)))];write('rp-shop',s)}
+
+function restart(){log.innerHTML='';reset();ask()}
+$('#replies').addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b)return;const v=b.dataset.v;
+  if(S.step===2&&!S.done&&v!=='Done'){handle(v);return}handle(v)});
+$('#compose').addEventListener('submit',e=>{e.preventDefault();const v=$('#say').value;$('#say').value='';handle(v)});
+$('#restart').addEventListener('click',()=>{if(!busy)restart()});
+$('#menuBtn').onclick=()=>{const m=$('#menu');m.hidden=!m.hidden;$('#menuBtn').setAttribute('aria-expanded',!m.hidden)};
+document.addEventListener('click',e=>{if(!e.target.closest('#menu,#menuBtn')){$('#menu').hidden=true;$('#menuBtn').setAttribute('aria-expanded','false')}});
+reset();ask();
+</script>
+</body>
+</html>

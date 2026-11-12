@@ -9,6 +9,7 @@ Design examples for new pages on roomplanned.com. Each one matches the live site
 | Page | File | What it shows |
 | --- | --- | --- |
 | Home (landing) | [`index.html`](index.html) | The front door, matching the live homepage hero, with Discover furniture, a three-step How it works, cards for every page and a Roo section. |
+| Plan with Roo | [`roo.html`](roo.html) | Opened from "Plan with Roo" on the landing page. Roo asks five questions (room, size, pieces, budget, style) while a floor plan builds live beside the chat, then lays out the room, keeps it on budget and checks gaps, the door and walkways. Finish by opening it in the planner, saving the pieces to My Home or rendering it. |
 | Shop furniture | [`shop.html`](shop.html) | Search, category chips, filters (retailer, price, colour, room), sorting, product pages, Roo's "Will it fit?" check and a basket that splits checkout by retailer. |
 | Plan a room | [`plan.html`](plan.html) | Top-down floor plan with real cm measurements. Drag, rotate and add pieces, set the room size, and Roo checks clashes, the door swing, walkway widths and free floor space. Includes a shopping list for the room. |
 | Inspiration | [`inspiration.html`](inspiration.html) | A bolder page: animated hero, six styles that retint the page, a featured room with tappable "shop the look" hotspots and colour palette, a before/after slider, a masonry gallery with likes and a pop-up room view, a scrolling style banner and a community call to action. Rooms are drawn in code so every one can be restyled. |
