@@ -229,12 +229,12 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="28" height="28" rx="3"/><path d="M8 26V8h6a4 4 0 0 1 0 8H8m6 0 3 10M18 8h4a4 4 0 0 1 0 8h-4v10"/></svg>
       <span>RoomPlanned.</span>
     </a>
-    <nav class="nav" aria-label="Main"><a href="shop.html">Shop</a><a href="plan.html">Plan</a><a href="inspiration.html" class="on">Inspiration</a><a href="#community">Community</a></nav>
+    <nav class="nav" aria-label="Main"><a href="shop.html">Shop</a><a href="plan.html">Plan</a><a href="inspiration.html" class="on">Inspiration</a><a href="community.html">Community</a></nav>
     <div class="icons">
       <a class="icon-btn" href="shop.html" aria-label="Search furniture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></a>
       <a class="icon-btn" href="shop.html" aria-label="Basket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></a>
       <button class="icon-btn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-      <div class="menu" id="menu" hidden><a href="shop.html">Shop furniture</a><a href="plan.html">Plan a room</a><a href="inspiration.html" class="on">Inspiration</a><a href="#community">Community preview</a><a href="#community">My Home</a><a href="#community">My Renders</a><a href="#community">Account</a></div>
+      <div class="menu" id="menu" hidden><a href="shop.html">Shop furniture</a><a href="plan.html">Plan a room</a><a href="inspiration.html" class="on">Inspiration</a><a href="community.html">Community preview</a><a href="#community">My Home</a><a href="#community">My Renders</a><a href="#community">Account</a></div>
     </div>
   </div>
 </header>
@@ -383,7 +383,7 @@ function scene(styleName,room,H,opts={}){
     let lampSpot;
     if(s.lamp==='arc'){P.push(`<path d="M352 ${fy+24}C352 ${fy-120} 300 ${fy-170} 240 ${fy-150}" stroke="${dark?'#c9973a':'#2f2c29'}" stroke-width="3" fill="none"/><ellipse cx="352" cy="${fy+24}" rx="14" ry="4" fill="#2f2c29"/><path d="M220 ${fy-132}q20-30 40 0Z" fill="${shade(s.accent,10)}"/><ellipse cx="240" cy="${fy-132}" rx="20" ry="4" fill="#ffe8a8"/>`);lampSpot=[240,fy-142]}
     else if(s.lamp==='table'){P.push(`<rect x="318" y="${fy-26}" width="56" height="52" rx="3" fill="${s.wood}"/><path d="M346 ${fy-26}v-24" stroke="${s.accent}" stroke-width="7" stroke-linecap="round"/><path d="M326 ${fy-50}l8-26h24l8 26Z" fill="#f2ead9"/>`);lampSpot=[346,fy-64]}
-    else{P.push(pendant(165,Math.round(fy*.28)));lampSpot=[165,Math.round(fy*.28)+14]}
+    else{P.push(pendant(240,Math.round(fy*.22)));lampSpot=[240,Math.round(fy*.22)+14]}
     if(s.lamp!=='table')P.push(plant(350));
     spots.push({x:sx+sw/2,y:sy+30,id:styleName==='Dark & moody'||styleName==='Mid-century'?'sienna-corner-sofa':'rhianna-sofa'},{x:tx,y:ty+12,id:'earth-coffee-table'},{x:tx+25,y:ty-18,id:'ida-vase'},{x:lampSpot[0],y:lampSpot[1],id:'arlo-pendant'});
   } else if(room==='Bedroom'){
