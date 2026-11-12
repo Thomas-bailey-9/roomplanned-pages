@@ -270,22 +270,12 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 <footer class="site-foot"><div class="wrap"><span>RoomPlanned. Your home, planned for real life.</span><span>Preview account. Saved on this device only.</span></div></footer>
 <div class="toast" id="toast" hidden role="status"></div>
 
+<script src="catalogue.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* ===== shared data copied from the other pages ===== */
-const CATALOGUE=[
-  {id:'rhianna-sofa',name:'Rhianna 3 Seater Fabric Sofa',short:'Sofa',retailer:'Furniture Village',room:'Living room',price:1095,colour:'#3f5a57',dims:[222,95,78]},
-  {id:'sienna-corner-sofa',name:'Sienna Velvet Corner Sofa',short:'Corner sofa',retailer:'Linden & Co',room:'Living room',price:1499,colour:'#6d6b3c',dims:[268,180,84]},
-  {id:'mabel-armchair',name:'Mabel Bouclé Armchair',short:'Armchair',retailer:'Linden & Co',room:'Living room',price:449,colour:'#e6dfd2',dims:[82,86,80]},
-  {id:'earth-coffee-table',name:'Earth Coffee Table',short:'Coffee table',retailer:'Furniture Village',room:'Living room',price:299,colour:'#c39a62',dims:[120,60,45]},
-  {id:'wren-bookcase',name:'Wren Tall Bookcase',short:'Bookcase',retailer:'Oakhaven Home',room:'Living room',price:259,colour:'#d7c2a0',dims:[80,32,180]},
-  {id:'veron-ottoman-bed',name:'Duo+ Collection Veron End Lift Ottoman Bed Frame',short:'Ottoman bed',retailer:'Furniture Village',room:'Bedroom',price:549,colour:'#a7a9ad',dims:[150,210,120]},
-  {id:'rowan-bed',name:'Rowan Upholstered Double Bed',short:'Double bed',retailer:'Linden & Co',room:'Bedroom',price:699,colour:'#bdb5a6',dims:[145,205,115]},
-  {id:'hollis-bedside',name:'Hollis Oak Bedside Table',short:'Bedside',retailer:'Oakhaven Home',room:'Bedroom',price:179,colour:'#c49a6c',dims:[48,40,58]},
-  {id:'grace-chest',name:'Grace 6 Drawer Wide Chest',short:'Chest',retailer:'Furniture Village',room:'Bedroom',price:null,colour:'#efeee8',dims:[140,45,85]},
-  {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',short:'Dining table',retailer:'Oakhaven Home',room:'Dining room',price:649,colour:'#8a6440',dims:[160,90,76]}
-];
+const CATALOGUE=RoomPlannedCatalogue.floor;
 
 const STYLES={
   'Japandi':{blurb:'Pale oak, linen and one sculptural branch. Calm, low and uncluttered.',wall:'#e9e3d8',floor:'#cfae83',sofa:'#d9d0c1',accent:'#6b8068',wood:'#8a6440',rug:'#efe9de',sky:'#dbe7e3',art:'arch',lamp:'pendant',plant:'olive',win:'arch',panel:false,paint:['Rice paper','Pale oak','Moss','Walnut','Linen']},

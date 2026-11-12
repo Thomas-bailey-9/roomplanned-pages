@@ -28,12 +28,14 @@ The pages link to each other: "Add to room" in the shop opens `plan.html` with t
 
 Home → Shop → Plan a room → Inspiration → Community preview → My Home → My Renders → Account. Every page's menu links to the others.
 
-## Adding product photos
+## Products and photos
 
-`shop.html`, `my-home.html` and `index.html` each have a `PHOTOS` list near the top of their script. Add a line like
+All products, product photos and product drawings live in one file, [`catalogue.js`](catalogue.js). Every page that shows furniture reads from it, so a change there appears everywhere.
+
+To add a photo, add a line to `PHOTOS` in `catalogue.js`:
 
 ```js
 'rhianna-sofa':'https://link-to-the-photo.jpg',
 ```
 
-and that piece shows the photo instead of its drawing. If a photo link stops working, the drawing comes back automatically. Only use photos you have permission to show, such as images supplied through a retailer's affiliate or product feed.
+That piece then shows the photo instead of its drawing. If a photo link stops working, the drawing comes back automatically. Never change an existing product `id`: ids are stored in visitors' browsers for saved pieces, baskets and room plans. Only use photos you have permission to show, such as images supplied through a retailer's affiliate or product feed.

@@ -291,6 +291,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Room details"><button class="lb-close" id="lbClose" aria-label="Close">✕</button><div class="lb-card" id="lbCard"></div></div>
 <div class="toast" id="toast" hidden role="status"></div>
 
+<script src="catalogue.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const fmt=n=>'£'+n.toLocaleString('en-GB');
@@ -300,18 +301,7 @@ function shade(hex,amt){const n=parseInt(hex.slice(1),16);const c=v=>Math.max(0,
 const lum=hex=>{const n=parseInt(hex.slice(1),16);return .299*(n>>16)+.587*(n>>8&255)+.114*(n&255)};
 
 /* Products shared with shop.html (sample data) */
-const PRODUCTS={
-  'rhianna-sofa':{name:'Rhianna 3 Seater Fabric Sofa',price:1095,retailer:'Furniture Village'},
-  'mabel-armchair':{name:'Mabel Bouclé Armchair',price:449,retailer:'Linden & Co'},
-  'earth-coffee-table':{name:'Earth Coffee Table',price:299,retailer:'Furniture Village'},
-  'arlo-pendant':{name:'Arlo Linen Pendant Light',price:89,retailer:'Harbour Living'},
-  'ida-vase':{name:'Ida Stoneware Vase',price:34,retailer:'Harbour Living'},
-  'veron-ottoman-bed':{name:'Duo+ Collection Veron End Lift Ottoman Bed Frame',price:549,retailer:'Furniture Village'},
-  'rowan-bed':{name:'Rowan Upholstered Double Bed',price:699,retailer:'Linden & Co'},
-  'hollis-bedside':{name:'Hollis Oak Bedside Table',price:179,retailer:'Oakhaven Home'},
-  'fenwick-dining-table':{name:'Fenwick 4 Seat Dining Table',price:649,retailer:'Oakhaven Home'},
-  'sienna-corner-sofa':{name:'Sienna Velvet Corner Sofa',price:1499,retailer:'Linden & Co'}
-};
+const PRODUCTS=Object.fromEntries(RoomPlannedCatalogue.products.map(p=>[p.id,{name:p.name,price:p.price,retailer:p.retailer}]));
 
 /* Style presets drive every illustrated room */
 const STYLES={
