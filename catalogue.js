@@ -14,13 +14,14 @@
 
   /* ---------- products ----------
      dims are width × depth × height in cm. price null means "Price to check".
-     short is the label drawn on floor plans; only pieces that stand on the floor have one. */
+     short is the label drawn on floor plans; only pieces that stand on the floor have one.
+     Real products can also carry brand and url (the retailer's product page). */
   const PRODUCTS=[
     {id:'rhianna-sofa',name:'Rhianna 3 Seater Fabric Sofa',short:'Sofa',retailer:'Furniture Village',cat:'Sofas',room:'Living room',price:1095,shape:'sofa',colours:[{n:'Teal',hex:'#3f5a57'},{n:'Oatmeal',hex:'#d6cbb7'},{n:'Charcoal',hex:'#55595a'}],dims:[222,95,78],material:'Velvet-touch fabric, hardwood frame',delivery:'4–6 weeks',popular:9},
     {id:'earth-coffee-table',name:'Earth Coffee Table',short:'Coffee table',retailer:'Furniture Village',cat:'Tables',room:'Living room',price:299,shape:'coffee',colours:[{n:'Natural oak',hex:'#c39a62'}],dims:[120,60,45],material:'Solid oak top, powder-coated steel legs',delivery:'1–2 weeks',popular:7},
     {id:'veron-ottoman-bed',name:'Duo+ Collection Veron End Lift Ottoman Bed Frame',short:'Ottoman bed',retailer:'Furniture Village',cat:'Beds',room:'Bedroom',price:549,shape:'bed',colours:[{n:'Silver grey',hex:'#a7a9ad'},{n:'Mink',hex:'#b5a593'}],dims:[150,210,120],material:'Woven fabric, gas-lift storage base',delivery:'3–4 weeks',popular:8},
     {id:'grace-chest',name:'Grace 6 Drawer Wide Chest',short:'Chest',retailer:'Furniture Village',cat:'Storage',room:'Bedroom',price:null,shape:'chest',colours:[{n:'White',hex:'#efeee8'},{n:'Sage',hex:'#a9b8a2'}],dims:[140,45,85],material:'Painted hardwood, soft-close runners',delivery:'Check with retailer',popular:5},
-    {id:'mabel-armchair',name:'Mabel Bouclé Armchair',short:'Armchair',retailer:'Linden & Co',cat:'Sofas',room:'Living room',price:449,shape:'armchair',colours:[{n:'Cream bouclé',hex:'#e6dfd2'},{n:'Moss',hex:'#7d8a63'}],dims:[82,86,80],material:'Bouclé, beech legs',delivery:'2–3 weeks',popular:10},
+    {id:'mabel-armchair',name:'Mabel Natural Boucle Swivel Armchair',short:'Armchair',retailer:'Homebase',brand:'Kyoto Futons',cat:'Sofas',room:'Living room',price:545,shape:'armchair',colours:[{n:'Natural',hex:'#a49e94'}],dims:[74,80,75.5],material:'Boucle (95% polyester, 5% cotton), rubber wood and plywood',delivery:'Check with retailer',popular:10,url:'https://www.homebase.co.uk/en-uk/mabel-natural-boucle-swivel-armchair/p/0806851'},
     {id:'sienna-corner-sofa',name:'Sienna Velvet Corner Sofa',short:'Corner sofa',retailer:'Linden & Co',cat:'Sofas',room:'Living room',price:1499,shape:'corner',colours:[{n:'Olive',hex:'#6d6b3c'},{n:'Dusk blue',hex:'#4f6178'}],dims:[268,180,84],material:'Recycled velvet, pocket-sprung seat',delivery:'6–8 weeks',popular:6},
     {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',short:'Dining table',retailer:'Oakhaven Home',cat:'Tables',room:'Dining room',price:649,shape:'dining',colours:[{n:'Walnut',hex:'#8a6440'},{n:'Light oak',hex:'#c9a777'}],dims:[160,90,76],material:'Walnut veneer, solid legs',delivery:'2–4 weeks',popular:6},
     {id:'hollis-bedside',name:'Hollis Oak Bedside Table',short:'Bedside',retailer:'Oakhaven Home',cat:'Storage',room:'Bedroom',price:179,shape:'bedside',colours:[{n:'Oak',hex:'#c49a6c'},{n:'Black',hex:'#3a3836'}],dims:[48,40,58],material:'Solid oak, two drawers',delivery:'1–2 weeks',popular:8},
@@ -42,7 +43,7 @@
     'veron-ottoman-bed':'https://media.furniturevillage.co.uk/i/fv/PRODZFRSP000000000064700_veron_end-lift-ottoman-frame_silver_4ft6?$large$&w=648&fmt=auto',
     'earth-coffee-table':'https://media.furniturevillage.co.uk/i/fv/PRODEATHCFTB--001_earth_coffee-table?$large$',
     'grace-chest':'https://media.furniturevillage.co.uk/i/fv/PRODZFRSP000000000054937_grace_6-drawer-wide-chest_white?$medium$&fmt=auto',
-    'mabel-armchair':'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcT1J4WMPSjx39o2mSHzJyUa4HjuLSXbuLvB4x1XPQTgJ65S727WCRJBMXe8nD_RA9v1cnf5GQUOpwRbnFBkY0QKnoFFMLPpfRlB6ZIS7-4'
+    'mabel-armchair':'images/products/mabel-natural-boucle-swivel-armchair.webp'
   };;
 
   /* ---------- drawings (used when there is no photo) ---------- */
@@ -67,7 +68,7 @@
   const art = (p, colour, cls='art') => {
     const svg=`<svg class="${cls}" viewBox="0 0 240 160" role="img" aria-label="${p.name}">${ART[p.shape](colour||p.colours[0].hex)}</svg>`;
     const url=PHOTOS[p.id];
-    if(!url||(colour&&colour!==p.colours[0].hex))return svg;  /* photo shows the main colour only */
+    if(!url||(colour&&colour!==p.colours[0].hex&&p.colours.some(x=>x.hex===colour)))return svg;  /* photo shows the main colour; another listed colour shows the drawing; an old colour saved before a product changed shows the photo */
     return `<span class="ph"><img src="${url}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
   };;
 
