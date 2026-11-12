@@ -230,7 +230,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 
 <header class="site">
   <div class="wrap">
-    <a class="logo" href="#shop" aria-label="RoomPlanned home">
+    <a class="logo" href="index.html" aria-label="RoomPlanned home">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="28" height="28" rx="3"/><path d="M8 26V8h6a4 4 0 0 1 0 8H8m6 0 3 10M18 8h4a4 4 0 0 1 0 8h-4v10"/></svg>
       <span>RoomPlanned.</span>
     </a>
@@ -347,7 +347,7 @@ function shopView(){
   const count=(k,v)=>PRODUCTS.filter(p=>p[k]===v).length;
   $('#app').innerHTML = `
   <div class="wrap">
-    <nav class="crumbs" aria-label="Breadcrumb"><a href="#shop">Home</a><span>/</span><span>Shop furniture</span></nav>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>Shop furniture</span></nav>
     <div class="intro"><div><h1>Shop <em>furniture.</em></h1><p>From the UK’s top retailers, all in one place.</p></div></div>
     <form class="search" id="searchForm" role="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input id="q" type="search" placeholder="Search furniture, brands or styles" value="${state.q.replace(/"/g,'&quot;')}" aria-label="Search furniture"></form>
