@@ -26,7 +26,14 @@
     {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',short:'Dining table',retailer:'Oakhaven Home',cat:'Tables',room:'Dining room',price:649,shape:'dining',colours:[{n:'Walnut',hex:'#8a6440'},{n:'Light oak',hex:'#c9a777'}],dims:[160,90,76],material:'Walnut veneer, solid legs',delivery:'2–4 weeks',popular:6},
     {id:'hollis-bedside',name:'Hollis Oak Bedside Table',short:'Bedside',retailer:'Oakhaven Home',cat:'Storage',room:'Bedroom',price:179,shape:'bedside',colours:[{n:'Oak',hex:'#c49a6c'},{n:'Black',hex:'#3a3836'}],dims:[48,40,58],material:'Solid oak, two drawers',delivery:'1–2 weeks',popular:8},
     {id:'wren-bookcase',name:'Wren Tall Bookcase',short:'Bookcase',retailer:'Oakhaven Home',cat:'Storage',room:'Living room',price:259,shape:'bookcase',colours:[{n:'Ash',hex:'#d7c2a0'}],dims:[80,32,180],material:'Ash veneer, adjustable shelves',delivery:'1–2 weeks',popular:4},
-    {id:'arlo-pendant',name:'Arlo Linen Pendant Light',retailer:'Harbour Living',cat:'Lighting',room:'Dining room',price:89,shape:'pendant',colours:[{n:'Natural linen',hex:'#ddd4c3'},{n:'Sage',hex:'#9aab92'}],dims:[45,45,32],material:'Linen shade, brass fittings',delivery:'3–5 days',popular:9},
+    /* Galley: prices, sizes and colours checked on dunelm.com on 12 November 2026. price is the lowest size ("From £8").
+       Each size has its own price; each colour has its own photo. It hangs from the ceiling, so the planner keeps it apart from floor pieces. */
+    {id:'arlo-pendant',name:'Galley Gloss Easy Fit Pendant Shade',short:'Pendant',retailer:'Dunelm',brand:'Dunelm',cat:'Lighting',room:'Dining room',price:8,shape:'pendant',ceiling:true,
+      colours:[{n:'Ivory',hex:'#e6e0d2',photo:'images/products/galley-pendant-shade-ivory.webp'},{n:'Anthracite',hex:'#56575a',photo:'images/products/galley-pendant-shade-anthracite.webp'}],
+      sizes:[{n:'19cm diameter',spec:'H 19cm × Dia. 19cm',dia:19,h:19,price:8},{n:'29cm diameter',spec:'H 16cm × Dia. 29cm',dia:29,h:16,price:10},{n:'40cm diameter',spec:'H 24cm × Dia. 40cm',dia:40,h:24,price:20}],defaultSize:1,
+      dims:[29,29,16],material:'Metal, gloss finish',delivery:'Check with retailer',popular:9,url:'https://www.dunelm.com/product/galley-easy-fit-pendant-shade-1000120313',
+      desc:'A dome-shaped gloss metal pendant shade. It attaches to your existing ceiling light fitting, so no wiring or electrician is needed. The cord and bulb holder shown in the photos are not included.',
+      notes:'Shade only: 1 × pendant shade. Takes 1 bulb, maximum 8W (bulb not included). Indoor use. Wipe clean with a soft cloth.',checked:'Price checked on Dunelm, 12 November 2026'},
     {id:'ida-vase',name:'Ida Stoneware Vase',retailer:'Harbour Living',cat:'Decor',room:'Living room',price:34,shape:'vase',colours:[{n:'Speckled stone',hex:'#d8d1c4'},{n:'Clay',hex:'#c08d6b'}],dims:[18,18,26],material:'Hand-glazed stoneware',delivery:'3–5 days',popular:7},
     {id:'rowan-bed',name:'Rowan Upholstered Double Bed',short:'Double bed',retailer:'Linden & Co',cat:'Beds',room:'Bedroom',price:699,shape:'bed',colours:[{n:'Stone',hex:'#bdb5a6'},{n:'Forest',hex:'#3d5545'}],dims:[145,205,115],material:'Linen blend, slatted base',delivery:'3–5 weeks',popular:5}
   ];
@@ -43,8 +50,9 @@
     'veron-ottoman-bed':'https://media.furniturevillage.co.uk/i/fv/PRODZFRSP000000000064700_veron_end-lift-ottoman-frame_silver_4ft6?$large$&w=648&fmt=auto',
     'earth-coffee-table':'https://media.furniturevillage.co.uk/i/fv/PRODEATHCFTB--001_earth_coffee-table?$large$',
     'grace-chest':'https://media.furniturevillage.co.uk/i/fv/PRODZFRSP000000000054937_grace_6-drawer-wide-chest_white?$medium$&fmt=auto',
-    'mabel-armchair':'images/products/mabel-natural-boucle-swivel-armchair.webp'
-  };;
+    'mabel-armchair':'images/products/mabel-natural-boucle-swivel-armchair.webp',
+    'arlo-pendant':'images/products/galley-pendant-shade-ivory.webp'
+  };
 
   /* ---------- drawings (used when there is no photo) ---------- */
   function shade(hex, amt){const n=parseInt(hex.slice(1),16);let r=(n>>16)+amt,g=(n>>8&255)+amt,b=(n&255)+amt;const c=v=>Math.max(0,Math.min(255,v));return '#'+((1<<24)+(c(r)<<16)+(c(g)<<8)+c(b)).toString(16).slice(1)}
@@ -67,19 +75,36 @@
   };
   const art = (p, colour, cls='art') => {
     const svg=`<svg class="${cls}" viewBox="0 0 240 160" role="img" aria-label="${p.name}">${ART[p.shape](colour||p.colours[0].hex)}</svg>`;
-    const url=PHOTOS[p.id];
-    if(!url||(colour&&colour!==p.colours[0].hex&&p.colours.some(x=>x.hex===colour)))return svg;  /* photo shows the main colour; another listed colour shows the drawing; an old colour saved before a product changed shows the photo */
-    return `<span class="ph"><img src="${url}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
-  };;
+    /* a colour with its own photo shows that photo; otherwise the main photo shows the first colour, another listed colour shows the drawing,
+       and an old colour saved before a product changed shows the main photo */
+    const c=p.colours.find(x=>x.hex===colour)||(colour?null:p.colours[0]);
+    const url=c&&c.photo||(c&&c!==p.colours[0]?null:PHOTOS[p.id]),alt=p.colours.some(x=>x.photo)?`${p.name} in ${(c||p.colours[0]).n}`:p.name;
+    if(!url)return svg;
+    return `<span class="ph"><img src="${url}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
+  };
+
+  /* ---------- options: colour and size ----------
+     A basket line, saved piece or planned piece can remember {colour, size} by name. */
+  const sizeOf=(p,n)=>p&&p.sizes?(p.sizes.find(s=>s.n===n)||p.sizes[p.defaultSize||0]):null;
+  const colourOf=(p,n)=>p.colours.find(c=>c.n===n)||p.colours[0];
+  const unitPrice=(p,size)=>{const s=sizeOf(p,size);return s?s.price:p.price};
+  /* "From £8" when a piece comes in sizes at different prices and no size is chosen */
+  const priceText=(p,size)=>{const v=size?unitPrice(p,size):p.price;if(v===null||v===undefined)return p.url?`Check price at ${p.retailer}`:'Price to check';
+    return (!size&&p.sizes?'From ':'')+'£'+v.toLocaleString('en-GB')};
+  /* bring a line saved before a product changed up to date: unknown colours become the first colour, a missing size the default size */
+  const fixVariant=l=>{const p=byId[l.id];if(!p||!p.sizes)return l;const c=colourOf(p,l.colour);l.colour=c.n;l.hex=c.hex;l.size=sizeOf(p,l.size).n;return l};
 
   const byId=Object.fromEntries(PRODUCTS.map(p=>[p.id,p]));
   const FLOOR=FLOOR_ORDER.map(id=>{const p=byId[id];return{id:p.id,name:p.name,short:p.short,retailer:p.retailer,room:p.room,price:p.price,colour:p.colours[0].hex,dims:p.dims}});
+  /* pieces that hang from the ceiling (shown on the plan, but not counted as floor space) */
+  const CEILING=PRODUCTS.filter(p=>p.ceiling).map(p=>p.id);
 
   window.RoomPlannedCatalogue={
     products:PRODUCTS,
     floor:FLOOR,
     photos:PHOTOS,
+    ceiling:CEILING,
     product:id=>byId[id]||null,
-    art
+    art,sizeOf,colourOf,unitPrice,priceText,fixVariant
   };
 })();

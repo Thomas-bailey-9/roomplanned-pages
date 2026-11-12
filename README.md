@@ -39,3 +39,5 @@ To add a photo, add a line to `PHOTOS` in `catalogue.js`:
 ```
 
 That piece then shows the photo instead of its drawing. If a photo link stops working, the drawing comes back automatically. Never change an existing product `id`: ids are stored in visitors' browsers for saved pieces, baskets and room plans. Only use photos you have permission to show, such as images supplied through a retailer's affiliate or product feed.
+
+A colour can carry its own photo (`photo` on the colour), and a product can come in `sizes`, each with its own dimensions and price. The Galley pendant shade (id `arlo-pendant`, kept from the earlier sample) uses both. Its basket lines, saved piece and planner pieces remember the colour and size chosen. It hangs from the ceiling (`ceiling:true`), so the planner keeps it in a separate list that isn't counted as floor space. Its prices were checked on Dunelm on 12 November 2026.

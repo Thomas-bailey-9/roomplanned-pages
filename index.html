@@ -497,7 +497,7 @@ function miniPlan(p){const cat=id=>CATALOGUE.find(c=>c.id===id),pad=12;
 
 /* discover furniture: the same four pieces as the live homepage */
 $('#pgrid').innerHTML=['rhianna-sofa','earth-coffee-table','veron-ottoman-bed','grace-chest'].map(id=>{const p=PRODUCTS.find(x=>x.id===id);
-  return `<a class="card pc" href="shop.html#piece-${id}"><span class="img">${art(p)}<span class="vp">View piece ${ARROW}</span></span><span class="body"><small>${p.retailer}</small><b>${p.name}</b><span class="pr">${p.price===null?'Price to check':fmt(p.price)}</span></span></a>`}).join('');
+  return `<a class="card pc" href="shop.html#piece-${id}"><span class="img">${art(p)}<span class="vp">View piece ${ARROW}</span></span><span class="body"><small>${p.retailer}</small><b>${p.name}</b><span class="pr">${RoomPlannedCatalogue.priceText(p)}</span></span></a>`}).join('');
 $('#search').addEventListener('submit',e=>{e.preventDefault();location.href='shop.html'});
 
 /* how it works: a real sequence, so it's numbered */

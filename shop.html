@@ -162,6 +162,12 @@ input[type=range]{width:100%;accent-color:var(--green)}
 .qty output{min-width:28px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
 .buy-row{display:flex;gap:10px;flex-wrap:wrap}
 .buy-row .btn.primary{flex:1;min-width:180px}
+.size-opts{display:flex;gap:8px;flex-wrap:wrap}
+.desc{margin:0;color:var(--text);font-size:15px;line-height:1.55}
+.desc-note{margin:-6px 0 0;color:var(--muted);font-size:13px}
+.desc-note a{color:var(--ink)}
+.dims .spec{font-size:15px;line-height:1.3;padding-top:3px}
+.dims-note{margin:8px 0 0;color:var(--muted);font-size:13px}
 .roo{background:var(--sage-soft);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
 .roo .av{width:36px;height:36px;border-radius:50%;background:var(--green);color:var(--green-ink);display:grid;place-items:center;font-weight:800;flex:none;font-size:14px}
 .roo p{margin:2px 0 0;color:var(--ink);font-size:14px}
@@ -269,7 +275,7 @@ const BOOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 
 
 /* ---------- products, photos and drawings come from catalogue.js ---------- */
-const {products:PRODUCTS, art}=RoomPlannedCatalogue;
+const {products:PRODUCTS, art, sizeOf, colourOf, unitPrice, priceText, fixVariant}=RoomPlannedCatalogue;
 const CATS = ['All','Sofas','Beds','Tables','Storage','Lighting','Decor'];
 const RETAILERS = [...new Set(PRODUCTS.map(p=>p.retailer))];
 const ROOMS = [...new Set(PRODUCTS.map(p=>p.room))];
@@ -280,8 +286,10 @@ const fmt = n => '£'+n.toLocaleString('en-GB');
 
 /* ---------- state ---------- */
 const state = {cat:'All',q:'',retailers:new Set(),rooms:new Set(),colour:null,max:1500,sort:'popular',saved:new Set(),bag:[]};
-try{const s=JSON.parse(localStorage.getItem('rp-shop')||'{}');if(s.bag)state.bag=s.bag;if(s.saved)state.saved=new Set(s.saved)}catch(e){}
-const persist=()=>{try{localStorage.setItem('rp-shop',JSON.stringify({bag:state.bag,saved:[...state.saved]}))}catch(e){}};
+/* savedVar remembers the colour and size a piece was saved in: {id:{colour,size}} */
+state.savedVar={};
+try{const s=JSON.parse(localStorage.getItem('rp-shop')||'{}');if(s.bag)state.bag=s.bag.map(fixVariant);if(s.saved)state.saved=new Set(s.saved);if(s.savedVar)state.savedVar=s.savedVar}catch(e){}
+const persist=()=>{try{const s=JSON.parse(localStorage.getItem('rp-shop')||'{}');Object.assign(s,{bag:state.bag,saved:[...state.saved],savedVar:state.savedVar});localStorage.setItem('rp-shop',JSON.stringify(s))}catch(e){}};
 
 function filtered(){
   let list = PRODUCTS.filter(p=>
@@ -305,7 +313,7 @@ function card(p){
     <div class="body">
       <span class="retailer">${p.retailer}</span>
       <h3>${p.name}</h3>
-      <div class="price ${p.price===null?'check-p':''}">${p.price===null?'Price to check':fmt(p.price)}</div>
+      <div class="price ${p.price===null?'check-p':''}">${priceText(p)}</div>
       <div class="dots">${p.colours.map(c=>`<span class="dot" title="${c.n}" style="background:${c.hex}"></span>`).join('')}</div>
       <button class="btn block" data-room="${p.id}">Add to room ${ARROW}</button>
     </div></article>`;
@@ -357,9 +365,13 @@ function renderGrid(){
   document.querySelectorAll('[data-col]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.col===state.colour));
 }
 
+let pieceVariant=null;  /* the colour and size chosen on the open product page */
 function pieceView(id){
+  pieceVariant=null;
   const p=PRODUCTS.find(x=>x.id===id); if(!p){location.hash='shop';return}
-  let ci=0, qty=1;
+  let ci=0, qty=1, si=p.sizes?(p.defaultSize||0):-1;
+  const sv=state.savedVar[p.id];if(sv){ci=Math.max(0,p.colours.indexOf(colourOf(p,sv.colour)));if(p.sizes)si=p.sizes.indexOf(sizeOf(p,sv.size))}
+  const size=()=>p.sizes?p.sizes[si]:null,variant=()=>({colour:p.colours[ci].n,size:size()?size().n:undefined});
   const related=PRODUCTS.filter(x=>x.id!==p.id&&(x.room===p.room||x.cat===p.cat)).slice(0,4);
   const [w,d,h]=p.dims;
   $('#app').innerHTML=`
@@ -368,20 +380,29 @@ function pieceView(id){
     <nav class="crumbs" aria-label="Breadcrumb"><a href="#shop">Shop furniture</a><span>/</span><a href="#shop" data-cat-link="${p.cat}">${p.cat}</a><span>/</span><span>${p.name}</span></nav>
     <div class="piece" style="margin-top:18px">
       <div class="gallery">
-        <div class="hero-img" id="hero">${art(p)}<button class="save" data-save="${p.id}" aria-pressed="${state.saved.has(p.id)}" aria-label="Save ${p.name}">${BOOK}</button></div>
-        ${p.colours.length>1?`<div class="thumbs" id="thumbs">${p.colours.slice(0,4).map((c,i)=>`<button class="thumb" data-thumb="${i}" aria-pressed="${i===0}" aria-label="${c.n} view">${art(p,c.hex,'')}</button>`).join('')}</div>`:''}
+        <div class="hero-img" id="hero">${art(p,p.colours[ci].hex)}<button class="save" data-save="${p.id}" aria-pressed="${state.saved.has(p.id)}" aria-label="Save ${p.name}">${BOOK}</button></div>
+        ${p.colours.length>1?`<div class="thumbs" id="thumbs">${p.colours.slice(0,4).map((c,i)=>`<button class="thumb" data-thumb="${i}" aria-pressed="${i===ci}" aria-label="${c.n} view">${art(p,c.hex,'')}</button>`).join('')}</div>`:''}
       </div>
       <div class="info">
         <div class="meta"><span>${p.retailer}</span><span class="pill">${p.room}</span></div>
         <h1>${p.name}</h1>
-        <div class="big-price">${p.price===null?'Price to check':fmt(p.price)}</div>
-        <div><div class="label">Colour: <span id="cname" style="color:var(--ink);text-transform:none;letter-spacing:0">${p.colours[0].n}</span></div>
-          <div class="colour-opts">${p.colours.map((c,i)=>`<button class="sw" data-ci="${i}" aria-pressed="${i===0}" aria-label="${c.n}" title="${c.n}" style="background:${c.hex}"></button>`).join('')}</div></div>
+        <div class="big-price" id="bigPrice">${p.sizes?priceText(p,size().n):priceText(p)}</div>${p.checked?`
+        <p class="desc-note">${p.checked}. Prices can change, so check at <a href="${p.url}" target="_blank" rel="noopener">${p.retailer}</a> before you buy.</p>`:''}${p.desc?`
+        <p class="desc">${p.desc}</p>`:''}
+        <div><div class="label">Colour: <span id="cname" style="color:var(--ink);text-transform:none;letter-spacing:0">${p.colours[ci].n}</span></div>
+          <div class="colour-opts">${p.colours.map((c,i)=>`<button class="sw" data-ci="${i}" aria-pressed="${i===ci}" aria-label="${c.n}" title="${c.n}" style="background:${c.hex}"></button>`).join('')}</div></div>${p.sizes?`
+        <div><div class="label" id="sizeLbl">Size: <span id="sname" style="color:var(--ink);text-transform:none;letter-spacing:0">${size().n}</span></div>
+          <div class="size-opts" role="group" aria-labelledby="sizeLbl">${p.sizes.map((s,i)=>`<button class="chip" data-si="${i}" aria-pressed="${i===si}">${s.n}</button>`).join('')}</div></div>
+        <div><div class="label">Dimensions</div>
+          <div class="dims" id="dims"></div>
+          <p class="dims-note">Shade only, not including the hanging cord.</p></div>
+        <div class="roo"><span class="av">Roo</span><div><b style="color:var(--ink)">Will it fit?</b>
+          <p>It attaches to the light fitting already on your ceiling, so you don’t need an electrician. Use a bulb of 8W or less.</p></div></div>`:`
         <div><div class="label">Dimensions</div>
           <div class="dims"><div><b>${w}</b><span>Width, cm</span></div><div><b>${d}</b><span>Depth, cm</span></div><div><b>${h}</b><span>Height, cm</span></div></div></div>
         <div class="roo"><span class="av">Roo</span><div><b style="color:var(--ink)">Will it fit?</b>
           <p id="fit"></p>
-          <label for="wall">Your wall length <input id="wall" type="number" min="50" max="2000" value="340"> cm</label></div></div>
+          <label for="wall">Your wall length <input id="wall" type="number" min="50" max="2000" value="340"> cm</label></div></div>`}
         <div class="buy-row">
           <div class="qty"><button id="minus" aria-label="Fewer">−</button><output id="qty">1</output><button id="plus" aria-label="More">+</button></div>
           <button class="btn primary" id="addBag" ${p.price===null?'disabled style="opacity:.5;cursor:not-allowed"':''}>${p.price===null?'Price to check':'Add to basket'}</button>
@@ -390,7 +411,8 @@ function pieceView(id){
         <ul class="facts">
           <li><span>Sold by</span><span>${p.url?`<a href="${p.url}" target="_blank" rel="noopener">${p.retailer}</a>`:p.retailer}</span></li>${p.brand?`
           <li><span>Brand</span><span>${p.brand}</span></li>`:''}
-          <li><span>Material</span><span>${p.material}</span></li>
+          <li><span>Material</span><span>${p.material}</span></li>${p.notes?`
+          <li><span>In the box</span><span>${p.notes}</span></li>`:''}
           <li><span>Delivery</span><span>${p.delivery}</span></li>
           <li><span>Returns</span><span>Handled by ${p.retailer}</span></li>
         </ul>
@@ -401,17 +423,26 @@ function pieceView(id){
   const setColour=i=>{ci=i;const c=p.colours[i];
     $('#hero').firstElementChild.outerHTML=art(p,c.hex);$('#cname').textContent=c.n;
     document.querySelectorAll('[data-ci]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.ci===i));
-    document.querySelectorAll('[data-thumb]').forEach((b,k)=>b.setAttribute('aria-pressed',k===i));};
+    document.querySelectorAll('[data-thumb]').forEach((b,k)=>b.setAttribute('aria-pressed',k===i))};
+  const setSize=i=>{si=i;const s=p.sizes[i];$('#sname').textContent=s.n;$('#bigPrice').textContent=priceText(p,s.n);
+    $('#dims').innerHTML=`<div><b>${s.dia}</b><span>Diameter, cm</span></div><div><b>${s.h}</b><span>Height, cm</span></div><div><b class="spec">${s.spec}</b><span>As listed</span></div>`;
+    document.querySelectorAll('[data-si]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.si===i))};
+  if(p.sizes){setSize(si);document.querySelectorAll('[data-si]').forEach(b=>b.addEventListener('click',()=>setSize(+b.dataset.si)))}
+  /* this page's save and "Add to room" buttons carry the chosen colour and size */
+  $('#hero [data-save]').dataset.variant='1';
+  document.querySelector('.info [data-room]').dataset.variant='1';
+  pieceVariant=variant;
   document.querySelectorAll('[data-ci]').forEach(b=>b.addEventListener('click',()=>setColour(+b.dataset.ci)));
   document.querySelectorAll('[data-thumb]').forEach(b=>b.addEventListener('click',()=>setColour(+b.dataset.thumb)));
-  const fit=()=>{const wall=+$('#wall').value||0,spare=wall-w;
+  if(!p.sizes){const fit=()=>{const wall=+$('#wall').value||0,spare=wall-w;
     $('#fit').textContent=wall<=0?'Enter a wall length to check.':spare>=60?`Yes. At ${w} cm wide it leaves ${spare} cm on a ${wall} cm wall, enough for a side table.`:spare>=0?`Just. It leaves ${spare} cm on a ${wall} cm wall, so there’s no room for a side table.`:`No. It’s ${-spare} cm wider than a ${wall} cm wall.`};
-  $('#wall').addEventListener('input',fit);fit();
+  $('#wall').addEventListener('input',fit);fit()}
   $('#minus').addEventListener('click',()=>{qty=Math.max(1,qty-1);$('#qty').textContent=qty});
   $('#plus').addEventListener('click',()=>{qty=Math.min(9,qty+1);$('#qty').textContent=qty});
   if(p.price!==null)$('#addBag').addEventListener('click',()=>{
-    const c=p.colours[ci].n,ex=state.bag.find(l=>l.id===p.id&&l.colour===c);
-    ex?ex.qty+=qty:state.bag.push({id:p.id,colour:c,hex:p.colours[ci].hex,qty});
+    /* each colour and size is its own basket line */
+    const c=p.colours[ci].n,sz=size()?size().n:undefined,ex=state.bag.find(l=>l.id===p.id&&l.colour===c&&l.size===sz);
+    ex?ex.qty+=qty:state.bag.push(Object.assign({id:p.id,colour:c,hex:p.colours[ci].hex,qty},sz?{size:sz}:{}));
     persist();updateBag();openBag();});
   const cl=document.querySelector('[data-cat-link]');cl&&cl.addEventListener('click',()=>{state.cat=cl.dataset.catLink});
 }
@@ -421,8 +452,8 @@ function updateBag(){
   const n=state.bag.reduce((a,l)=>a+l.qty,0);
   $('#bagCount').hidden=!n;$('#bagCount').textContent=n;
   if(!state.bag.length){$('#lines').innerHTML='<p class="empty-b">Your basket is empty.<br>Add pieces from the shop to see them here.</p>';$('#bagFoot').innerHTML=`<a class="btn primary block" href="#shop" id="keep">Browse furniture</a>`;$('#keep').onclick=closeBag;return}
-  $('#lines').innerHTML=state.bag.map((l,i)=>{const p=PRODUCTS.find(x=>x.id===l.id);return `<div class="line"><div class="mini">${art(p,l.hex,'')}</div><div><b>${p.name}</b><small>${p.retailer} · ${l.colour} · Qty ${l.qty}</small><br><button class="rm" data-rm-line="${i}">Remove</button></div><div class="lp">${fmt(p.price*l.qty)}</div></div>`}).join('');
-  const sub=state.bag.reduce((a,l)=>a+PRODUCTS.find(x=>x.id===l.id).price*l.qty,0);
+  $('#lines').innerHTML=state.bag.map((l,i)=>{const p=PRODUCTS.find(x=>x.id===l.id);return `<div class="line"><div class="mini">${art(p,l.hex,'')}</div><div><b>${p.name}</b><small>${p.retailer} · ${l.colour}${l.size?' · '+l.size:''} · Qty ${l.qty}</small><br><button class="rm" data-rm-line="${i}">Remove</button></div><div class="lp">${fmt(unitPrice(p,l.size)*l.qty)}</div></div>`}).join('');
+  const sub=state.bag.reduce((a,l)=>a+unitPrice(PRODUCTS.find(x=>x.id===l.id),l.size)*l.qty,0);
   const shops=new Set(state.bag.map(l=>PRODUCTS.find(x=>x.id===l.id).retailer));
   $('#bagFoot').innerHTML=`<div class="sum"><span>Subtotal</span><span>${fmt(sub)}</span></div><div class="sum"><span>Delivery</span><span>Set by each retailer</span></div><div class="sum total"><span>Total</span><span>${fmt(sub)}</span></div>
     <button class="btn primary block" id="checkout">Checkout with ${shops.size} ${shops.size===1?'retailer':'retailers'} ${ARROW}</button>
@@ -437,10 +468,12 @@ $('#bagBtn').onclick=openBag;$('#closeBag').onclick=closeBag;$('#scrim').onclick
 /* ---------- shared events ---------- */
 let tt;function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
 document.addEventListener('click',e=>{
-  const s=e.target.closest('[data-save]');if(s){e.stopPropagation();const id=s.dataset.save;state.saved.has(id)?state.saved.delete(id):state.saved.add(id);persist();
+  const s=e.target.closest('[data-save]');if(s){e.stopPropagation();const id=s.dataset.save;state.saved.has(id)?state.saved.delete(id):state.saved.add(id);
+    const sp=PRODUCTS.find(x=>x.id===id);if(state.saved.has(id)&&s.dataset.variant&&pieceVariant&&(sp.sizes||sp.colours.length>1))state.savedVar[id]=pieceVariant();else delete state.savedVar[id];persist();
     document.querySelectorAll(`[data-save="${id}"]`).forEach(b=>b.setAttribute('aria-pressed',state.saved.has(id)));toast(state.saved.has(id)?'Saved to My Home':'Removed from My Home');return}
   const o=e.target.closest('[data-open]');if(o){location.hash='piece-'+o.dataset.open;return}
-  const r=e.target.closest('[data-room]');if(r){location.href='plan.html#add-'+r.dataset.room;return}
+  const r=e.target.closest('[data-room]');if(r){const v=r.dataset.variant&&pieceVariant?pieceVariant():null;
+    location.href='plan.html#add-'+r.dataset.room+(v&&v.size?`&colour=${encodeURIComponent(v.colour)}&size=${encodeURIComponent(v.size)}`:'');return}
   const c=e.target.closest('[data-cat]');if(c){state.cat=c.dataset.cat;renderGrid();return}
   const col=e.target.closest('[data-col]');if(col){state.colour=state.colour===col.dataset.col?null:col.dataset.col;renderGrid();return}
   if(!e.target.closest('#menu,#menuBtn')){$('#menu').hidden=true;$('#menuBtn').setAttribute('aria-expanded','false')}

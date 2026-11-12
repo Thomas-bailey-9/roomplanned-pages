@@ -512,11 +512,17 @@ function render(){
   /* saved furniture + basket */
   $('#savedTag').innerHTML=tag(live.saved);
   const saved=D.saved.map(prod).filter(Boolean);
-  $('#savedGrid').innerHTML=saved.length?`<div class="pgrid">${saved.map(p=>`<article class="card pc-card"><div class="img">${art(p)}<button class="rm" data-unsave="${p.id}" aria-label="Remove ${p.name} from saved">✕</button></div>
-    <div class="body"><small>${p.retailer}</small><b>${p.name}</b><div class="pr">${p.price===null?'Price to check':fmt(p.price)}</div><a class="btn" href="${cat(p.id)?'plan.html#add-'+p.id:'shop.html#piece-'+p.id}">${cat(p.id)?'Add to room':'View piece'} ${ARROW}</a></div></article>`).join('')}</div>`
+  /* a piece saved in a particular colour and size shows that photo, price and option; ceiling pieces can go on the plan too */
+  const sv=(live.saved&&shop.savedVar)||{},RPC=RoomPlannedCatalogue;
+  $('#savedGrid').innerHTML=saved.length?`<div class="pgrid">${saved.map(p=>{const v=sv[p.id],c=v?RPC.colourOf(p,v.colour):null,sz=v&&p.sizes?RPC.sizeOf(p,v.size).n:null,ceil=RPC.ceiling.includes(p.id);
+    const planHref='plan.html#add-'+p.id+(ceil&&c?`&colour=${encodeURIComponent(c.n)}&size=${encodeURIComponent(sz)}`:''),canPlan=cat(p.id)||ceil;
+    return `<article class="card pc-card"><div class="img">${art(p,c?c.hex:undefined)}<button class="rm" data-unsave="${p.id}" aria-label="Remove ${p.name} from saved">✕</button></div>
+    <div class="body"><small>${p.retailer}${c&&(sz||p.colours.length>1)?` · ${c.n}${sz?' · '+sz:''}`:''}</small><b>${p.name}</b><div class="pr">${RPC.priceText(p,sz||undefined)}</div><a class="btn" href="${canPlan?planHref:'shop.html#piece-'+p.id}">${canPlan?'Add to room':'View piece'} ${ARROW}</a></div></article>`}).join('')}</div>`
     :`<div class="empty-s">Nothing saved yet. Tap the bookmark on any piece in the shop.</div>`;
-  const bagTotal=D.bag.reduce((s,l)=>s+(prod(l.id)?.price||0)*l.qty,0);
-  $('#basket').innerHTML=`<h3>Basket ${tag(live.bag)}</h3>`+(D.bag.length?`<ul>${D.bag.map(l=>{const p=prod(l.id);return p?`<li><span>${l.qty>1?l.qty+' × ':''}${p.name}<br><small style="color:var(--muted)">${l.colour}</small></span><span>${fmt(p.price*l.qty)}</span></li>`:''}).join('')}</ul><div class="tot"><span>Total</span><span>${fmt(bagTotal)}</span></div><a class="btn primary" style="width:100%" href="shop.html">Go to checkout</a>`
+  D.bag.forEach(RoomPlannedCatalogue.fixVariant);
+  const linePrice=l=>{const p=prod(l.id);return p?(RoomPlannedCatalogue.unitPrice(p,l.size)||0)*l.qty:0};
+  const bagTotal=D.bag.reduce((s,l)=>s+linePrice(l),0);
+  $('#basket').innerHTML=`<h3>Basket ${tag(live.bag)}</h3>`+(D.bag.length?`<ul>${D.bag.map(l=>{const p=prod(l.id);return p?`<li><span>${l.qty>1?l.qty+' × ':''}${p.name}<br><small style="color:var(--muted)">${l.colour}${l.size?' · '+l.size:''}</small></span><span>${fmt(linePrice(l))}</span></li>`:''}).join('')}</ul><div class="tot"><span>Total</span><span>${fmt(bagTotal)}</span></div><a class="btn primary" style="width:100%" href="shop.html">Go to checkout</a>`
     :`<p style="color:var(--muted);font-size:14px;margin:0 0 14px">Your basket is empty.</p><a class="btn" style="width:100%" href="shop.html">Browse the shop</a>`);
 
   /* loved rooms: inspiration likes + saved community posts */
