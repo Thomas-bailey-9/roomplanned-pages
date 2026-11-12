@@ -130,6 +130,9 @@ section.sec{padding-block:72px 8px}
 .step{overflow:hidden;display:flex;flex-direction:column;text-decoration:none}
 .step .vis{background:var(--soft);aspect-ratio:16/10;display:grid;place-items:center;overflow:hidden;max-width:100%}
 .step .vis svg{width:100%;height:100%;display:block}
+.step .vis:has(img){position:relative}
+.step .vis img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.steps-note{margin:14px 0 0;font-size:13px;line-height:20px;color:var(--muted)}
 .step .vis.pad{padding:18px}
 .step .body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:6px}
 .step .num{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--sage)}
@@ -251,6 +254,7 @@ footer.big p{color:var(--muted);font-size:14px;max-width:34ch}
   <section class="wrap sec" aria-labelledby="howH">
     <div class="sec-head"><div><h2 id="howH">How it <span class="serif">works.</span></h2><p>Three steps from an empty room to a finished one.</p></div></div>
     <div class="steps" id="steps"></div>
+    <p class="steps-note">Illustrative room and furniture examples.</p>
   </section>
 
   <section class="wrap sec" aria-labelledby="allH">
@@ -484,9 +488,9 @@ $('#search').addEventListener('submit',e=>{e.preventDefault();location.href='sho
 
 /* how it works: a real sequence, so it's numbered */
 const steps=[
-  ['Plan your room','Enter your room size, drag in furniture and let Roo check every gap, door and walkway.',`<div class="vis pad">${miniPlan(DEFAULTS['Living room'])}</div>`,'plan.html','Start a plan'],
-  ['Shop what fits','Browse pieces from the UK’s top retailers. Add them to your room to see how they sit before you buy.',`<div class="vis" style="background:var(--img-bg)">${art(PRODUCTS.find(p=>p.id==='mabel-armchair')).replace('class="art"','class="art" style="width:70%;height:auto;margin:auto"')}</div>`,'shop.html','Shop furniture'],
-  ['See it finished','Render your plan in any style and light, then share it with the community.',`<div class="vis">${wideScene('Japandi','Living room',250)}</div>`,'my-renders.html','Create a render']
+  ['Plan your room','Enter your room size, drag in furniture and let Roo check every gap, door and walkway.',`<div class="vis"><img src="images/how-it-works/plan-your-room.webp" width="664" height="664" alt="Top-down plan of a living room with a sage sofa, oval oak coffee table and cream armchair" loading="lazy" decoding="async" style="object-position:50% 47%"></div>`,'plan.html','Start a plan'],
+  ['Shop what fits','Browse pieces from the UK’s top retailers. Add them to your room to see how they sit before you buy.',`<div class="vis"><img src="images/how-it-works/shop-what-fits.webp" width="664" height="664" alt="A sage green three-seater sofa with an oval oak coffee table" loading="lazy" decoding="async" style="object-position:50% 62%"></div>`,'shop.html','Shop furniture'],
+  ['See it finished','Render your plan in any style and light, then share it with the community.',`<div class="vis"><img src="images/how-it-works/see-it-finished.webp" width="664" height="664" alt="A finished living room with the sage sofa, oak coffee table, cream armchair and an olive tree" loading="lazy" decoding="async" style="object-position:50% 58%"></div>`,'my-renders.html','Create a render']
 ];
 $('#steps').innerHTML=steps.map(([t,d,v,h,cta],i)=>`<a class="card step" href="${h}">${v}<div class="body"><span class="num">Step ${i+1}</span><h3>${t}</h3><p>${d}</p><span class="link">${cta} ${ARROW}</span></div></a>`).join('');
 
