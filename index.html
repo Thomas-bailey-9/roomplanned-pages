@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap">
 <style>
-/* Layout: site header → full-bleed hero (headline left over an illustrated bedroom) → discover furniture row → how it works (plan, shop, render) → every page in the set → Roo band → footer. */
+/* Layout: site header → full-bleed hero (headline left over a crossfading photo slideshow) → discover furniture row → how it works (plan, shop, render) → every page in the set → Roo band → footer. */
 :root{
   --bg:#f7f6f2;--surface:#ffffff;--soft:#efeee9;--line:#e3e1da;--img-bg:#ffffff;
   --ink:#16251f;--text:#3b4641;--muted:#76807a;
@@ -69,8 +69,25 @@ header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;backgrou
 
 /* hero */
 .hero{position:relative;overflow:hidden;background:var(--hero-fade);isolation:isolate}
-.hero-art{position:absolute;inset:0 0 0 30%;z-index:-2}
-.hero-art svg{width:100%;height:100%;display:block}
+.hero-slides{position:absolute;inset:0;z-index:-2;background:var(--hero-fade)}
+.slide{position:absolute;inset:0;margin:0;opacity:0;transition:opacity 1s ease}
+.slide.on{opacity:1}
+.slide.failed{display:none}
+.slide img{width:100%;height:100%;object-fit:cover;object-position:var(--pos-desk,50% 50%);display:block}
+.hero-ctrl{position:absolute;left:0;right:0;bottom:22px;pointer-events:none}
+.hero .hero-ctrl .wrap{padding-block:0}
+.hero-controls{pointer-events:auto;display:inline-flex;align-items:center;gap:4px;padding:4px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--hero-fade) 82%,transparent);backdrop-filter:blur(6px);box-shadow:var(--shadow)}
+.hero-controls[hidden]{display:none}
+.hero-pause{width:32px;height:32px;border-radius:50%;border:0;background:transparent;color:var(--ink);display:grid;place-items:center;padding:0}
+.hero-pause:hover{background:var(--soft)}
+.hero-pause svg{width:14px;height:14px}
+.hero-dots{display:flex;gap:2px;padding-right:6px}
+.hero-dot{width:24px;height:32px;border:0;background:transparent;padding:0;display:grid;place-items:center;border-radius:12px}
+.hero-dot::before{content:"";width:8px;height:8px;border-radius:4px;background:var(--muted);opacity:.55;transition:width .3s ease,opacity .3s ease}
+.hero-dot[aria-current="true"]::before{width:18px;opacity:1;background:var(--ink)}
+.hero-dot[hidden]{display:none}
+.hero-pause:focus-visible,.hero-dot:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+@media (min-width:601px) and (max-width:1000px){.hero .hero-ctrl .wrap{display:flex;justify-content:flex-end}}
 .hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,var(--hero-fade) 28%,color-mix(in srgb,var(--hero-fade) 80%,transparent) 42%,transparent 66%)}
 .hero .wrap{padding-block:clamp(56px,9vw,120px)}
 .hero h1{font-size:clamp(48px,7.4vw,92px);line-height:.98;font-weight:700;letter-spacing:-.045em;max-width:9.5ch}
@@ -168,9 +185,9 @@ footer.big a:hover{color:var(--ink);text-decoration:underline}
 footer.big p{color:var(--muted);font-size:14px;max-width:34ch}
 .fine{grid-column:1/-1;border-top:1px solid var(--line);padding-top:18px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
-@media (max-width:1000px){.nav{display:none}.icons{margin-left:auto}.pgrid,.pages{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}.roo-band .wrap{grid-template-columns:1fr}.hero-art{inset:0 0 0 18%}.roo-chip{display:none}footer.big .wrap{grid-template-columns:1fr 1fr}}
-@media (max-width:600px){.site .wrap{height:64px;gap:12px}.logo{font-size:20px}.hero-art{inset:auto 0 0 0;height:46%;opacity:.9}.hero::before{background:linear-gradient(180deg,var(--hero-fade) 52%,transparent 80%)}.hero .wrap{padding-bottom:260px}.pgrid{gap:10px}.pc b{font-size:13px}.pc .pr{font-size:15px}.pc .vp{display:none}.pages{grid-template-columns:1fr}.pg.feature{grid-column:auto}.btn{min-width:0;width:100%}.hero-cta{align-items:stretch}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:1000px){.nav{display:none}.icons{margin-left:auto}.pgrid,.pages{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}.roo-band .wrap{grid-template-columns:1fr}.hero-slides{inset:0}.roo-chip{display:none}footer.big .wrap{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.site .wrap{height:64px;gap:12px}.logo{font-size:20px}.hero-slides{inset:auto 0 0 0;height:46%}.slide img{object-position:var(--pos-phone,50% 50%)}.hero::before{background:linear-gradient(180deg,var(--hero-fade) 52%,transparent 80%)}.hero .wrap{padding-bottom:260px}.pgrid{gap:10px}.pc b{font-size:13px}.pc .pr{font-size:15px}.pc .vp{display:none}.pages{grid-template-columns:1fr}.pg.feature{grid-column:auto}.btn{min-width:0;width:100%}.hero-cta{align-items:stretch}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.hero-dot::before{transition:none}}
 .ph{display:grid;place-items:center;width:100%;height:100%}.ph img{width:88%;height:88%;object-fit:contain;mix-blend-mode:multiply}.ph>svg{display:none}.ph.err img{display:none}.ph.err>svg{display:block}
 </style>
 </head>
@@ -194,7 +211,17 @@ footer.big p{color:var(--muted);font-size:14px;max-width:34ch}
 </header>
 
 <section class="hero">
-  <div class="hero-art" id="heroArt" aria-hidden="true"></div>
+  <div class="hero-slides" id="heroSlides" role="group" aria-roledescription="slideshow" aria-label="Room photographs">
+    <figure class="slide on" style="--pos-desk:55% 50%;--pos-phone:62% 55%">
+      <img src="images/hero/roomplanned-home-1672.webp" srcset="images/hero/roomplanned-home-1000.webp 1000w, images/hero/roomplanned-home-1672.webp 1672w" sizes="100vw" width="1672" height="941" alt="A calm cream bedroom with a linen bed, ceramic lamp and olive branches" fetchpriority="high" decoding="async">
+    </figure>
+    <figure class="slide" aria-hidden="true" style="--pos-desk:40% 62%;--pos-phone:14% 72%">
+      <img data-src="images/hero/living-room-cream-sofa-2000.jpg" data-srcset="images/hero/living-room-cream-sofa-1000.jpg 1000w, images/hero/living-room-cream-sofa-2000.jpg 2000w" sizes="100vw" alt="A long cream sofa with sage green cushions in a bright living room" decoding="async">
+    </figure>
+    <figure class="slide" aria-hidden="true" style="--pos-desk:56% 58%;--pos-phone:50% 68%">
+      <img data-src="images/hero/bedroom-green-wall-2000.jpg" data-srcset="images/hero/bedroom-green-wall-1000.jpg 1000w, images/hero/bedroom-green-wall-2000.jpg 2000w" sizes="100vw" alt="A bedroom with a sage green panelled wall, wooden floor and soft blush bedding" decoding="async">
+    </figure>
+  </div>
   <div class="wrap">
     <h1>Your home. Planned for <em>real life.</em></h1>
     <p>Design your space, discover furniture you’ll love and bring it all together, with Roo, your personal home assistant.</p>
@@ -203,6 +230,12 @@ footer.big p{color:var(--muted);font-size:14px;max-width:34ch}
       <a class="btn ghost" href="shop.html">Explore furniture</a>
     </div>
   </div>
+  <div class="hero-ctrl"><div class="wrap">
+    <div class="hero-controls" id="heroControls" role="group" aria-label="Slideshow controls" hidden>
+      <button class="hero-pause" id="heroPause" type="button" aria-pressed="false" aria-label="Pause slideshow"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" rx="1" fill="currentColor"/><rect x="9.5" y="2" width="3.5" height="12" rx="1" fill="currentColor"/></svg></button>
+      <div class="hero-dots" id="heroDots"></div>
+    </div>
+  </div></div>
   <div class="roo-chip"><span class="av">Roo</span><span>The Rhianna sofa fits your 3.4 m wall with 1.2 m to spare.</span></div>
 </section>
 
@@ -383,8 +416,64 @@ function miniPlan(p){const cat=id=>CATALOGUE.find(c=>c.id===id),pad=12;
   p.items.forEach(i=>{const c=cat(i.id),[w,d]=i.r%180?[c.dims[1],c.dims[0]]:[c.dims[0],c.dims[1]];s+=`<rect x="${i.x}" y="${i.y}" width="${w}" height="${d}" rx="4" fill="${c.colour}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`});
   return s+'</svg>'}
 
-/* hero */
-$('#heroArt').innerHTML=wideScene('Warm minimal','Bedroom',300);
+/* hero slideshow: about 4 s per photo with a 1 s crossfade. The first photo is in the
+   page so it loads at once; each following photo is fetched ahead of its turn and only
+   shown once it has fully loaded, so there is never a blank frame. */
+(function(){
+  const HOLD=5000;   /* 4 s fully visible + 1 s fade */
+  const root=$('#heroSlides'),slides=[...root.querySelectorAll('.slide')],dotsEl=$('#heroDots'),pauseBtn=$('#heroPause');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+  const PAUSE_ICON=pauseBtn.innerHTML,PLAY_ICON='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11a1 1 0 0 0 1.5.86l9-5.5a1 1 0 0 0 0-1.72l-9-5.5A1 1 0 0 0 4 2.5Z" fill="currentColor"/></svg>';
+  const state=slides.map((s,i)=>i===0?'loading':'idle');   /* idle | loading | ready | failed */
+  const waits=[];let cur=0,timer=null,userPaused=false,fontsIn=false;
+  /* controls appear once fonts have loaded (so they never jump) and only when there are photos to switch between */
+  const syncControls=()=>{$('#heroControls').hidden=!(fontsIn&&state.filter(x=>x!=='failed').length>1)};
+
+  slides.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.className='hero-dot';
+    b.setAttribute('aria-label',`Show photo ${i+1} of ${slides.length}`);b.setAttribute('aria-current',String(i===0));
+    b.addEventListener('click',()=>{go(i,true)});dotsEl.appendChild(b)});
+  const dots=[...dotsEl.children];
+
+  function load(i){
+    if(waits[i])return waits[i];
+    const img=slides[i].querySelector('img');
+    waits[i]=new Promise((res,rej)=>{
+      const ok=()=>{state[i]='ready';res()},bad=()=>{fail(i);rej()};
+      if(img.complete&&img.getAttribute('src')){img.naturalWidth?ok():bad();return}
+      img.addEventListener('load',()=>(img.decode?img.decode().catch(()=>{}):Promise.resolve()).then(ok),{once:true});
+      img.addEventListener('error',bad,{once:true});
+      if(!img.getAttribute('src')){state[i]='loading';img.srcset=img.dataset.srcset;img.src=img.dataset.src}
+    });
+    return waits[i];
+  }
+  function fail(i){state[i]='failed';slides[i].classList.add('failed');dots[i].hidden=true;
+    syncControls();
+    if(i===cur){const n=nextOk(i);if(n!==null)load(n).then(()=>show(n)).catch(()=>{})}}
+  function nextOk(i){for(let k=1;k<slides.length;k++){const n=(i+k)%slides.length;if(state[n]!=='failed')return n}return null}
+  function show(i){if(state[i]!=='ready')return;
+    slides.forEach((s,k)=>{s.classList.toggle('on',k===i);s.setAttribute('aria-hidden',String(k!==i))});
+    dots.forEach((d,k)=>d.setAttribute('aria-current',String(k===i)));cur=i;
+    const n=nextOk(i);if(n!==null&&n!==i)load(n).catch(()=>{});   /* preload the next photo */
+  }
+  function go(i,byUser){if(state[i]==='failed')return;load(i).then(()=>{show(i);if(byUser)restart()}).catch(()=>{})}
+  const autoplay=()=>!userPaused&&!reduce.matches&&!document.hidden;
+  function restart(){clearTimeout(timer);timer=null;if(autoplay())timer=setTimeout(advance,HOLD)}
+  function advance(){const n=nextOk(cur);if(n===null||n===cur)return restart();
+    /* if the next photo is not ready yet, keep the current one and try again shortly */
+    load(n).then(()=>{show(n);restart()},()=>restart())}
+  function setPaused(p){userPaused=p;pauseBtn.setAttribute('aria-pressed',String(p));
+    pauseBtn.setAttribute('aria-label',p?'Play slideshow':'Pause slideshow');pauseBtn.innerHTML=p?PLAY_ICON:PAUSE_ICON;restart()}
+
+  pauseBtn.addEventListener('click',()=>setPaused(!userPaused));
+  document.addEventListener('visibilitychange',restart);
+  /* reduced motion: no automatic cycling and no fades; the dots still change photo */
+  const applyMotion=()=>{if(reduce.matches)setPaused(true);else setPaused(false)};
+  (reduce.addEventListener?reduce.addEventListener('change',applyMotion):reduce.addListener(applyMotion));
+
+  const pageLoaded=document.readyState==='complete'?Promise.resolve():new Promise(r=>addEventListener('load',r,{once:true}));
+  pageLoaded.then(()=>document.fonts?document.fonts.ready:null).then(()=>{fontsIn=true;syncControls()});
+  load(0).then(()=>{show(0);applyMotion()},()=>{applyMotion()});
+})();
 
 /* discover furniture: the same four pieces as the live homepage */
 $('#pgrid').innerHTML=['rhianna-sofa','earth-coffee-table','veron-ottoman-bed','grace-chest'].map(id=>{const p=PRODUCTS.find(x=>x.id===id);
