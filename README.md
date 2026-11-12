@@ -27,3 +27,13 @@ The pages link to each other: "Add to room" in the shop opens `plan.html` with t
 ## Pages
 
 Home → Shop → Plan a room → Inspiration → Community preview → My Home → My Renders → Account. Every page's menu links to the others.
+
+## Adding product photos
+
+`shop.html`, `my-home.html` and `index.html` each have a `PHOTOS` list near the top of their script. Add a line like
+
+```js
+'rhianna-sofa':'https://link-to-the-photo.jpg',
+```
+
+and that piece shows the photo instead of its drawing. If a photo link stops working, the drawing comes back automatically. Only use photos you have permission to show, such as images supplied through a retailer's affiliate or product feed.

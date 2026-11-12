@@ -171,6 +171,7 @@ footer.big p{color:var(--muted);font-size:14px;max-width:34ch}
 @media (max-width:1000px){.nav{display:none}.icons{margin-left:auto}.pgrid,.pages{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}.roo-band .wrap{grid-template-columns:1fr}.hero-art{inset:0 0 0 18%}.roo-chip{display:none}footer.big .wrap{grid-template-columns:1fr 1fr}}
 @media (max-width:600px){.site .wrap{height:64px;gap:12px}.logo{font-size:20px}.hero-art{inset:auto 0 0 0;height:46%;opacity:.9}.hero::before{background:linear-gradient(180deg,var(--hero-fade) 52%,transparent 80%)}.hero .wrap{padding-bottom:260px}.pgrid{gap:10px}.pc b{font-size:13px}.pc .pr{font-size:15px}.pc .vp{display:none}.pages{grid-template-columns:1fr}.pg.feature{grid-column:auto}.btn{min-width:0;width:100%}.hero-cta{align-items:stretch}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.ph{display:grid;place-items:center;width:100%;height:100%}.ph img{width:88%;height:88%;object-fit:contain;mix-blend-mode:multiply}.ph>svg{display:none}.ph.err img{display:none}.ph.err>svg{display:block}
 </style>
 </head>
 <body>
@@ -269,7 +270,17 @@ const ART = {
   pendant(c){return `<path d="M120 0v52" stroke="#3b3835" stroke-width="2"/><rect x="114" y="48" width="12" height="10" rx="2" fill="#b38b4d"/><path d="M72 106q0-48 48-48t48 48Z" fill="${c}"/><path d="M72 106h96" stroke="${shade(c,-25)}" stroke-width="2"/><ellipse cx="120" cy="110" rx="16" ry="6" fill="#ffe8a8"/><ellipse cx="120" cy="140" rx="70" ry="8" fill="#ffe8a8" opacity=".35"/>`},
   vase(c){return `<ellipse cx="120" cy="142" rx="46" ry="5" fill="#000" opacity=".07"/><g stroke="#6f8a62" stroke-width="2" fill="none"><path d="M120 70C114 40 96 26 80 16M120 70c4-26 20-42 42-50M120 70c-2-20 0-40 4-56"/></g><g fill="#7f9a70"><ellipse cx="92" cy="26" rx="7" ry="3" transform="rotate(-30 92 26)"/><ellipse cx="104" cy="38" rx="7" ry="3" transform="rotate(-50 104 38)"/><ellipse cx="148" cy="28" rx="7" ry="3" transform="rotate(30 148 28)"/><ellipse cx="136" cy="42" rx="7" ry="3" transform="rotate(50 136 42)"/><ellipse cx="124" cy="22" rx="6" ry="3" transform="rotate(80 124 22)"/></g><path d="M106 70h28c0 10 16 22 16 42 0 18-14 28-30 28s-30-10-30-28c0-20 16-32 16-42Z" fill="${c}"/><path d="M96 100c10 4 38 4 48 0" stroke="${shade(c,-20)}" opacity=".5" fill="none"/>`}
 };
-const art = (p, colour, cls='art') => `<svg class="${cls}" viewBox="0 0 240 160" role="img" aria-label="${p.name}">${ART[p.shape](colour||p.colours[0].hex)}</svg>`;
+/* Product photos. Add a link here and that piece shows the photo on every page.
+   Pieces without a photo, or whose photo fails to load, show the drawing instead. */
+const PHOTOS={
+  'mabel-armchair':'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcT1J4WMPSjx39o2mSHzJyUa4HjuLSXbuLvB4x1XPQTgJ65S727WCRJBMXe8nD_RA9v1cnf5GQUOpwRbnFBkY0QKnoFFMLPpfRlB6ZIS7-4'
+};
+const art = (p, colour, cls='art') => {
+  const svg=`<svg class="${cls}" viewBox="0 0 240 160" role="img" aria-label="${p.name}">${ART[p.shape](colour||p.colours[0].hex)}</svg>`;
+  const url=PHOTOS[p.id];
+  if(!url||(colour&&colour!==p.colours[0].hex))return svg;  /* photo shows the main colour only */
+  return `<span class="ph"><img src="${url}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
+};
 
 /* ---------- catalogue (sample data) ---------- */
 
