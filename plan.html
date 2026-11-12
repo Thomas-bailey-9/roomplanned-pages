@@ -86,7 +86,7 @@ header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;backgrou
 .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
 .legend span{display:flex;align-items:center;gap:6px}
 .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
-.stage{padding:18px;background:var(--bg)}
+.stage{padding:18px;background:var(--bg);position:relative}
 svg#plan{width:100%;height:auto;display:block;touch-action:none;user-select:none;max-height:72vh}
 .piece{cursor:grab}
 .piece:active{cursor:grabbing}
@@ -111,10 +111,19 @@ svg#plan{width:100%;height:auto;display:block;touch-action:none;user-select:none
 .add-item .plus{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--ink);font-size:16px;line-height:1}
 .add-sep{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;padding:10px 6px 4px}
 
-.sel-empty{font-size:14px;color:var(--muted);margin:0}
-.sel-name{font-weight:700;color:var(--ink);font-size:15px;line-height:1.3}
-.sel-meta{font-size:13px;color:var(--muted);margin:2px 0 12px;font-variant-numeric:tabular-nums}
-.sel-actions{display:flex;gap:8px;flex-wrap:wrap}
+.piece-bar{position:absolute;z-index:5;display:flex;align-items:center;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 28px -12px rgba(0,0,0,.4);white-space:nowrap}
+.pb-name{display:flex;flex-direction:column;padding:0 10px 0 8px;margin-right:2px;line-height:1.2;border-right:1px solid var(--line)}
+.pb-name b{font-size:13px;color:var(--ink)}
+.pb-name small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pb-btn{width:36px;height:36px;border-radius:10px;border:0;background:transparent;color:var(--ink);display:grid;place-items:center;text-decoration:none;padding:0}
+.pb-btn:hover{background:var(--soft)}
+.pb-btn.danger{color:var(--bad)}
+.pb-btn.danger:hover{background:var(--bad-soft)}
+.pb-btn svg{width:18px;height:18px}
+.pb-btn:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+.piece-bar.docked{position:static;margin:10px auto 0;width:fit-content;max-width:100%;justify-content:center;min-height:46px}
+.pb-hint{font-size:13px;color:var(--muted);padding:0 12px;white-space:nowrap}
+@media (max-width:520px){.pb-name small{display:none}.pb-btn{width:34px;height:34px}}
 
 .checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .checks li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:13px;color:var(--ink);line-height:1.4}
@@ -215,8 +224,8 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
         <button class="btn small primary preview-btn" id="previewBtn" type="button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5v9L12 24l-9-5.5z" transform="translate(0 -2)"/><path d="M3 7.5 12 13l9-5.5M12 13v9"/></svg>Preview room</button>
         <div class="legend"><span><i style="background:var(--wall)"></i>Wall</span><span><i style="background:var(--sage-soft);border:1px dashed var(--sage)"></i>Door swing</span><span><i style="background:var(--bad-soft);border:1px solid var(--bad)"></i>Clash</span><span>Grid: 50 cm</span></div>
       </div>
-      <div class="stage"><svg id="plan" aria-label="Top-down floor plan"></svg></div>
-      <div class="hint">Drag to move. Select a piece, then use <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> to nudge 5 cm, <kbd>R</kbd> to rotate, <kbd>Delete</kbd> to remove.</div>
+      <div class="stage"><svg id="plan" aria-label="Top-down floor plan"></svg><div class="piece-bar" id="pieceBar" role="toolbar" hidden></div></div>
+      <div class="hint">Tap a piece for its tools, or drag it to move. Keys: <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> nudge 5 cm, <kbd>R</kbd> rotate right, <kbd>Shift</kbd>+<kbd>R</kbd> rotate left, <kbd>Delete</kbd> remove, <kbd>Esc</kbd> deselect.</div>
     </section>
 
     <div class="panel">
@@ -226,7 +235,6 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
           <label for="rl">Length<span class="inp"><input id="rl" type="number" min="200" max="800" step="10"><span>cm</span></span></label>
         </div></div>
 
-      <div class="box"><h2>Selected piece</h2><div id="sel"></div></div>
 
       <div class="box"><h2><span class="roo-head"><span class="av">Roo</span>Roo’s checks</span></h2><ul class="checks" id="checks"></ul></div>
 
@@ -372,15 +380,41 @@ function draw(){
   renderSel();renderShop();
   document.querySelectorAll('#roomChips .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.room===current));
 }
+/* floating toolbar next to the selected piece */
 function renderSel(){
-  const i=P().items.find(x=>x.uid===selected);
-  if(!i){$('#sel').innerHTML='<p class="sel-empty">Tap a piece on the plan to move, rotate or remove it.</p>';return}
-  const c=byId(i.id),f=foot(i);
-  $('#sel').innerHTML=`<div class="sel-name">${c.name}</div><div class="sel-meta">${c.retailer} · ${f.w} × ${f.d} cm footprint · ${c.dims[2]} cm high</div>
-    <div class="sel-actions"><button class="btn small" id="rot">Rotate 90°</button><button class="btn small" id="dup">Duplicate</button><button class="btn small" id="del">Remove</button><a class="btn small" href="shop.html#piece-${c.id}">View in shop</a></div>`;
-  $('#rot').onclick=rotate;$('#del').onclick=remove;
-  $('#dup').onclick=()=>{const n={id:i.id,x:i.x+20,y:i.y+20,r:i.r,uid:uid++};P().items.push(n);fitIn(n);selected=n.uid;save();draw()};
+  const bar=$('#pieceBar'),i=P().items.find(x=>x.uid===selected);
+  /* narrow screens: the toolbar sits below the plan in its own reserved space, so it never covers a piece */
+  const docked=$('.stage').clientWidth<760;bar.classList.toggle('docked',docked);
+  if(!i||(drag&&drag.moved)){if(docked){bar.hidden=false;bar.removeAttribute('aria-label');bar.innerHTML='<span class="pb-hint">Tap a piece for its tools</span>'}else bar.hidden=true;return}
+  const c=byId(i.id),f=foot(i),keep=bar.contains(document.activeElement)?document.activeElement.dataset.act:null;
+  bar.setAttribute('aria-label',`Tools for ${c.name}`);
+  bar.innerHTML=`<span class="pb-name"><b>${c.short}</b><small>${f.w} × ${f.d} cm</small></span>
+    <button type="button" class="pb-btn" data-act="left" aria-label="Rotate ${c.short.toLowerCase()} 90° left" title="Rotate 90° left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v6h6"/><path d="M4.6 15a8 8 0 1 0 1.9-8.3L4 10"/></svg></button>
+    <button type="button" class="pb-btn" data-act="right" aria-label="Rotate ${c.short.toLowerCase()} 90° right" title="Rotate 90° right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4v6h-6"/><path d="M19.4 15a8 8 0 1 1-1.9-8.3L20 10"/></svg></button>
+    <button type="button" class="pb-btn" data-act="dup" aria-label="Duplicate ${c.short.toLowerCase()}" title="Duplicate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>
+    <a class="pb-btn" data-act="shop" href="shop.html#piece-${c.id}" aria-label="View ${c.name} in the shop" title="View in shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></a>
+    <button type="button" class="pb-btn danger" data-act="del" aria-label="Remove ${c.short.toLowerCase()}" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>`;
+  bar.hidden=false;placeBar();
+  if(keep){const k=bar.querySelector(`[data-act="${keep}"]`);k&&k.focus()}
 }
+function placeBar(){
+  const bar=$('#pieceBar');if(bar.hidden)return;const g=svg.querySelector(`.piece[data-uid="${selected}"]`);if(!g)return;
+  const st=$('.stage').getBoundingClientRect(),pr=g.getBoundingClientRect(),bw=bar.offsetWidth,bh=bar.offsetHeight;
+  if(bar.classList.contains('docked')){bar.style.left=bar.style.top='';return}
+  /* try above, below, right and left of the piece; use the first spot that covers no other piece */
+  const others=[...svg.querySelectorAll('.piece')].filter(n=>n!==g).map(n=>{const r=n.querySelector('rect').getBoundingClientRect();return{l:r.left-st.left,t:r.top-st.top,r:r.right-st.left,b:r.bottom-st.top}});
+  const fit=(x,y)=>[Math.max(6,Math.min(st.width-bw-6,x)),Math.max(6,Math.min(st.height-bh-6,y))];
+  const P0={l:pr.left-st.left,t:pr.top-st.top,r:pr.right-st.left,b:pr.bottom-st.top},mx=(P0.l+P0.r)/2,my=(P0.t+P0.b)/2;
+  const cands=[fit(mx-bw/2,P0.t-bh-10),fit(mx-bw/2,P0.b+10),fit(P0.r+10,my-bh/2),fit(P0.l-bw-10,my-bh/2)];
+  const hits=([x,y])=>others.filter(o=>!(x+bw<=o.l||x>=o.r||y+bh<=o.t||y>=o.b)).length+((x<P0.r&&x+bw>P0.l&&y<P0.b&&y+bh>P0.t)?5:0);
+  let [x,y]=cands.reduce((best,c)=>hits(c)<hits(best)?c:best,cands[0]);
+  bar.style.left=x+'px';bar.style.top=y+'px';
+}
+$('#pieceBar').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.dataset.act==='shop')return;
+  const i=P().items.find(x=>x.uid===selected);if(!i)return;
+  if(b.dataset.act==='left')rotateBy(-90);else if(b.dataset.act==='right')rotateBy(90);else if(b.dataset.act==='del'){remove();toast('Piece removed');svg.focus()}
+  else if(b.dataset.act==='dup'){const n={id:i.id,x:i.x+20,y:i.y+20,r:i.r,uid:uid++};P().items.push(n);fitIn(n);selected=n.uid;save();draw();toast('Piece duplicated')}});
+addEventListener('resize',renderSel);
 function renderShop(){
   const counts={};P().items.forEach(i=>counts[i.id]=(counts[i.id]||0)+1);
   const ids=Object.keys(counts);let total=0,unpriced=0;
@@ -406,7 +440,10 @@ function addPiece(id,quiet){
   n.x=snap(n.x);n.y=snap(n.y);p.items.push(n);selected=n.uid;save();draw();
   if(!quiet)toast(placed?`Added ${c.short.toLowerCase()} to your ${current.toLowerCase()}`:`Added ${c.short.toLowerCase()}. There’s no free space, so check Roo’s notes.`);
 }
-function rotate(){const i=P().items.find(x=>x.uid===selected);if(!i)return;const f0=foot(i),cx=i.x+f0.w/2,cy=i.y+f0.d/2;i.r=(i.r+90)%360;const f=foot(i);i.x=snap(cx-f.w/2);i.y=snap(cy-f.d/2);fitIn(i);save();draw()}
+function rotate(){rotateBy(90)}
+/* rotation turns a piece about its centre; the centre from before the first turn is remembered, so turning back returns it exactly even if a wall pushed it aside */
+const rotAnchor=new Map();
+function rotateBy(d){const i=P().items.find(x=>x.uid===selected);if(!i)return;const f0=foot(i);const a=rotAnchor.get(i.uid)||{cx:i.x+f0.w/2,cy:i.y+f0.d/2,r:i.r,x:i.x,y:i.y};const cx=a.cx,cy=a.cy;i.r=((i.r+d)%360+360)%360;const f=foot(i);i.x=snap(cx-f.w/2);i.y=snap(cy-f.d/2);fitIn(i);if(i.r===a.r){i.x=a.x;i.y=a.y;rotAnchor.delete(i.uid)}else rotAnchor.set(i.uid,a);save();draw()}
 function remove(){const p=P();p.items=p.items.filter(x=>x.uid!==selected);selected=null;save();draw()}
 
 /* dragging in cm via the SVG's screen matrix */
@@ -418,17 +455,23 @@ svg.addEventListener('pointerdown',e=>{
   const i=P().items.find(x=>x.uid===+g.dataset.uid);selected=i.uid;const pt=toCm(e);
   drag={i,dx:pt.x-i.x,dy:pt.y-i.y,moved:false};svg.setPointerCapture(e.pointerId);draw();
 });
-svg.addEventListener('pointermove',e=>{if(!drag)return;const pt=toCm(e);drag.i.x=snap(pt.x-drag.dx);drag.i.y=snap(pt.y-drag.dy);fitIn(drag.i);drag.moved=true;draw()});
-const endDrag=()=>{if(drag&&drag.moved)save();drag=null};
+svg.addEventListener('pointermove',e=>{if(!drag)return;const pt=toCm(e);drag.i.x=snap(pt.x-drag.dx);drag.i.y=snap(pt.y-drag.dy);fitIn(drag.i);drag.moved=true;rotAnchor.delete(drag.i.uid);draw()});
+const endDrag=()=>{const moved=drag&&drag.moved;if(moved)save();drag=null;if(moved)renderSel()};
+/* tapping anywhere outside the plan and its toolbar deselects the piece */
+document.addEventListener('pointerdown',e=>{if(selected===null)return;
+  /* use the event's original path: tapping a piece redraws the plan, which detaches the tapped element */
+  if(!e.composedPath().some(n=>n.id==='plan'||n.id==='pieceBar'||n.id==='pvScrim')){selected=null;draw()}});
+/* keyboard: focus a piece and press Enter or Space to select it */
+svg.addEventListener('keydown',e=>{const g=e.target.closest&&e.target.closest('.piece');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selected=+g.dataset.uid;draw();const n=svg.querySelector(`.piece[data-uid="${selected}"]`);n&&n.focus()}});
 svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',endDrag);
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){$('#menu').hidden=true}
+  if(e.key==='Escape'){$('#menu').hidden=true;if(selected!==null){selected=null;draw();return}}
   if(selected===null||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
   const i=P().items.find(x=>x.uid===selected);if(!i)return;
   const mv={ArrowLeft:[-5,0],ArrowRight:[5,0],ArrowUp:[0,-5],ArrowDown:[0,5]}[e.key];
-  if(mv){e.preventDefault();i.x+=mv[0];i.y+=mv[1];fitIn(i);save();draw();return}
-  if(e.key==='r'||e.key==='R'){e.preventDefault();rotate()}
+  if(mv){e.preventDefault();rotAnchor.delete(i.uid);i.x+=mv[0];i.y+=mv[1];fitIn(i);save();draw();return}
+  if(e.key==='r'||e.key==='R'){e.preventDefault();rotateBy(e.shiftKey?-90:90)}
   if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();remove()}
 });
 document.addEventListener('click',e=>{
