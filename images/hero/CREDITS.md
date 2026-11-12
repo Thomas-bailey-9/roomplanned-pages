@@ -1,15 +1,15 @@
 # Homepage slideshow photographs
 
-Shown in this order on `index.html`. Each image is stored at 2000 px and 1000 px wide
-(the browser picks the right size). Crops are set per slide in `index.html`
+Shown in this order on `index.html`. Each image is stored at two widths and the browser
+picks the right size. Crops are set per slide in `index.html`
 (`--pos-desk` and `--pos-phone`).
 
 ## 1. RoomPlanned opening photograph (roomplanned.com)
 
-- Files: `roomplanned-home-2000.jpg`, `roomplanned-home-1000.jpg`
-- Source: https://roomplanned.com/homepage/bedroom-hero.webp (RoomPlanned's own asset)
-- Status: **not yet added.** The file sits behind roomplanned.com's private-access screen,
-  so it could not be downloaded automatically. Waiting for the owner to supply the file.
+- Files: `roomplanned-home-1672.webp` (the original file, unchanged), `roomplanned-home-1000.webp` (resized, WebP quality 88)
+- Source: https://roomplanned.com/homepage/bedroom-hero.webp (RoomPlanned's own asset, 1672 × 941 px).
+  Supplied directly by the site owner because roomplanned.com is behind a private-access screen.
+  Kept at its original size rather than enlarged.
 
 ## 2. Long sofa in spacious living room
 
