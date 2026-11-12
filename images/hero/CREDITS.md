@@ -7,8 +7,9 @@ Shown in this order on `index.html`. Each image is stored at 2000 px and 1000 px
 ## 1. RoomPlanned opening photograph (roomplanned.com)
 
 - Files: `roomplanned-home-2000.jpg`, `roomplanned-home-1000.jpg`
-- Status: **not yet added.** roomplanned.com is behind a password screen, so the original
-  asset could not be retrieved. Waiting for the owner to supply it.
+- Source: https://roomplanned.com/homepage/bedroom-hero.webp (RoomPlanned's own asset)
+- Status: **not yet added.** The file sits behind roomplanned.com's private-access screen,
+  so it could not be downloaded automatically. Waiting for the owner to supply the file.
 
 ## 2. Long sofa in spacious living room
 
@@ -16,7 +17,7 @@ Shown in this order on `index.html`. Each image is stored at 2000 px and 1000 px
 - Photographer: Max Vakhtbovych [2EyesProd.] (from the photo's embedded creator field; rights field: "2Eyes prod.")
 - Source page: https://www.pexels.com/photo/long-sofa-in-spacious-living-room-7214329/
 - Downloaded from: https://images.pexels.com/photos/7214329/pexels-photo-7214329.jpeg (original 7342 × 4900 px), resized and compressed
-- Licence: Pexels License, **to be confirmed by the owner** (the Pexels website blocked automated access when this was added)
+- Licence: [Pexels License](https://www.pexels.com/license/). Free to use on websites and to modify; attribution not required. Licence and photo page checked by the site owner.
 
 ## 3. Modern bedroom interior with green accent wall
 
@@ -24,4 +25,4 @@ Shown in this order on `index.html`. Each image is stored at 2000 px and 1000 px
 - Photographer: Chad Populis (from the photo's embedded creator and rights fields)
 - Source page: https://www.pexels.com/photo/modern-bedroom-interior-with-green-accent-wall-30725672/
 - Downloaded from: https://images.pexels.com/photos/30725672/pexels-photo-30725672.jpeg (original 7942 × 5297 px), resized and compressed
-- Licence: Pexels License, **to be confirmed by the owner** (the Pexels website blocked automated access when this was added)
+- Licence: [Pexels License](https://www.pexels.com/license/). Free to use on websites and to modify; attribution not required. Licence and photo page checked by the site owner.
