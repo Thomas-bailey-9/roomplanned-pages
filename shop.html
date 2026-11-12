@@ -369,7 +369,7 @@ function pieceView(id){
     <div class="piece" style="margin-top:18px">
       <div class="gallery">
         <div class="hero-img" id="hero">${art(p)}<button class="save" data-save="${p.id}" aria-pressed="${state.saved.has(p.id)}" aria-label="Save ${p.name}">${BOOK}</button></div>
-        <div class="thumbs" id="thumbs">${p.colours.concat(p.colours.length<4?[p.colours[0]]:[]).slice(0,4).map((c,i)=>`<button class="thumb" data-thumb="${i%p.colours.length}" aria-pressed="${i===0}" aria-label="${c.n} view">${art(p,c.hex,'')}</button>`).join('')}</div>
+        ${p.colours.length>1?`<div class="thumbs" id="thumbs">${p.colours.slice(0,4).map((c,i)=>`<button class="thumb" data-thumb="${i}" aria-pressed="${i===0}" aria-label="${c.n} view">${art(p,c.hex,'')}</button>`).join('')}</div>`:''}
       </div>
       <div class="info">
         <div class="meta"><span>${p.retailer}</span><span class="pill">${p.room}</span></div>
