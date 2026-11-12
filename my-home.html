@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>RoomPlanned My Home</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: site header → welcome band (greeting + stats | your style card) → your rooms (mini floor plans) → budget tracker → saved furniture + basket → saved rooms and posts → people you follow. */
+:root{
+  --bg:#f7f6f2;--surface:#ffffff;--soft:#efeee9;--line:#e3e1da;--img-bg:#ffffff;
+  --ink:#16251f;--text:#3b4641;--muted:#76807a;
+  --green:#2c4a3b;--green-ink:#ffffff;--sage:#6b8068;--sage-soft:#e6ece3;
+  --band:#e8e1d3;--band-deep:#ddd3c0;--clay:#c98a63;--clay-soft:#f6e6da;
+  --ok:#3f7a52;--ok-soft:#e3f0e6;--warn:#a26a12;--warn-soft:#f8eedb;--bad:#b3412f;--bad-soft:#f7e3df;
+  --wall:#16251f;--floor:#fbfaf7;--grid:#ecebe5;
+  --r1:#2c4a3b;--r2:#c98a63;--r3:#7f9a70;
+  --shadow:0 1px 2px rgba(22,37,31,.05),0 6px 20px rgba(22,37,31,.06);
+  --lift:0 24px 50px -22px rgba(10,25,18,.4);
+  --font:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --r-card:16px;--r-pill:999px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815;--surface:#1a221e;--soft:#222c27;--line:#2e3a34;--img-bg:#e9e8e3;--ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;
+  --green:#9cc0a4;--green-ink:#10201a;--sage:#a9c0a5;--sage-soft:#22302a;--band:#1f2823;--band-deep:#26312b;--clay-soft:#3a2a20;
+  --ok:#8cc79c;--ok-soft:#1f3326;--warn:#e2b25e;--warn-soft:#3a2f1a;--bad:#ee8d7c;--bad-soft:#3d221d;
+  --wall:#dfe5e0;--floor:#1e2723;--grid:#25302a;--r1:#9cc0a4;--r2:#e0a27c;--r3:#b7cc9f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815;--surface:#1a221e;--soft:#222c27;--line:#2e3a34;--img-bg:#e9e8e3;--ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;
+  --green:#9cc0a4;--green-ink:#10201a;--sage:#a9c0a5;--sage-soft:#22302a;--band:#1f2823;--band-deep:#26312b;--clay-soft:#3a2a20;
+  --ok:#8cc79c;--ok-soft:#1f3326;--warn:#e2b25e;--warn-soft:#3a2f1a;--bad:#ee8d7c;--bad-soft:#3d221d;
+  --wall:#dfe5e0;--floor:#1e2723;--grid:#25302a;--r1:#9cc0a4;--r2:#e0a27c;--r3:#b7cc9f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+h1,h2,h3{color:var(--ink);margin:0;text-wrap:balance;letter-spacing:-.03em}
+.serif{font-family:var(--serif);font-weight:400;font-style:italic;letter-spacing:-.01em}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.demo{background:var(--sage-soft);color:var(--ink);font-size:13px;text-align:center}
+.demo .wrap{padding-block:8px}
+
+header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--surface);border-bottom:1px solid var(--line)}
+.site .wrap{display:flex;align-items:center;gap:24px;height:76px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:800;font-size:23px;letter-spacing:-.03em}
+.logo svg{width:30px;height:30px}
+.nav{display:flex;gap:34px;margin:0 auto;font-weight:500}
+.nav a{text-decoration:none;color:var(--text);padding:6px 0;border-bottom:2px solid transparent}
+.icons{display:flex;gap:8px;align-items:center;position:relative}
+.icon-btn{width:42px;height:42px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;color:var(--ink);text-decoration:none;position:relative}
+.icon-btn:hover{background:var(--soft)}
+.icon-btn svg{width:22px;height:22px}
+.icon-btn.on{background:var(--sage-soft)}
+.badge{position:absolute;top:4px;right:3px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--green);color:var(--green-ink);font-size:11px;font-weight:700;display:grid;place-items:center}
+.menu{position:absolute;right:0;top:54px;width:240px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:10px 0}
+.menu a{display:block;padding:10px 22px;text-decoration:none;color:var(--ink);font-weight:500}
+.menu a:hover,.menu a.on{background:var(--soft)}
+
+.btn{height:44px;border-radius:var(--r-pill);font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 20px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;white-space:nowrap}
+.btn svg{width:16px;height:16px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.small{height:34px;font-size:13px;padding:0 14px}
+.ex{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--clay-soft);color:var(--ink);border-radius:var(--r-pill);padding:3px 10px;vertical-align:middle}
+.live{background:var(--ok-soft);color:var(--ok)}
+
+/* welcome band */
+.band{background:var(--band);position:relative;overflow:hidden;isolation:isolate}
+.band::before{content:"";position:absolute;width:560px;height:560px;border-radius:50%;background:var(--band-deep);left:-200px;bottom:-320px;z-index:-1}
+.band .wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;padding-block:56px 60px}
+.crumbs{font-size:13px;color:var(--muted);display:flex;gap:8px;margin-bottom:14px}
+.crumbs a{text-decoration:none}
+.band h1{font-size:clamp(44px,6.6vw,84px);font-weight:800;line-height:.95}
+.band h1 .serif{color:var(--sage);font-size:1.08em}
+.band p{font-size:17px;max-width:48ch;margin:16px 0 26px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:620px}
+.stat{background:var(--surface);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);text-decoration:none;display:block}
+.stat b{display:block;font-size:30px;font-weight:800;color:var(--ink);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{font-size:12px;color:var(--muted)}
+.stat:hover{outline:2px solid var(--sage)}
+.style-card{background:var(--surface);border-radius:22px;overflow:hidden;box-shadow:var(--lift);transform:rotate(1.5deg)}
+.style-card .img svg{display:block;width:100%;height:auto}
+.style-card .body{padding:16px 18px 18px}
+.style-card small{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.style-card h3{font-size:24px;font-weight:800;margin:2px 0 12px}
+.pal{display:flex;border-radius:10px;overflow:hidden;height:34px}
+.pal i{flex:1}
+.style-card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+
+/* sections */
+section.sec{padding-block:48px 8px}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.sec-head h2{font-size:clamp(28px,3.4vw,40px);font-weight:800;line-height:1.05;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sec-head p{margin:6px 0 0;color:var(--muted);max-width:56ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow);min-width:0}
+
+.rooms{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.room{display:flex;flex-direction:column;overflow:hidden}
+.room .plan{background:var(--bg);padding:16px;border-bottom:1px solid var(--line)}
+.room .plan svg{display:block;width:100%;height:190px}
+.room .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.room h3{font-size:20px;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.room h3 small{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0;font-variant-numeric:tabular-nums}
+.room .meta{display:flex;justify-content:space-between;font-size:14px;color:var(--text);font-variant-numeric:tabular-nums}
+.room .meta b{color:var(--ink)}
+.status{display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:700;border-radius:var(--r-pill);padding:4px 10px;align-self:flex-start}
+.status.ok{background:var(--ok-soft);color:var(--ok)}
+.status.warn{background:var(--warn-soft);color:var(--warn)}
+.status.bad{background:var(--bad-soft);color:var(--bad)}
+.room .btn{margin-top:auto}
+
+.budget{display:grid;grid-template-columns:1fr 1.3fr;gap:0;overflow:hidden}
+.b-left{padding:24px;background:var(--green);color:var(--green-ink);display:flex;flex-direction:column;gap:14px}
+.b-left small{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.75}
+.b-left .big{font-size:48px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.b-left .sub{font-size:14px;opacity:.85}
+.b-left label{font-size:13px;opacity:.85;display:flex;flex-direction:column;gap:6px}
+.b-left .inp{display:flex;align-items:center;background:rgba(255,255,255,.12);border-radius:12px;height:46px;padding:0 14px;gap:6px;max-width:220px}
+.b-left input{border:0;background:transparent;outline:none;color:inherit;font-weight:700;font-size:18px;width:100%;font-variant-numeric:tabular-nums}
+.b-right{padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.stackbar{height:22px;border-radius:11px;background:var(--soft);display:flex;overflow:hidden}
+.stackbar i{display:block;height:100%}
+.stackbar i+i{border-left:2px solid var(--surface)}
+.over{font-size:13px;font-weight:700;color:var(--bad)}
+.legend{list-style:none;margin:0;padding:0}
+.legend li{display:grid;grid-template-columns:14px 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;font-variant-numeric:tabular-nums}
+.legend li i{width:14px;height:14px;border-radius:4px}
+.legend b{color:var(--ink)}
+.legend span.pc{color:var(--muted);font-size:12px;min-width:40px;text-align:right}
+
+.saved-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.pc-card{padding:8px;display:flex;flex-direction:column}
+.pc-card .img{background:var(--img-bg);border-radius:10px;aspect-ratio:4/3;display:grid;place-items:center;position:relative;overflow:hidden}
+.pc-card .img svg.art{width:86%;height:auto}
+.pc-card .rm{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid #e3e1da;background:#fff;color:#16251f;font-size:14px;display:grid;place-items:center}
+.pc-card .body{padding:10px 6px 4px;display:flex;flex-direction:column;gap:2px;flex:1}
+.pc-card small{font-size:11px;color:var(--muted)}
+.pc-card b{font-size:13px;color:var(--ink);line-height:1.3}
+.pc-card .pr{font-weight:700;color:var(--ink);margin:6px 0 8px;font-variant-numeric:tabular-nums}
+.pc-card .btn{margin-top:auto;height:34px;font-size:12px}
+.basket{padding:18px}
+.basket h3{font-size:17px;font-weight:700;margin-bottom:10px}
+.basket ul{list-style:none;margin:0 0 10px;padding:0}
+.basket li{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid var(--line)}
+.basket li span:last-child{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.basket .tot{display:flex;justify-content:space-between;font-weight:800;color:var(--ink);font-size:16px;margin:4px 0 14px;font-variant-numeric:tabular-nums}
+.empty-s{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r-card)}
+
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.tile{border-radius:16px;overflow:hidden;position:relative;box-shadow:var(--shadow);text-decoration:none;display:block}
+.tile svg{display:block;width:100%;height:auto}
+.tile .cap{position:absolute;inset:auto 0 0 0;padding:30px 12px 10px;background:linear-gradient(to top,rgba(12,22,17,.82),rgba(12,22,17,0));color:#f4f1ea}
+.tile .cap b{display:block;font-size:14px;line-height:1.2}
+.tile .cap small{font-size:11px;opacity:.85}
+.tile .kind{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);color:#16251f;font-size:11px;font-weight:700;border-radius:var(--r-pill);padding:3px 9px}
+
+.people{display:flex;gap:12px;flex-wrap:wrap}
+.person{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:var(--r-pill);background:var(--surface);border:1px solid var(--line);font-size:14px;color:var(--ink);font-weight:600;text-decoration:none}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;font-size:12px}
+.next{padding-block:48px 72px}
+.next-card{border-radius:24px;background:var(--sage-soft);padding:28px clamp(18px,4vw,40px);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.next-card h3{font-size:26px;font-weight:800}
+.next-card p{margin:6px 0 0;color:var(--text)}
+.next-card .acts{display:flex;gap:10px;flex-wrap:wrap}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:var(--r-pill);font-weight:600;font-size:14px;z-index:100;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+footer.site-foot{border-top:1px solid var(--line);background:var(--surface)}
+footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+
+@media (max-width:1000px){.nav{display:none}.icons{margin-left:auto}.band .wrap,.budget,.saved-wrap{grid-template-columns:1fr}.rooms{grid-template-columns:1fr 1fr}.tiles{grid-template-columns:repeat(3,1fr)}.style-card{transform:none;max-width:520px}}
+@media (max-width:640px){.site .wrap{height:64px;gap:12px}.logo{font-size:20px}.rooms{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.tiles{grid-template-columns:1fr 1fr}.pgrid{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="demo"><div class="wrap" id="demoNote">My Home collects what you save on the other RoomPlanned pages. Sections marked “Example” show sample data until you save something.</div></div>
+
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="shop.html" aria-label="RoomPlanned home">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="28" height="28" rx="3"/><path d="M8 26V8h6a4 4 0 0 1 0 8H8m6 0 3 10M18 8h4a4 4 0 0 1 0 8h-4v10"/></svg>
+      <span>RoomPlanned.</span>
+    </a>
+    <nav class="nav" aria-label="Main"><a href="shop.html">Shop</a><a href="plan.html">Plan</a><a href="inspiration.html">Inspiration</a><a href="community.html">Community</a></nav>
+    <div class="icons">
+      <a class="icon-btn" href="shop.html" aria-label="Search furniture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></a>
+      <a class="icon-btn" href="#saved" aria-label="Basket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 12a3 3 0 0 0 6 0"/></svg><span class="badge" id="bagCount" hidden>0</span></a>
+      <button class="icon-btn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="menu" id="menu" hidden><a href="shop.html">Shop furniture</a><a href="plan.html">Plan a room</a><a href="inspiration.html">Inspiration</a><a href="community.html">Community preview</a><a href="my-home.html" class="on">My Home</a><a href="#top">My Renders</a><a href="#top">Account</a></div>
+    </div>
+  </div>
+</header>
+
+<div class="band" id="top">
+  <div class="wrap">
+    <div>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="shop.html">Home</a><span>/</span><span>My Home</span></nav>
+      <h1>Welcome <span class="serif">home.</span></h1>
+      <p id="intro">Your rooms, your budget and everything you’ve saved, in one place.</p>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="style-card" id="styleCard"></div>
+  </div>
+</div>
+
+<main>
+  <section class="wrap sec" id="rooms" aria-labelledby="roomsH">
+    <div class="sec-head"><div><h2 id="roomsH">Your rooms <span id="roomsTag"></span></h2><p>Each plan updates when you change it in the planner. Roo’s checks run here too.</p></div><a class="btn" href="plan.html">Open the planner</a></div>
+    <div class="rooms" id="roomCards"></div>
+  </section>
+
+  <section class="wrap sec" id="budget" aria-labelledby="budgetH">
+    <div class="sec-head"><div><h2 id="budgetH">Budget</h2><p>What your planned rooms add up to against what you want to spend.</p></div></div>
+    <div class="card budget">
+      <div class="b-left">
+        <small>Left to spend</small>
+        <div class="big" id="left"></div>
+        <div class="sub" id="leftSub"></div>
+        <label for="budgetIn">Your total budget<span class="inp">£<input id="budgetIn" type="number" min="0" step="100"></span></label>
+      </div>
+      <div class="b-right">
+        <div class="stackbar" id="stackbar" role="img" aria-label="Spending by room"></div>
+        <ul class="legend" id="legend"></ul>
+        <p class="sub" style="margin:0;font-size:13px;color:var(--muted)" id="unpriced"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap sec" id="saved" aria-labelledby="savedH">
+    <div class="sec-head"><div><h2 id="savedH">Saved furniture <span id="savedTag"></span></h2><p>Pieces you bookmarked in the shop.</p></div><a class="btn" href="shop.html">Browse the shop</a></div>
+    <div class="saved-wrap"><div id="savedGrid"></div><aside class="card basket" id="basket" aria-label="Basket"></aside></div>
+  </section>
+
+  <section class="wrap sec" aria-labelledby="likedH">
+    <div class="sec-head"><div><h2 id="likedH">Rooms you loved <span id="likedTag"></span></h2><p>Rooms you liked on Inspiration and posts you saved in Community.</p></div><a class="btn" href="inspiration.html">Find more rooms</a></div>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section class="wrap sec" aria-labelledby="peopleH">
+    <div class="sec-head"><div><h2 id="peopleH">People you follow <span id="peopleTag"></span></h2></div></div>
+    <div class="people" id="people"></div>
+  </section>
+
+  <section class="wrap next">
+    <div class="next-card"><div><h3 id="nextH">Next step</h3><p id="nextP"></p></div><div class="acts" id="nextActs"></div></div>
+  </section>
+</main>
+
+<footer class="site-foot"><div class="wrap"><span>RoomPlanned. Your home, planned for real life.</span><span>Saved on this device. Sign in at launch to sync across devices.</span></div></footer>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const fmt=n=>'£'+Math.round(n).toLocaleString('en-GB');
+const ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
+
+/* ===== shared data copied from the other pages ===== */
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);const c=v=>Math.max(0,Math.min(255,v));return'#'+((1<<24)+(c((n>>16)+amt)<<16)+(c((n>>8&255)+amt)<<8)+c((n&255)+amt)).toString(16).slice(1)}
+const lum=hex=>{const n=parseInt(hex.slice(1),16);return .299*(n>>16)+.587*(n>>8&255)+.114*(n&255)};
+const LEG='#4a4643';
+const ART = {
+  sofa(c){const d=shade(c,-22),l=shade(c,14);let ch='';for(let x=52;x<200;x+=19)ch+=`<path d="M${x} 50v40" stroke="${d}" stroke-width="2.5"/>`;
+    return `<ellipse cx="120" cy="136" rx="104" ry="7" fill="#000" opacity=".07"/><rect x="34" y="40" width="172" height="62" rx="20" fill="${c}"/>${ch}<rect x="30" y="88" width="180" height="34" rx="12" fill="${l}"/><path d="M60 90v30M95 90v30M130 90v30M165 90v30" stroke="${d}" stroke-width="1.5" opacity=".5"/><rect x="16" y="66" width="30" height="62" rx="14" fill="${c}"/><rect x="194" y="66" width="30" height="62" rx="14" fill="${c}"/><rect x="30" y="127" width="6" height="8" fill="${LEG}"/><rect x="204" y="127" width="6" height="8" fill="${LEG}"/>`},
+  corner(c){const d=shade(c,-20),l=shade(c,12);return `<ellipse cx="120" cy="138" rx="108" ry="7" fill="#000" opacity=".07"/><rect x="20" y="44" width="200" height="50" rx="14" fill="${c}"/><rect x="20" y="86" width="140" height="34" rx="10" fill="${l}"/><rect x="150" y="80" width="70" height="52" rx="10" fill="${l}"/><path d="M150 92v28M80 90v28M115 90v28" stroke="${d}" stroke-width="1.5" opacity=".6"/><rect x="10" y="70" width="24" height="58" rx="10" fill="${c}"/><circle cx="60" cy="72" r="14" fill="${shade(c,-35)}"/><circle cx="190" cy="68" r="13" fill="#d9cfbd"/>`},
+  armchair(c){const d=shade(c,-14);return `<ellipse cx="120" cy="140" rx="64" ry="6" fill="#000" opacity=".07"/><path d="M70 40q50-22 100 0v60H70Z" fill="${c}"/><rect x="72" y="92" width="96" height="32" rx="12" fill="${shade(c,8)}"/><rect x="56" y="70" width="26" height="58" rx="13" fill="${d}"/><rect x="158" y="70" width="26" height="58" rx="13" fill="${d}"/><path d="M76 128l-4 10M164 128l4 10" stroke="#8a6440" stroke-width="4" stroke-linecap="round"/><g fill="${shade(c,-8)}" opacity=".5"><circle cx="100" cy="60" r="2"/><circle cx="120" cy="54" r="2"/><circle cx="140" cy="60" r="2"/><circle cx="110" cy="76" r="2"/><circle cx="130" cy="76" r="2"/></g>`},
+  coffee(c){return `<ellipse cx="120" cy="128" rx="96" ry="6" fill="#000" opacity=".07"/><rect x="28" y="64" width="184" height="14" rx="3" fill="${c}"/><path d="M28 70h184" stroke="${shade(c,-25)}" stroke-width="1" opacity=".5"/><path d="M40 72q10 0 6 18" stroke="${shade(c,-30)}" opacity=".3"/><path d="M58 78l-6 46h10l6-46M182 78l6 46h-10l-6-46" fill="#55524e"/>`},
+  dining(c){return `<ellipse cx="120" cy="140" rx="100" ry="6" fill="#000" opacity=".07"/><rect x="22" y="56" width="196" height="12" rx="2" fill="${c}"/><rect x="30" y="68" width="180" height="8" fill="${shade(c,-18)}"/><path d="M36 76h10l-2 60h-6ZM194 76h10l-2 60h-6Z" fill="${shade(c,-12)}"/><path d="M60 76h8l-2 54h-4ZM172 76h8l-2 54h-4Z" fill="${shade(c,-30)}"/>`},
+  bed(c){const d=shade(c,-18);return `<ellipse cx="120" cy="140" rx="104" ry="6" fill="#000" opacity=".07"/><rect x="40" y="22" width="160" height="78" rx="6" fill="${c}"/><path d="M56 22v78M72 22v78M88 22v78M104 22v78M120 22v78M136 22v78M152 22v78M168 22v78M184 22v78" stroke="${d}" stroke-width="1.4" opacity=".6"/><rect x="32" y="82" width="176" height="24" rx="6" fill="#f6f5f1" stroke="#dcdad3"/><path d="M40 94h160" stroke="#e5e3dc"/><rect x="58" y="70" width="52" height="18" rx="8" fill="#fbfaf7" stroke="#e1dfd8"/><rect x="130" y="70" width="52" height="18" rx="8" fill="#fbfaf7" stroke="#e1dfd8"/><rect x="28" y="104" width="184" height="28" rx="4" fill="${c}"/><rect x="32" y="132" width="8" height="6" fill="${LEG}"/><rect x="200" y="132" width="8" height="6" fill="${LEG}"/>`},
+  chest(c){const d=shade(c,-28);let r='';for(let i=0;i<3;i++){const y=40+i*30;r+=`<rect x="54" y="${y}" width="64" height="26" rx="2" fill="${shade(c,4)}" stroke="${d}" stroke-width="1.2"/><rect x="122" y="${y}" width="64" height="26" rx="2" fill="${shade(c,4)}" stroke="${d}" stroke-width="1.2"/><circle cx="86" cy="${y+13}" r="3" fill="#b9b4aa"/><circle cx="154" cy="${y+13}" r="3" fill="#b9b4aa"/>`}
+    return `<ellipse cx="120" cy="142" rx="80" ry="6" fill="#000" opacity=".07"/><rect x="46" y="30" width="148" height="104" rx="3" fill="${c}" stroke="${d}" stroke-width="1.2"/><rect x="42" y="26" width="156" height="8" rx="2" fill="${shade(c,8)}" stroke="${d}" stroke-width="1.2"/>${r}<rect x="50" y="134" width="8" height="6" fill="${d}"/><rect x="182" y="134" width="8" height="6" fill="${d}"/>`},
+  bedside(c){const d=shade(c,-30);return `<ellipse cx="120" cy="142" rx="52" ry="5" fill="#000" opacity=".07"/><rect x="78" y="54" width="84" height="74" rx="3" fill="${c}"/><rect x="84" y="62" width="72" height="26" rx="2" fill="${shade(c,8)}" stroke="${d}" stroke-width="1"/><rect x="84" y="94" width="72" height="26" rx="2" fill="${shade(c,8)}" stroke="${d}" stroke-width="1"/><rect x="108" y="73" width="24" height="4" rx="2" fill="${d}"/><rect x="108" y="105" width="24" height="4" rx="2" fill="${d}"/><path d="M84 128l-3 12M156 128l3 12" stroke="${d}" stroke-width="4"/><rect x="104" y="40" width="18" height="14" rx="3" fill="#e5e0d6"/><path d="M113 40c0-10 8-16 14-20" stroke="#6f8a62" stroke-width="2" fill="none"/>`},
+  bookcase(c){const d=shade(c,-30);const bk=['#6f8a62','#c9b48e','#3f5a57','#b45f3f','#d8d2c4','#8a6440'];let b='';[[30,40],[64,74],[98,108]].forEach(([y],i)=>{let x=86;for(let k=0;k<5;k++){const w=6+((k+i)%3)*3,h=22-((k*7+i)%8);b+=`<rect x="${x}" y="${y+30-h}" width="${w}" height="${h}" fill="${bk[(k+i*2)%6]}"/>`;x+=w+2}});
+    return `<ellipse cx="120" cy="148" rx="58" ry="5" fill="#000" opacity=".07"/><rect x="76" y="18" width="88" height="128" rx="2" fill="${c}" stroke="${d}"/><rect x="82" y="24" width="76" height="116" fill="${shade(c,-12)}"/><path d="M82 60h76M82 94h76M82 128h76" stroke="${c}" stroke-width="4"/>${b}<circle cx="142" cy="120" r="8" fill="#e5e0d6"/>`},
+  pendant(c){return `<path d="M120 0v52" stroke="#3b3835" stroke-width="2"/><rect x="114" y="48" width="12" height="10" rx="2" fill="#b38b4d"/><path d="M72 106q0-48 48-48t48 48Z" fill="${c}"/><path d="M72 106h96" stroke="${shade(c,-25)}" stroke-width="2"/><ellipse cx="120" cy="110" rx="16" ry="6" fill="#ffe8a8"/><ellipse cx="120" cy="140" rx="70" ry="8" fill="#ffe8a8" opacity=".35"/>`},
+  vase(c){return `<ellipse cx="120" cy="142" rx="46" ry="5" fill="#000" opacity=".07"/><g stroke="#6f8a62" stroke-width="2" fill="none"><path d="M120 70C114 40 96 26 80 16M120 70c4-26 20-42 42-50M120 70c-2-20 0-40 4-56"/></g><g fill="#7f9a70"><ellipse cx="92" cy="26" rx="7" ry="3" transform="rotate(-30 92 26)"/><ellipse cx="104" cy="38" rx="7" ry="3" transform="rotate(-50 104 38)"/><ellipse cx="148" cy="28" rx="7" ry="3" transform="rotate(30 148 28)"/><ellipse cx="136" cy="42" rx="7" ry="3" transform="rotate(50 136 42)"/><ellipse cx="124" cy="22" rx="6" ry="3" transform="rotate(80 124 22)"/></g><path d="M106 70h28c0 10 16 22 16 42 0 18-14 28-30 28s-30-10-30-28c0-20 16-32 16-42Z" fill="${c}"/><path d="M96 100c10 4 38 4 48 0" stroke="${shade(c,-20)}" opacity=".5" fill="none"/>`}
+};
+const art = (p, colour, cls='art') => `<svg class="${cls}" viewBox="0 0 240 160" role="img" aria-label="${p.name}">${ART[p.shape](colour||p.colours[0].hex)}</svg>`;
+
+/* ---------- catalogue (sample data) ---------- */
+
+const PRODUCTS = [
+  {id:'rhianna-sofa',name:'Rhianna 3 Seater Fabric Sofa',retailer:'Furniture Village',cat:'Sofas',room:'Living room',price:1095,shape:'sofa',colours:[{n:'Teal',hex:'#3f5a57'},{n:'Oatmeal',hex:'#d6cbb7'},{n:'Charcoal',hex:'#55595a'}],dims:[222,95,78],material:'Velvet-touch fabric, hardwood frame',delivery:'4–6 weeks',popular:9},
+  {id:'earth-coffee-table',name:'Earth Coffee Table',retailer:'Furniture Village',cat:'Tables',room:'Living room',price:299,shape:'coffee',colours:[{n:'Natural oak',hex:'#c39a62'}],dims:[120,60,45],material:'Solid oak top, powder-coated steel legs',delivery:'1–2 weeks',popular:7},
+  {id:'veron-ottoman-bed',name:'Duo+ Collection Veron End Lift Ottoman Bed Frame',retailer:'Furniture Village',cat:'Beds',room:'Bedroom',price:549,shape:'bed',colours:[{n:'Silver grey',hex:'#a7a9ad'},{n:'Mink',hex:'#b5a593'}],dims:[150,210,120],material:'Woven fabric, gas-lift storage base',delivery:'3–4 weeks',popular:8},
+  {id:'grace-chest',name:'Grace 6 Drawer Wide Chest',retailer:'Furniture Village',cat:'Storage',room:'Bedroom',price:null,shape:'chest',colours:[{n:'White',hex:'#efeee8'},{n:'Sage',hex:'#a9b8a2'}],dims:[140,45,85],material:'Painted hardwood, soft-close runners',delivery:'Check with retailer',popular:5},
+  {id:'mabel-armchair',name:'Mabel Bouclé Armchair',retailer:'Linden & Co',cat:'Sofas',room:'Living room',price:449,shape:'armchair',colours:[{n:'Cream bouclé',hex:'#e6dfd2'},{n:'Moss',hex:'#7d8a63'}],dims:[82,86,80],material:'Bouclé, beech legs',delivery:'2–3 weeks',popular:10},
+  {id:'sienna-corner-sofa',name:'Sienna Velvet Corner Sofa',retailer:'Linden & Co',cat:'Sofas',room:'Living room',price:1499,shape:'corner',colours:[{n:'Olive',hex:'#6d6b3c'},{n:'Dusk blue',hex:'#4f6178'}],dims:[268,180,84],material:'Recycled velvet, pocket-sprung seat',delivery:'6–8 weeks',popular:6},
+  {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',retailer:'Oakhaven Home',cat:'Tables',room:'Dining room',price:649,shape:'dining',colours:[{n:'Walnut',hex:'#8a6440'},{n:'Light oak',hex:'#c9a777'}],dims:[160,90,76],material:'Walnut veneer, solid legs',delivery:'2–4 weeks',popular:6},
+  {id:'hollis-bedside',name:'Hollis Oak Bedside Table',retailer:'Oakhaven Home',cat:'Storage',room:'Bedroom',price:179,shape:'bedside',colours:[{n:'Oak',hex:'#c49a6c'},{n:'Black',hex:'#3a3836'}],dims:[48,40,58],material:'Solid oak, two drawers',delivery:'1–2 weeks',popular:8},
+  {id:'wren-bookcase',name:'Wren Tall Bookcase',retailer:'Oakhaven Home',cat:'Storage',room:'Living room',price:259,shape:'bookcase',colours:[{n:'Ash',hex:'#d7c2a0'}],dims:[80,32,180],material:'Ash veneer, adjustable shelves',delivery:'1–2 weeks',popular:4},
+  {id:'arlo-pendant',name:'Arlo Linen Pendant Light',retailer:'Harbour Living',cat:'Lighting',room:'Dining room',price:89,shape:'pendant',colours:[{n:'Natural linen',hex:'#ddd4c3'},{n:'Sage',hex:'#9aab92'}],dims:[45,45,32],material:'Linen shade, brass fittings',delivery:'3–5 days',popular:9},
+  {id:'ida-vase',name:'Ida Stoneware Vase',retailer:'Harbour Living',cat:'Decor',room:'Living room',price:34,shape:'vase',colours:[{n:'Speckled stone',hex:'#d8d1c4'},{n:'Clay',hex:'#c08d6b'}],dims:[18,18,26],material:'Hand-glazed stoneware',delivery:'3–5 days',popular:7},
+  {id:'rowan-bed',name:'Rowan Upholstered Double Bed',retailer:'Linden & Co',cat:'Beds',room:'Bedroom',price:699,shape:'bed',colours:[{n:'Stone',hex:'#bdb5a6'},{n:'Forest',hex:'#3d5545'}],dims:[145,205,115],material:'Linen blend, slatted base',delivery:'3–5 weeks',popular:5}
+];
+
+const CATALOGUE=[
+  {id:'rhianna-sofa',name:'Rhianna 3 Seater Fabric Sofa',short:'Sofa',retailer:'Furniture Village',room:'Living room',price:1095,colour:'#3f5a57',dims:[222,95,78]},
+  {id:'sienna-corner-sofa',name:'Sienna Velvet Corner Sofa',short:'Corner sofa',retailer:'Linden & Co',room:'Living room',price:1499,colour:'#6d6b3c',dims:[268,180,84]},
+  {id:'mabel-armchair',name:'Mabel Bouclé Armchair',short:'Armchair',retailer:'Linden & Co',room:'Living room',price:449,colour:'#e6dfd2',dims:[82,86,80]},
+  {id:'earth-coffee-table',name:'Earth Coffee Table',short:'Coffee table',retailer:'Furniture Village',room:'Living room',price:299,colour:'#c39a62',dims:[120,60,45]},
+  {id:'wren-bookcase',name:'Wren Tall Bookcase',short:'Bookcase',retailer:'Oakhaven Home',room:'Living room',price:259,colour:'#d7c2a0',dims:[80,32,180]},
+  {id:'veron-ottoman-bed',name:'Duo+ Collection Veron End Lift Ottoman Bed Frame',short:'Ottoman bed',retailer:'Furniture Village',room:'Bedroom',price:549,colour:'#a7a9ad',dims:[150,210,120]},
+  {id:'rowan-bed',name:'Rowan Upholstered Double Bed',short:'Double bed',retailer:'Linden & Co',room:'Bedroom',price:699,colour:'#bdb5a6',dims:[145,205,115]},
+  {id:'hollis-bedside',name:'Hollis Oak Bedside Table',short:'Bedside',retailer:'Oakhaven Home',room:'Bedroom',price:179,colour:'#c49a6c',dims:[48,40,58]},
+  {id:'grace-chest',name:'Grace 6 Drawer Wide Chest',short:'Chest',retailer:'Furniture Village',room:'Bedroom',price:null,colour:'#efeee8',dims:[140,45,85]},
+  {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',short:'Dining table',retailer:'Oakhaven Home',room:'Dining room',price:649,colour:'#8a6440',dims:[160,90,76]}
+];
+const byId=id=>CATALOGUE.find(c=>c.id===id);
+
+/* Door on the left wall, window on the top wall, positions in cm. */
+const DEFAULTS={
+  'Living room':{w:420,l:360,door:{y:262,size:80},win:{x:110,size:200},items:[
+    {id:'rhianna-sofa',x:99,y:6,r:0},{id:'earth-coffee-table',x:150,y:146,r:0},{id:'mabel-armchair',x:300,y:250,r:0},{id:'wren-bookcase',x:382,y:150,r:90}]},
+  'Bedroom':{w:360,l:400,door:{y:300,size:80},win:{x:100,size:160},items:[
+    {id:'veron-ottoman-bed',x:105,y:6,r:0},{id:'hollis-bedside',x:52,y:6,r:0},{id:'hollis-bedside',x:260,y:6,r:0},{id:'grace-chest',x:150,y:349,r:0}]},
+  'Dining room':{w:380,l:340,door:{y:240,size:80},win:{x:110,size:160},items:[
+    {id:'fenwick-dining-table',x:110,y:125,r:0}]}
+};
+
+/* Style presets drive every illustrated room */
+const STYLES={
+  'Japandi':{blurb:'Pale oak, linen and one sculptural branch. Calm, low and uncluttered.',wall:'#e9e3d8',floor:'#cfae83',sofa:'#d9d0c1',accent:'#6b8068',wood:'#8a6440',rug:'#efe9de',sky:'#dbe7e3',art:'arch',lamp:'pendant',plant:'olive',win:'arch',panel:false,paint:['Rice paper','Pale oak','Moss','Walnut','Linen']},
+  'Warm minimal':{blurb:'Sand and caramel tones with soft curves and nothing on show that doesn’t earn it.',wall:'#efe5d8',floor:'#d9c3a2',sofa:'#c9b79f',accent:'#b07a58',wood:'#a77b52',rug:'#e6d8c4',sky:'#e8e4da',art:'abstract',lamp:'arc',plant:'tall',win:'square',panel:false,paint:['Oat','Sand','Terracotta','Caramel','Bone']},
+  'Cottage':{blurb:'Panelled walls, sage paint and pieces that look like they’ve always been there.',wall:'#d9e0d0',floor:'#a8825a',sofa:'#7d8a63',accent:'#c98f7a',wood:'#8a6440',rug:'#c9b48e',sky:'#d7e4e8',art:'landscape',lamp:'table',plant:'fern',win:'square',panel:true,paint:['Sage','Honey oak','Rose clay','Fern','Straw']},
+  'Mid-century':{blurb:'Teak, mustard and teal with tapered legs and confident shapes.',wall:'#ebe1cc',floor:'#a0734b',sofa:'#c9973a',accent:'#3f5a57',wood:'#7a5233',rug:'#3f5a57',sky:'#d5e3e6',art:'abstract',lamp:'arc',plant:'tall',win:'square',panel:false,paint:['Cream','Mustard','Teal','Teak','Rust']},
+  'Coastal':{blurb:'Washed blues, white linen and pale timber, like a room that smells of salt.',wall:'#e5ecee',floor:'#d8ccb6',sofa:'#f1eee8',accent:'#4f6178',wood:'#c9b48e',rug:'#cfd8dc',sky:'#cfe2ec',art:'landscape',lamp:'table',plant:'olive',win:'arch',panel:false,paint:['Sea mist','Driftwood','Harbour blue','Sand','Shell']},
+  'Dark & moody':{blurb:'Deep green walls, rust velvet and brass. Built for evenings.',wall:'#2d3a35',floor:'#5a4130',sofa:'#8a3f2c',accent:'#c9973a',wood:'#3a2a20',rug:'#4a4035',sky:'#9fb3b5',art:'arch',lamp:'pendant',plant:'fern',win:'arch',panel:true,paint:['Forest','Rust velvet','Brass','Espresso','Smoke']}
+};
+const STYLE_NAMES=Object.keys(STYLES);
+
+/* ---------- room illustration ---------- */
+let gid=0;
+function scene(styleName,room,H,opts={}){
+  const s=STYLES[styleName],W=400,fy=Math.round(H*.68),id='s'+(gid++),bare=!!opts.bare,spots=[],P=[];
+  const dark=lum(s.wall)<110;
+  P.push(`<defs><linearGradient id="${id}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(s.wall,dark?-14:10)}"/><stop offset="1" stop-color="${shade(s.wall,dark?6:-8)}"/></linearGradient>
+  <linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(s.floor,-18)}"/><stop offset="1" stop-color="${shade(s.floor,8)}"/></linearGradient>
+  <radialGradient id="${id}l" cx=".78" cy=".3" r=".7"><stop offset="0" stop-color="#fff8e6" stop-opacity="${dark?.28:.45}"/><stop offset="1" stop-color="#fff8e6" stop-opacity="0"/></radialGradient>
+  <linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(s.sky,12)}"/><stop offset="1" stop-color="${s.sky}"/></linearGradient></defs>`);
+  P.push(`<rect width="${W}" height="${fy}" fill="url(#${id}w)"/>`);
+  if(s.panel){let l='';for(let x=20;x<W;x+=40)l+=`<rect x="${x-14}" y="${fy*.5}" width="28" height="${fy*.44}" rx="2" fill="none" stroke="${shade(s.wall,dark?14:-16)}" stroke-width="1.5"/>`;P.push(`<rect y="${fy*.46}" width="${W}" height="3" fill="${shade(s.wall,dark?20:-18)}"/>`+l)}
+  /* floor + planks */
+  P.push(`<rect y="${fy}" width="${W}" height="${H-fy}" fill="url(#${id}f)"/>`);
+  for(let k=1,y=fy;y<H;k++){y+=6+k*4;P.push(`<path d="M0 ${y}H${W}" stroke="${shade(s.floor,-26)}" stroke-width=".8" opacity=".5"/>`);
+    for(let x=(k*37)%90;x<W;x+=90+k*6)P.push(`<path d="M${x} ${y-6-(k)*4}V${y}" stroke="${shade(s.floor,-26)}" stroke-width=".8" opacity=".4"/>`)}
+  P.push(`<rect y="${fy-5}" width="${W}" height="7" fill="${shade(s.wall,dark?18:-22)}"/>`);
+  /* window (placement depends on room) */
+  const wx=room==='Bedroom'?298:room==='Dining room'?284:268,ww=78,wt=Math.round(H*.1),wb=room==='Bedroom'?fy-70:fy-28;
+  const wpath=s.win==='arch'?`M${wx} ${wb}V${wt+ww/2}a${ww/2} ${ww/2} 0 0 1 ${ww} 0V${wb}Z`:`M${wx} ${wb}V${wt}H${wx+ww}V${wb}Z`;
+  P.push(`<path d="${wpath}" fill="url(#${id}s)" stroke="${dark?'#c9c2b2':'#fbfaf6'}" stroke-width="6"/>`);
+  P.push(`<path d="M${wx+ww/2} ${s.win==='arch'?wt:wt}V${wb}M${wx} ${(wt+wb)/2+10}H${wx+ww}" stroke="${dark?'#c9c2b2':'#fbfaf6'}" stroke-width="3"/>`);
+  P.push(`<path d="M${wx+4} ${wt+40}q30-18 70 4" stroke="#fff" stroke-width="10" opacity=".25" fill="none"/>`);
+  P.push(`<path d="M${wx-6} ${fy+2}L${wx+ww+6} ${fy+2}L${wx+ww+80} ${H}L${wx-60} ${H}Z" fill="#fff8e6" opacity="${dark?.06:.14}"/>`);
+  /* art */
+  const ax=room==='Bedroom'?150:room==='Dining room'?60:110,aw=room==='Dining room'?82:100,ay=room==='Bedroom'?fy-165:fy-155,ah=62;
+  if(!bare){
+    P.push(`<rect x="${ax-5}" y="${ay-5}" width="${aw+10}" height="${ah+10}" fill="${shade(s.wood,-10)}"/><rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="#f5f0e6"/>`);
+    if(s.art==='arch')P.push(`<path d="M${ax+aw/2-18} ${ay+ah-8}v-22a18 18 0 0 1 36 0v22Z" fill="${s.accent}"/><circle cx="${ax+aw/2+22}" cy="${ay+18}" r="7" fill="${s.sofa}"/>`);
+    else if(s.art==='abstract')P.push(`<circle cx="${ax+aw*.38}" cy="${ay+ah*.52}" r="17" fill="${s.accent}"/><path d="M${ax+aw*.5} ${ay+ah-8}a22 22 0 0 1 36 -24" stroke="${s.sofa}" stroke-width="7" fill="none"/><rect x="${ax+aw*.62}" y="${ay+10}" width="14" height="14" fill="${shade(s.wood,20)}"/>`);
+    else P.push(`<path d="M${ax} ${ay+ah}L${ax+30} ${ay+28}L${ax+55} ${ay+44}L${ax+80} ${ay+22}L${ax+aw} ${ay+40}V${ay+ah}Z" fill="${s.accent}" opacity=".85"/><circle cx="${ax+aw-22}" cy="${ay+16}" r="7" fill="${s.sofa==='#f1eee8'?'#e6c38c':s.sofa}"/>`);
+  }
+  /* sunlight wash */
+  const light=`<rect width="${W}" height="${H}" fill="url(#${id}l)"/>`;
+  if(bare){P.push(light,`<rect x="40" y="${fy+12}" width="44" height="34" fill="#d8c3a0" stroke="#b39a74"/><path d="M40 ${fy+22}h44" stroke="#b39a74"/>`);return{svg:wrapSvg(W,H,P,styleName,room,bare),spots}}
+  /* rug */
+  const ry1=fy+26,ry2=Math.min(H-8,fy+(H-fy)*.82);
+  P.push(`<path d="M60 ${ry1}H340L382 ${ry2}H18Z" fill="${s.rug}"/><path d="M70 ${ry1+6}H330M50 ${ry2-8}H350" stroke="${shade(s.rug,lum(s.rug)<110?30:-24)}" stroke-width="2" stroke-dasharray="${s.rug===STYLES['Mid-century'].rug?'0':'6 4'}"/>`);
+  const shadow=(cx,cy,rx)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${rx*.12}" fill="#000" opacity=".16"/>`;
+  const plant=x=>{const by=fy+22;let o=shadow(x,by+2,26)+`<path d="M${x-16} ${by-30}h32l-5 30h-22Z" fill="${dark?'#8f7a64':'#d8cbb6'}"/>`;
+    if(s.plant==='olive'){o+=`<g stroke="${shade(s.wood,-10)}" stroke-width="2" fill="none"><path d="M${x} ${by-30}C${x-8} ${by-80} ${x-30} ${by-110} ${x-44} ${by-128}M${x} ${by-30}C${x+6} ${by-90} ${x+26} ${by-120} ${x+34} ${by-140}"/></g>`;
+      for(let k=0;k<14;k++){const t=k/13,lx=k%2?x-44*t+(1-t)*2:x+34*t,ly=by-30-(k%2?98:110)*t;o+=`<ellipse cx="${lx+(k%3-1)*6}" cy="${ly}" rx="8" ry="3" transform="rotate(${k%2?-35:35} ${lx} ${ly})" fill="${k%3?'#7f9a70':'#6b8068'}"/>`}}
+    else if(s.plant==='fern'){for(let k=-3;k<=3;k++)o+=`<path d="M${x} ${by-30}q${k*12} -40 ${k*24} -${50-Math.abs(k)*4}" stroke="#4f7a4a" stroke-width="5" fill="none" stroke-linecap="round"/>`}
+    else{o+=`<path d="M${x} ${by-30}V${by-150}" stroke="#5b4a38" stroke-width="3"/>`;for(let k=0;k<7;k++){const ly=by-60-k*14,d=k%2?-1:1;o+=`<ellipse cx="${x+d*14}" cy="${ly}" rx="16" ry="8" transform="rotate(${d*-28} ${x+d*14} ${ly})" fill="${k%2?'#5f8a55':'#4c7444'}"/>`}}
+    return o};
+  const pendant=(x,y)=>`<path d="M${x} 0V${y}" stroke="${dark?'#d8c39a':'#3b3835'}" stroke-width="1.5"/><path d="M${x-26} ${y+24}q0-26 26-26t26 26Z" fill="${s.lamp==='pendant'&&dark?s.accent:'#e3d8c5'}"/><ellipse cx="${x}" cy="${y+26}" rx="9" ry="4" fill="#ffe8a8"/><path d="M${x-40} ${y+30}L${x-90} ${fy}H${x+90}L${x+40} ${y+30}Z" fill="#ffe8a8" opacity="${dark?.1:.06}"/>`;
+  if(room==='Living room'){
+    const sx=60,sw=210,sy=fy-58;
+    P.push(shadow(sx+sw/2,fy+30,130));
+    P.push(`<rect x="${sx}" y="${sy}" width="${sw}" height="62" rx="14" fill="${s.sofa}"/>`);
+    for(let x=sx+30;x<sx+sw;x+=30)P.push(`<path d="M${x} ${sy+6}v50" stroke="${shade(s.sofa,-16)}" stroke-width="1.5" opacity=".6"/>`);
+    P.push(`<rect x="${sx-8}" y="${fy-6}" width="${sw+16}" height="30" rx="9" fill="${shade(s.sofa,10)}"/><rect x="${sx-20}" y="${fy-30}" width="28" height="56" rx="12" fill="${shade(s.sofa,-8)}"/><rect x="${sx+sw-8}" y="${fy-30}" width="28" height="56" rx="12" fill="${shade(s.sofa,-8)}"/>`);
+    P.push(`<rect x="${sx+22}" y="${sy+10}" width="44" height="38" rx="9" transform="rotate(-6 ${sx+44} ${sy+29})" fill="${s.accent}"/><rect x="${sx+sw-70}" y="${sy+12}" width="44" height="38" rx="9" transform="rotate(7 ${sx+sw-48} ${sy+31})" fill="${shade(s.accent,30)}"/>`);
+    P.push(`<rect x="${sx-4}" y="${fy+24}" width="5" height="9" fill="${s.wood}"/><rect x="${sx+sw-1}" y="${fy+24}" width="5" height="9" fill="${s.wood}"/>`);
+    const tx=165,ty=fy+(H-fy)*.52;
+    P.push(shadow(tx,ty+30,64),`<path d="M${tx-46} ${ty+4}l-6 28M${tx+46} ${ty+4}l6 28M${tx-20} ${ty+8}l-3 26M${tx+20} ${ty+8}l3 26" stroke="${shade(s.wood,-18)}" stroke-width="4" stroke-linecap="round"/><ellipse cx="${tx}" cy="${ty}" rx="62" ry="13" fill="${s.wood}"/><ellipse cx="${tx}" cy="${ty-2}" rx="62" ry="12" fill="${shade(s.wood,14)}"/>`);
+    P.push(`<path d="M${tx+18} ${ty-4}c-6-10 2-18 2-26h10c0 8 8 16 2 26Z" fill="${dark?'#c8b9a2':'#cfc8bb'}"/><path d="M${tx+25} ${ty-30}c-2-14 6-22 12-28" stroke="#6f8a62" stroke-width="1.6" fill="none"/><rect x="${tx-34}" y="${ty-9}" width="26" height="6" rx="1" fill="${s.accent}"/><rect x="${tx-32}" y="${ty-14}" width="22" height="5" rx="1" fill="${shade(s.sofa,-20)}"/>`);
+    let lampSpot;
+    if(s.lamp==='arc'){P.push(`<path d="M352 ${fy+24}C352 ${fy-120} 300 ${fy-170} 240 ${fy-150}" stroke="${dark?'#c9973a':'#2f2c29'}" stroke-width="3" fill="none"/><ellipse cx="352" cy="${fy+24}" rx="14" ry="4" fill="#2f2c29"/><path d="M220 ${fy-132}q20-30 40 0Z" fill="${shade(s.accent,10)}"/><ellipse cx="240" cy="${fy-132}" rx="20" ry="4" fill="#ffe8a8"/>`);lampSpot=[240,fy-142]}
+    else if(s.lamp==='table'){P.push(`<rect x="318" y="${fy-26}" width="56" height="52" rx="3" fill="${s.wood}"/><path d="M346 ${fy-26}v-24" stroke="${s.accent}" stroke-width="7" stroke-linecap="round"/><path d="M326 ${fy-50}l8-26h24l8 26Z" fill="#f2ead9"/>`);lampSpot=[346,fy-64]}
+    else{P.push(pendant(240,Math.round(fy*.22)));lampSpot=[240,Math.round(fy*.22)+14]}
+    if(s.lamp!=='table')P.push(plant(350));
+    spots.push({x:sx+sw/2,y:sy+30,id:styleName==='Dark & moody'||styleName==='Mid-century'?'sienna-corner-sofa':'rhianna-sofa'},{x:tx,y:ty+12,id:'earth-coffee-table'},{x:tx+25,y:ty-18,id:'ida-vase'},{x:lampSpot[0],y:lampSpot[1],id:'arlo-pendant'});
+  } else if(room==='Bedroom'){
+    const bx=96,bw=196;
+    P.push(shadow(bx+bw/2,fy+72,140));
+    P.push(`<rect x="${bx}" y="${fy-96}" width="${bw}" height="110" rx="12" fill="${s.sofa}"/>`);
+    for(let x=bx+22;x<bx+bw;x+=22)P.push(`<path d="M${x} ${fy-90}v96" stroke="${shade(s.sofa,-16)}" stroke-width="1.4" opacity=".6"/>`);
+    P.push(`<path d="M${bx-6} ${fy-12}H${bx+bw+6}L${bx+bw+22} ${fy+56}H${bx-22}Z" fill="#f6f2ea"/><rect x="${bx+12}" y="${fy-34}" width="78" height="30" rx="10" fill="#fbfaf6" stroke="#e2ddd2"/><rect x="${bx+bw-90}" y="${fy-34}" width="78" height="30" rx="10" fill="#fbfaf6" stroke="#e2ddd2"/><rect x="${bx+50}" y="${fy-28}" width="40" height="26" rx="8" fill="${s.accent}"/>`);
+    P.push(`<path d="M${bx-14} ${fy+24}H${bx+bw+14}L${bx+bw+20} ${fy+50}H${bx-20}Z" fill="${s.accent}"/><rect x="${bx-22}" y="${fy+56}" width="${bw+44}" height="20" rx="4" fill="${shade(s.sofa,-10)}"/>`);
+    const side=x=>shadow(x+24,fy+28,30)+`<rect x="${x}" y="${fy-30}" width="48" height="56" rx="3" fill="${s.wood}"/><path d="M${x+4} ${fy-2}h40" stroke="${shade(s.wood,-25)}"/><rect x="${x+18}" y="${fy-18}" width="12" height="3" rx="1.5" fill="${shade(s.wood,-30)}"/><path d="M${x+24} ${fy-30}v-18" stroke="${s.accent}" stroke-width="6" stroke-linecap="round"/><path d="M${x+8} ${fy-48}l6-22h20l6 22Z" fill="#f2ead9"/><ellipse cx="${x+24}" cy="${fy-48}" rx="16" ry="3" fill="#ffe8a8" opacity=".8"/>`;
+    P.push(side(30),side(320));
+    spots.push({x:bx+bw/2,y:fy+20,id:styleName==='Cottage'||styleName==='Dark & moody'?'rowan-bed':'veron-ottoman-bed'},{x:54,y:fy-6,id:'hollis-bedside'},{x:54,y:fy-60,id:'arlo-pendant'});
+  } else {
+    const tx=200,ty=fy+28;
+    const chairBack=x=>`<path d="M${x-20} ${ty+4}V${fy-36}a20 20 0 0 1 40 0V${ty+4}" fill="none" stroke="${s.accent}" stroke-width="7"/><path d="M${x-20} ${ty+4}v40M${x+20} ${ty+4}v40" stroke="${shade(s.wood,-10)}" stroke-width="4"/>`;
+    P.push(shadow(tx,ty+66,130),chairBack(150),chairBack(250));
+    P.push(`<path d="M${tx-120} ${ty}H${tx+120}L${tx+132} ${ty+16}H${tx-132}Z" fill="${shade(s.wood,14)}"/><rect x="${tx-132}" y="${ty+16}" width="264" height="10" fill="${s.wood}"/><path d="M${tx-118} ${ty+26}l-4 50M${tx+118} ${ty+26}l4 50M${tx-80} ${ty+26}l-2 40M${tx+80} ${ty+26}l2 40" stroke="${shade(s.wood,-14)}" stroke-width="6"/>`);
+    P.push(`<path d="M${tx+30} ${ty+4}c-6-10 2-18 2-26h10c0 8 8 16 2 26Z" fill="${dark?'#c8b9a2':'#cfc8bb'}"/><path d="M${tx+37} ${ty-22}c-2-16 8-24 14-30M${tx+37} ${ty-22}c0-14-8-22-14-26" stroke="#6f8a62" stroke-width="1.6" fill="none"/><ellipse cx="${tx-40}" cy="${ty+6}" rx="16" ry="4" fill="#f5f0e6" stroke="#ddd5c6"/><ellipse cx="${tx-70}" cy="${ty+8}" rx="10" ry="3" fill="${s.accent}" opacity=".7"/>`);
+    const py=Math.round(fy*.3);P.push(pendant(tx,py));
+    const sideChair=(x,flip)=>`<path d="M${x} ${ty+44}V${ty-6}" stroke="${s.accent}" stroke-width="7"/><path d="M${x} ${ty+18}H${x+(flip?-30:30)}V${ty+50}" stroke="${shade(s.wood,-10)}" stroke-width="5" fill="none"/>`;
+    P.push(sideChair(54,false),sideChair(346,true));
+    if(H>420)P.push(plant(362));
+    spots.push({x:tx,y:ty+20,id:'fenwick-dining-table'},{x:tx,y:py+12,id:'arlo-pendant'},{x:tx+37,y:ty-6,id:'ida-vase'});
+  }
+  P.push(light);
+  return{svg:wrapSvg(W,H,P,styleName,room,bare),spots:spots.map(p=>({...p,x:p.x/W*100,y:p.y/H*100}))};
+}
+const wrapSvg=(W,H,P,st,room,bare)=>`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${bare?'Empty':st} ${room.toLowerCase()} illustration">${P.join('')}</svg>`;
+
+
+const INSP_ROOMS=[
+  {t:'Slow Sunday living room',st:'Japandi',room:'Living room',h:520,likes:1284},
+  {t:'Sage panelled bedroom',st:'Cottage',room:'Bedroom',h:420,likes:962},
+  {t:'Teak and teal lounge',st:'Mid-century',room:'Living room',h:400,likes:1503},
+  {t:'Candlelit supper club',st:'Dark & moody',room:'Dining room',h:480,likes:2210},
+  {t:'Sea-glass guest room',st:'Coastal',room:'Bedroom',h:500,likes:731},
+  {t:'Caramel corner',st:'Warm minimal',room:'Living room',h:440,likes:1176},
+  {t:'Kitchen table for six',st:'Cottage',room:'Dining room',h:400,likes:648},
+  {t:'Rust velvet den',st:'Dark & moody',room:'Living room',h:500,likes:1890},
+  {t:'Linen and oak bedroom',st:'Japandi',room:'Bedroom',h:400,likes:1042},
+  {t:'Harbour view dining',st:'Coastal',room:'Dining room',h:460,likes:587},
+  {t:'Sandstone suite',st:'Warm minimal',room:'Bedroom',h:420,likes:913},
+  {t:'Mustard hour',st:'Mid-century',room:'Dining room',h:500,likes:802}
+];
+
+const PEOPLE={
+  maisie:{h:'@maisie.makes',c:'#6b8068',n:'MM',loc:'Leeds'},
+  box:{h:'@theboxroomproject',c:'#c98a63',n:'BR',loc:'Bristol'},
+  ivy:{h:'@oak_and_ivy',c:'#8a6440',n:'OI',loc:'Norwich'},
+  owl:{h:'@nightowl.interiors',c:'#2d3a35',n:'NO',loc:'Glasgow'},
+  salt:{h:'@saltwater.semi',c:'#4f6178',n:'SS',loc:'Brighton'},
+  mo:{h:'@mid.mod.mo',c:'#c9973a',n:'MO',loc:'Manchester'},
+  flo:{h:'@firsthome.flo',c:'#7d8a63',n:'FF',loc:'Cardiff'},
+  you:{h:'You',c:'#2c4a3b',n:'YOU',loc:'Preview'}
+};
+const POSTS=[
+  {id:1,by:'maisie',st:'Japandi',room:'Living room',dims:[340,380],spent:1517,ago:'2h',text:'Rented flat, no drilling allowed, so everything here is freestanding. The pendant is a plug-in with a ceiling hook. Planned the whole thing in RoomPlanned before buying a single piece.',tags:['Rentals'],likes:842,
+    comments:[['salt','The plug-in pendant is genius. Where did you hide the cable?'],['maisie','Cable clips along the window frame, painted to match the wall!']]},
+  {id:2,by:'box',st:'Warm minimal',room:'Bedroom',dims:[240,270],spent:486,ago:'5h',text:'Box room to guest room for £486. A small double bed only just fitted. Roo flagged a 42 cm gap by the door, so I swapped to a narrower bedside and it now opens fully.',tags:['Small spaces','Under £1,000'],likes:1290,
+    comments:[['flo','Saving this for my second bedroom. Same size almost exactly.']]},
+  {id:3,by:'ivy',st:'Cottage',room:'Dining room',dims:[380,340],spent:1120,ago:'1d',text:'Painted the panelling sage, kept the old table, added a linen pendant and four mismatched chairs. Total cost was mostly the paint and the light.',tags:['Under £1,000','Before and after'],likes:654,comments:[]},
+  {id:4,by:'owl',st:'Dark & moody',room:'Living room',dims:[420,360],spent:2210,ago:'2d',text:'Went fully dark on the walls and I’m not sorry. Velvet sofa, brass lamp and a jungle of ferns. Evening light in here is the best part of my day.',tags:['Before and after'],likes:2034,
+    comments:[['mo','The rust against that green is perfect.'],['owl','Took three paint samples to get it right, worth it.'],['ivy','How do you find it in the daytime?']]},
+  {id:5,by:'salt',st:'Coastal',room:'Bedroom',dims:[360,400],spent:980,ago:'3d',text:'Bedroom refresh in a 1930s semi. Kept the bed, changed everything around it. The washed-blue throw did most of the work.',tags:['Under £1,000'],likes:577,comments:[]},
+  {id:6,by:'mo',st:'Mid-century',room:'Living room',dims:[400,420],spent:1890,ago:'4d',text:'Mustard sofa, teal rug, arc lamp. I measured the arc lamp’s reach in the planner first so it actually hangs over the coffee table.',tags:['Small spaces'],likes:1468,comments:[['box','The planner tip is so useful, never thought of measuring the lamp reach.']]}
+];
+
+
+/* ===== read what the other pages saved (same browser, same site) ===== */
+const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}};
+const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const shop=read('rp-shop'),plan=read('rp-plan'),insp=read('rp-insp'),comm=read('rp-comm'),home=read('rp-home')||{};
+const EX={saved:['rhianna-sofa','arlo-pendant','hollis-bedside','ida-vase'],bag:[{id:'earth-coffee-table',colour:'Natural oak',hex:'#c39a62',qty:1}],liked:[0,3,7],style:'Japandi',commSaved:[2],following:['owl','box','salt']};
+const live={
+  saved:!!(shop&&shop.saved&&shop.saved.length),bag:!!(shop&&shop.bag&&shop.bag.length),
+  plans:!!(plan&&plan.plans),liked:!!(insp&&insp.liked&&insp.liked.length),style:!!(insp&&insp.style),
+  commSaved:!!(comm&&comm.saved&&comm.saved.length),following:!!(comm&&comm.following&&comm.following.length)
+};
+const D={
+  saved:live.saved?shop.saved:EX.saved,
+  bag:live.bag?shop.bag:(live.saved?[]:EX.bag),
+  plans:live.plans?plan.plans:Object.fromEntries(Object.keys(DEFAULTS).map(r=>[r,JSON.parse(JSON.stringify(DEFAULTS[r]))])),
+  liked:live.liked?insp.liked:EX.liked,
+  style:live.style?insp.style:EX.style,
+  commSaved:live.commSaved?comm.saved:EX.commSaved,
+  following:live.following?comm.following:EX.following,
+  budget:home.budget||4000
+};
+const tag=on=>on?'<span class="ex live">Yours</span>':'<span class="ex">Example</span>';
+const prod=id=>PRODUCTS.find(p=>p.id===id);
+const cat=id=>CATALOGUE.find(c=>c.id===id);
+
+/* ===== room analysis, same rules as the planner ===== */
+function foot(i){const c=cat(i.id);return i.r%180?{w:c.dims[1],d:c.dims[0]}:{w:c.dims[0],d:c.dims[1]}}
+function box(i){const f=foot(i);return{x:i.x,y:i.y,w:f.w,d:f.d}}
+const ov=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.d&&b.y<a.y+a.d;
+function check(p){const it=p.items.filter(i=>cat(i.id));let clash=0,door=0;
+  for(let a=0;a<it.length;a++)for(let b=a+1;b<it.length;b++)if(ov(box(it[a]),box(it[b])))clash++;
+  const dz={x:0,y:p.door.y,w:p.door.size,d:p.door.size};it.forEach(i=>{if(ov(box(i),dz))door++});
+  const used=it.reduce((s,i)=>{const f=foot(i);return s+f.w*f.d},0),free=Math.round(100-used/(p.w*p.l)*100);
+  const cost=it.reduce((s,i)=>s+(cat(i.id).price||0),0),unpriced=it.filter(i=>cat(i.id).price===null).length;
+  const issues=clash+door;return{it,clash,door,free,cost,unpriced,issues}}
+function miniPlan(p){
+  const it=p.items.filter(i=>cat(i.id)),pad=14;let s=`<svg viewBox="${-pad} ${-pad} ${p.w+pad*2} ${p.l+pad*2}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Floor plan, ${p.w} by ${p.l} cm">`;
+  s+=`<rect width="${p.w}" height="${p.l}" style="fill:var(--floor)"/>`;
+  for(let x=50;x<p.w;x+=50)s+=`<path d="M${x} 0V${p.l}" style="stroke:var(--grid)" stroke-width="1.5"/>`;
+  for(let y=50;y<p.l;y+=50)s+=`<path d="M0 ${y}H${p.w}" style="stroke:var(--grid)" stroke-width="1.5"/>`;
+  s+=`<rect x="-5" y="-5" width="${p.w+10}" height="${p.l+10}" fill="none" style="stroke:var(--wall)" stroke-width="10"/>`;
+  s+=`<rect x="-10" y="${p.door.y}" width="10" height="${p.door.size}" style="fill:var(--bg)"/><path d="M0 ${p.door.y}L${p.door.size} ${p.door.y}A${p.door.size} ${p.door.size} 0 0 1 0 ${p.door.y+p.door.size}Z" style="fill:var(--sage-soft);stroke:var(--sage)" stroke-dasharray="5 5" stroke-width="2"/>`;
+  s+=`<rect x="${p.win.x}" y="-10" width="${p.win.size}" height="10" style="fill:var(--bg)"/><path d="M${p.win.x} -5h${p.win.size}" style="stroke:var(--sage)" stroke-width="4"/>`;
+  it.forEach(i=>{const f=foot(i);s+=`<rect x="${i.x}" y="${i.y}" width="${f.w}" height="${f.d}" rx="5" fill="${cat(i.id).colour}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`});
+  return s+'</svg>'}
+
+/* ===== renderers ===== */
+const ROOM_COLOURS=['var(--r1)','var(--r2)','var(--r3)'];
+function render(){
+  const rooms=Object.keys(D.plans),checks=Object.fromEntries(rooms.map(r=>[r,check(D.plans[r])]));
+  const pieces=rooms.reduce((s,r)=>s+checks[r].it.length,0),planned=rooms.reduce((s,r)=>s+checks[r].cost,0);
+  const bagN=D.bag.reduce((s,l)=>s+l.qty,0);$('#bagCount').hidden=!bagN;$('#bagCount').textContent=bagN;
+
+  $('#stats').innerHTML=[[rooms.length,'rooms planned','#rooms'],[pieces,'pieces placed','#rooms'],[D.saved.length,'pieces saved','#saved'],[D.liked.length+D.commSaved.length,'rooms loved','#tiles']]
+    .map(([n,l,h])=>`<a class="stat" href="${h}"><b>${n}</b><span>${l}</span></a>`).join('');
+  const anyLive=Object.values(live).some(Boolean);
+  $('#intro').textContent=anyLive?'Here’s everything you’ve planned and saved across RoomPlanned.':'Your rooms, your budget and everything you save, in one place. Save a sofa in the shop or like a room on Inspiration and it shows up here.';
+
+  const st=STYLES[D.style]||STYLES.Japandi;
+  $('#styleCard').innerHTML=`<div class="img">${scene(D.style,'Living room',250).svg}</div><div class="body"><small>Your style ${live.style?'':'· Example'}</small><h3>${D.style}</h3>
+    <div class="pal">${[st.wall,st.sofa,st.accent,st.wood,st.rug].map(c=>`<i style="background:${c}" title="${c}"></i>`).join('')}</div>
+    <div class="row"><span style="font-size:13px;color:var(--muted)">${st.blurb}</span><a class="btn small" href="inspiration.html">Change style</a></div></div>`;
+
+  $('#roomsTag').innerHTML=tag(live.plans);
+  $('#roomCards').innerHTML=rooms.map(r=>{const p=D.plans[r],c=checks[r];
+    const status=c.issues?`<span class="status bad">${c.issues} ${c.issues===1?'thing':'things'} to fix</span>`:c.free<45?`<span class="status warn">Feels tight · ${c.free}% floor free</span>`:`<span class="status ok">Everything fits · ${c.free}% floor free</span>`;
+    return `<article class="card room"><div class="plan">${miniPlan(p)}</div><div class="body"><h3>${r}<small>${p.w/100} × ${p.l/100} m</small></h3>
+      <div class="meta"><span><b>${c.it.length}</b> ${c.it.length===1?'piece':'pieces'}</span><span><b>${fmt(c.cost)}</b>${c.unpriced?' + 1 to check':''}</span></div>${status}
+      <a class="btn" href="plan.html">Edit this room ${ARROW}</a></div></article>`}).join('');
+
+  /* budget */
+  $('#budgetIn').value=D.budget;
+  const left=D.budget-planned;
+  $('#left').textContent=left>=0?fmt(left):'−'+fmt(-left);
+  $('#leftSub').textContent=`${fmt(planned)} planned of a ${fmt(D.budget)} budget`;
+  const scale=Math.max(D.budget,planned)||1;
+  $('#stackbar').innerHTML=rooms.map((r,i)=>`<i style="width:${checks[r].cost/scale*100}%;background:${ROOM_COLOURS[i%3]}" title="${r}: ${fmt(checks[r].cost)}"></i>`).join('');
+  $('#legend').innerHTML=rooms.map((r,i)=>`<li><i style="background:${ROOM_COLOURS[i%3]}"></i><span>${r}</span><b>${fmt(checks[r].cost)}</b><span class="pc">${planned?Math.round(checks[r].cost/planned*100):0}%</span></li>`).join('')+
+    `<li><i style="background:var(--soft);border:1px solid var(--line)"></i><span>${left>=0?'Still available':'Over budget'}</span><b style="${left<0?'color:var(--bad)':''}">${fmt(Math.abs(left))}</b><span class="pc"></span></li>`;
+  const up=rooms.reduce((s,r)=>s+checks[r].unpriced,0);
+  $('#unpriced').textContent=up?`${up} planned ${up===1?'piece has':'pieces have'} no price yet, so the total may go up.`:'All planned pieces have a price.';
+
+  /* saved furniture + basket */
+  $('#savedTag').innerHTML=tag(live.saved);
+  const saved=D.saved.map(prod).filter(Boolean);
+  $('#savedGrid').innerHTML=saved.length?`<div class="pgrid">${saved.map(p=>`<article class="card pc-card"><div class="img">${art(p)}<button class="rm" data-unsave="${p.id}" aria-label="Remove ${p.name} from saved">✕</button></div>
+    <div class="body"><small>${p.retailer}</small><b>${p.name}</b><div class="pr">${p.price===null?'Price to check':fmt(p.price)}</div><a class="btn" href="${cat(p.id)?'plan.html#add-'+p.id:'shop.html#piece-'+p.id}">${cat(p.id)?'Add to room':'View piece'} ${ARROW}</a></div></article>`).join('')}</div>`
+    :`<div class="empty-s">Nothing saved yet. Tap the bookmark on any piece in the shop.</div>`;
+  const bagTotal=D.bag.reduce((s,l)=>s+(prod(l.id)?.price||0)*l.qty,0);
+  $('#basket').innerHTML=`<h3>Basket ${tag(live.bag)}</h3>`+(D.bag.length?`<ul>${D.bag.map(l=>{const p=prod(l.id);return p?`<li><span>${l.qty>1?l.qty+' × ':''}${p.name}<br><small style="color:var(--muted)">${l.colour}</small></span><span>${fmt(p.price*l.qty)}</span></li>`:''}).join('')}</ul><div class="tot"><span>Total</span><span>${fmt(bagTotal)}</span></div><a class="btn primary" style="width:100%" href="shop.html">Go to checkout</a>`
+    :`<p style="color:var(--muted);font-size:14px;margin:0 0 14px">Your basket is empty.</p><a class="btn" style="width:100%" href="shop.html">Browse the shop</a>`);
+
+  /* loved rooms: inspiration likes + saved community posts */
+  $('#likedTag').innerHTML=tag(live.liked||live.commSaved);
+  const tiles=D.liked.map(i=>INSP_ROOMS[i]).filter(Boolean).map(r=>({kind:'Inspiration',t:r.t,st:r.st,room:r.room,href:'inspiration.html',sub:r.st}))
+    .concat(D.commSaved.map(id=>POSTS.find(p=>p.id===id)).filter(Boolean).map(p=>({kind:'Community',t:PEOPLE[p.by].h,st:p.st,room:p.room,href:'community.html',sub:`${p.room} · ${fmt(p.spent)} spent`})));
+  $('#tiles').innerHTML=tiles.length?tiles.map(t=>`<a class="tile" href="${t.href}">${scene(t.st,t.room,300).svg}<span class="kind">${t.kind}</span><span class="cap"><b>${t.t}</b><small>${t.sub}</small></span></a>`).join('')
+    :`<div class="empty-s" style="grid-column:1/-1">Like a room on Inspiration or save a post in Community to see it here.</div>`;
+
+  $('#peopleTag').innerHTML=tag(live.following);
+  $('#people').innerHTML=D.following.filter(k=>PEOPLE[k]).map(k=>`<a class="person" href="community.html"><span class="av" style="background:${PEOPLE[k].c}">${PEOPLE[k].n}</span>${PEOPLE[k].h}</a>`).join('')||'<div class="empty-s">You’re not following anyone yet.</div>';
+
+  /* next step: the most useful thing to do now */
+  const worst=rooms.find(r=>checks[r].issues);
+  let h,pText,acts;
+  if(worst){h=`Fix your ${worst.toLowerCase()}`;pText=`Roo found ${checks[worst].issues} ${checks[worst].issues===1?'problem':'problems'} in the plan. Sort it before you order anything.`;acts=`<a class="btn primary" href="plan.html">Open the planner ${ARROW}</a>`}
+  else if(left<0){h='You’re over budget';pText=`Your plans come to ${fmt(-left)} more than your budget. Swap a big piece or raise the budget above.`;acts=`<a class="btn primary" href="shop.html">Find cheaper pieces ${ARROW}</a>`}
+  else if(D.bag.length){h='Ready to order?';pText=`Everything fits and you have ${fmt(left)} left. Your basket is waiting.`;acts=`<a class="btn primary" href="shop.html">Go to checkout ${ARROW}</a>`}
+  else{h='Make it yours';pText=`Everything fits and you still have ${fmt(left)} to spend. Find a piece for the space that’s left.`;acts=`<a class="btn primary" href="inspiration.html">Get inspired ${ARROW}</a><a class="btn" href="shop.html">Shop furniture</a>`}
+  $('#nextH').textContent=h;$('#nextP').textContent=pText;$('#nextActs').innerHTML=acts;
+}
+
+/* ===== events ===== */
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+$('#budgetIn').addEventListener('change',e=>{D.budget=Math.max(0,+e.target.value||0);home.budget=D.budget;write('rp-home',home);render()});
+document.addEventListener('click',e=>{
+  const u=e.target.closest('[data-unsave]');
+  if(u){const id=u.dataset.unsave;D.saved=D.saved.filter(x=>x!==id);
+    if(live.saved){shop.saved=D.saved;write('rp-shop',shop)}render();toast('Removed from saved');return}
+  if(!e.target.closest('#menu,#menuBtn')){$('#menu').hidden=true;$('#menuBtn').setAttribute('aria-expanded','false')}
+});
+$('#menuBtn').onclick=()=>{const m=$('#menu');m.hidden=!m.hidden;$('#menuBtn').setAttribute('aria-expanded',!m.hidden)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#menu').hidden=true});
+/* refresh if another RoomPlanned tab saves something */
+window.addEventListener('storage',()=>location.reload());
+render();
+</script>
+</body>
+</html>
