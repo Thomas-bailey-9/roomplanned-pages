@@ -112,6 +112,14 @@ header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;backgrou
 .style-card .sw i{flex:1}
 .style-card b{display:block;padding:10px 12px 2px;color:var(--ink);font-size:14px}
 .style-card small{display:block;padding:0 12px 12px;color:var(--muted);font-size:12px}
+.style-card .sw{position:relative}
+.style-card .ic{position:absolute;left:10px;bottom:-14px;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.18);display:grid;place-items:center;color:var(--green)}
+.style-card .ic svg{width:17px;height:17px}
+.season-row .style-card b{padding-top:20px}
+.season-head{margin:34px 0 16px}
+.season-head h3{margin:0;font-size:clamp(22px,2.6vw,30px);font-weight:800;line-height:1.1;color:var(--ink)}
+.season-head h3 .serif{color:var(--sage);font-size:1.1em}
+.season-head p{margin:6px 0 0;color:var(--muted);font-size:15px}
 
 /* featured */
 .feature{display:grid;grid-template-columns:1.4fr 1fr;gap:36px;align-items:center;padding-block:36px 64px}
@@ -207,12 +215,16 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
   .hero .wrap,.feature,.ba-wrap .wrap,.cta-card,.lb-card{grid-template-columns:1fr}
   .fan{height:360px}
   .style-row{grid-template-columns:repeat(3,1fr)}
+  .season-row{display:grid;grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:calc((100% - 24px)/3.4);overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 4px 14px;margin:-4px -4px 0;scrollbar-width:thin}
+  .season-row .style-card{scroll-snap-align:start}
+  .season-row .style-card:hover{transform:none}
 }
 @media (max-width:520px){
   .site .wrap{height:64px;gap:12px}.logo{font-size:20px}
   .hero .wrap{padding-block:44px 56px}
   .fan{height:250px}
   .style-row{grid-template-columns:repeat(2,1fr)}
+  .season-row{grid-template-columns:none;grid-auto-columns:42%}
   .stats{gap:20px}
   .mini-stack{transform:none}
 }
@@ -257,6 +269,8 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
   <section class="wrap styles" id="styles">
     <div class="sec-head"><div><h2>Find your <span class="serif">style.</span></h2><p>Pick a look and the whole page follows: palette, featured room and gallery.</p></div></div>
     <div class="style-row" id="styleRow" role="group" aria-label="Style"></div>
+    <div class="season-head"><h3>Seasonal &amp; <span class="serif">celebrations.</span></h3><p>Dress the same rooms for the time of year.</p></div>
+    <div class="style-row season-row" id="seasonRow" role="group" aria-label="Seasonal and celebration looks"></div>
   </section>
   <section class="wrap feature" id="feature" aria-label="Featured look"></section>
 </div>
@@ -313,6 +327,24 @@ const STYLES={
   'Dark & moody':{blurb:'Deep green walls, rust velvet and brass. Built for evenings.',wall:'#2d3a35',floor:'#5a4130',sofa:'#8a3f2c',accent:'#c9973a',wood:'#3a2a20',rug:'#4a4035',sky:'#9fb3b5',art:'arch',lamp:'pendant',plant:'fern',win:'arch',panel:true,paint:['Forest','Rust velvet','Brass','Espresso','Smoke']}
 };
 const STYLE_NAMES=Object.keys(STYLES);
+/* Seasonal and celebration looks: the same rooms, dressed for the time of year. `deco` switches on the extras. */
+const SEASONS={
+  'Christmas':{when:'December',icon:'tree',feature:'Living room',blurb:'A real-looking tree, a wreath, warm lights and presents waiting. Red velvet and forest green.',wall:'#ece4d4',floor:'#a8825a',sofa:'#8a2f2b',accent:'#2f5a43',wood:'#6b4a30',rug:'#ddd0b9',sky:'#c9d5de',art:'wreath',lamp:'table',plant:'xmas',win:'square',panel:true,deco:{snow:1,lights:1},paint:['Mulled cream','Red velvet','Fir green','Chestnut','Oatmeal']},
+  'Winter':{when:'December – February',icon:'snow',feature:'Living room',blurb:'Snow at the window, frosty blues, candlelight and a string of lights for the long nights.',wall:'#e4e8ea',floor:'#c9b9a0',sofa:'#b6c0c7',accent:'#5f7684',wood:'#8a7a66',rug:'#f2f0ec',sky:'#e6edf1',art:'landscape',lamp:'arc',plant:'olive',win:'arch',panel:false,deco:{snow:1,lights:1,candles:1},flower:'#f7f5f0',paint:['Frost','Fog','Slate blue','Birch','Snow']},
+  'Summer':{when:'June – August',icon:'sun',feature:'Living room',blurb:'Long light, sunshine yellow and pool blue, a bowl of lemons and bunting for the garden door.',wall:'#f5ecd8',floor:'#d9c3a2',sofa:'#f1e8d8',accent:'#e0a43a',wood:'#b48a5a',rug:'#a7cdc7',sky:'#9fd3ec',art:'abstract',lamp:'arc',plant:'tall',win:'arch',panel:false,deco:{sun:1,bunting:['#e0a43a','#f7f2e6','#7fb8b0','#e8826a'],top:'lemons'},flower:'#f2c14e',paint:['Sunlit','Linen','Sunshine','Rattan','Pool']},
+  'Birthday':{when:'Any day',icon:'balloon',feature:'Living room',blurb:'Balloons, bunting, confetti on the rug and a cake on the table. Ready for the surprise.',wall:'#f4ece5',floor:'#cfae83',sofa:'#e6d3c5',accent:'#d97a6c',wood:'#a77b52',rug:'#efe3d7',sky:'#dbe7e3',art:'abstract',lamp:'pendant',plant:'fern',win:'square',panel:false,deco:{bunting:['#e8a23a','#d97a6c','#7fa7c9','#9cc1a0'],balloons:['#e8a23a','#d97a6c','#7fa7c9','#9cc1a0','#f4f1ea'],confetti:['#e8a23a','#d97a6c','#7fa7c9','#9cc1a0'],top:'cake'},paint:['Icing','Blush','Coral','Honey oak','Vanilla']},
+  'Valentine’s':{when:'14 February',icon:'heart',feature:'Dining room',blurb:'Dusky pink, deep red roses, a string of hearts and candles for two.',wall:'#f1e1de',floor:'#b89070',sofa:'#c99e9b',accent:'#b4323f',wood:'#7a4f3a',rug:'#ecd5d1',sky:'#e9d9df',art:'heart',lamp:'pendant',plant:'fern',win:'arch',panel:false,deco:{hearts:['#b4323f','#e09aa2'],candles:1},flower:'#b4323f',paint:['Blush','Dusky rose','Ruby','Cherrywood','Petal']},
+  'Halloween':{when:'31 October',icon:'pumpkin',feature:'Living room',blurb:'Glowing pumpkins, bats on the wall, a cobweb in the corner and a full moon outside.',wall:'#2f2a33',floor:'#4a3a2e',sofa:'#5a3d5c',accent:'#e07b25',wood:'#2e2420',rug:'#3b3239',sky:'#e39a52',art:'arch',lamp:'pendant',plant:'fern',win:'arch',panel:true,deco:{moon:1,bats:1,web:1,pumpkins:1,candles:1},paint:['Midnight','Plum','Pumpkin','Ebony','Shadow']},
+  'Patriots’ Day':{when:'National days',icon:'star',feature:'Living room',blurb:'Red, white and navy bunting, stars and balloons for a national day at home.',wall:'#eef0f2',floor:'#b8977a',sofa:'#2c3e5c',accent:'#b0302f',wood:'#7a5a40',rug:'#f4f1ea',sky:'#cfe2ec',art:'stars',lamp:'table',plant:'olive',win:'square',panel:true,deco:{bunting:['#b0302f','#f7f5f0','#2c3e5c'],balloons:['#b0302f','#f7f5f0','#2c3e5c']},paint:['Chalk','Navy','Pillar-box red','Oak','Cotton']},
+  'St Patrick’s Day':{when:'17 March',icon:'shamrock',feature:'Living room',blurb:'Shamrock greens, a touch of gold and a garland of clover for 17 March.',wall:'#e3ead9',floor:'#a8825a',sofa:'#3f7a4a',accent:'#d4a63a',wood:'#6b4a30',rug:'#e9e2cc',sky:'#d7e4e8',art:'landscape',lamp:'pendant',plant:'fern',win:'square',panel:true,deco:{shamrocks:['#3f7a4a','#6aa35a'],balloons:['#3f7a4a','#d4a63a','#6aa35a','#f4f1ea']},paint:['Meadow','Shamrock','Gold','Peat','Cream']},
+  'Remembrance':{label:'Poppy Day',when:'11 November',icon:'poppy',feature:'Living room',blurb:'A quiet, respectful room for Remembrance: a poppy wreath, red poppies and candlelight.',wall:'#ebe5db',floor:'#8f6e50',sofa:'#59605a',accent:'#b3261e',wood:'#4f3a2a',rug:'#d9d0c1',sky:'#c6cdd1',art:'poppy',lamp:'table',plant:'olive',win:'square',panel:true,deco:{candles:1},flower:'#b3261e',paint:['Stone','Slate','Poppy red','Dark oak','Parchment']},
+  'New Year':{when:'31 December',icon:'spark',feature:'Living room',blurb:'Fireworks at the window, gold balloons, fizz on the table and confetti for midnight.',wall:'#232838',floor:'#3a3330',sofa:'#4d5263',accent:'#d4af37',wood:'#2a2420',rug:'#3a3a44',sky:'#1c2a4a',art:'abstract',lamp:'arc',plant:'tall',win:'arch',panel:false,deco:{fireworks:1,lights:1,balloons:['#d4af37','#c9ccd3','#d4af37','#1f1f26'],confetti:['#d4af37','#c9ccd3','#f4f1ea'],top:'fizz'},paint:['Midnight','Charcoal','Gold','Ebony','Graphite']},
+  'Chinese New Year':{when:'January – February',icon:'lantern',feature:'Dining room',blurb:'Red lanterns, gold, plum blossom and a bowl of tangerines for luck in the new year.',wall:'#f2e6d4',floor:'#8a5a3a',sofa:'#b22a24',accent:'#d9a52b',wood:'#5a2e1e',rug:'#e8d6b8',sky:'#dfe6e3',art:'abstract',lamp:'table',plant:'blossom',win:'arch',panel:false,deco:{lanterns:1,top:'oranges'},paint:['Rice','Lucky red','Gold','Rosewood','Silk']}
+};
+const SEASON_NAMES=Object.keys(SEASONS);
+Object.assign(STYLES,SEASONS);
+const isSeason=n=>SEASON_NAMES.includes(n);
+const ICONS={tree:'<path d="M12 3l5 7h-3l4 6h-5v4h-2v-4H6l4-6H7z" fill="currentColor"/>',snow:'<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5 12 7l2.5-2.5M9.5 19.5 12 17l2.5 2.5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',sun:'<circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',balloon:'<ellipse cx="12" cy="9" rx="6" ry="7" fill="currentColor"/><path d="M12 16l-1.5 2h3zM12 18c-1 2 1 2 0 4" stroke="currentColor" stroke-width="1.4" fill="currentColor"/>',heart:'<path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z" fill="currentColor"/>',pumpkin:'<path d="M12 7c-5.5 0-8 3-8 6.5S6.5 20 12 20s8-3 8-6.5S17.5 7 12 7z" fill="currentColor"/><path d="M12 7V4.5c1 0 2-.5 2.5-1.5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',star:'<path d="M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6.1L12 16.9l-5.4 2.9 1.1-6.1-4.5-4.3 6.1-.8z" fill="currentColor"/>',shamrock:'<circle cx="12" cy="7" r="3.6" fill="currentColor"/><circle cx="7.6" cy="12.6" r="3.6" fill="currentColor"/><circle cx="16.4" cy="12.6" r="3.6" fill="currentColor"/><path d="M12 12c0 4 1 6.5 3 9" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',poppy:'<circle cx="9" cy="9" r="4.2" fill="currentColor"/><circle cx="15" cy="9" r="4.2" fill="currentColor"/><circle cx="9" cy="15" r="4.2" fill="currentColor"/><circle cx="15" cy="15" r="4.2" fill="currentColor"/><circle cx="12" cy="12" r="2.4" fill="#fff"/>',spark:'<path d="M12 2l2 8 8 2-8 2-2 8-2-8-8-2 8-2z" fill="currentColor"/>',lantern:'<path d="M12 2v2M9 4h6M12 20v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="12" cy="12" rx="7" ry="7.5" fill="currentColor"/><path d="M9 4.6h6M9 19.4h6" stroke="currentColor" stroke-width="2"/>'};
 
 /* ---------- room illustration: eye-level 3D rooms ----------
    Each room is a small scene measured in centimetres (x across the room, y from the window wall
@@ -365,6 +397,15 @@ function scene(styleName,room,H,opts={}){
     else o.push(wp(a1,z1),wp(a0,z1));return o};
   P.push(poly(outline(win.a0-6,win.a1+6,win.z0-6,win.z1+6),trim),poly(outline(win.a0,win.a1,win.z0,win.z1),`url(#${id}s)`));
   { const m=(win.a0+win.a1)/2,top=arch?win.z1:win.z1;P.push(line(wp(m,win.z0),wp(m,top),trim,2.4),line(wp(win.a0,(win.z0+win.z1)/2-6),wp(win.a1,(win.z0+win.z1)/2-6),trim,2.4)) }
+  { /* what's outside: snow, summer sun, a Halloween moon or New Year fireworks */
+    const dc=s.deco||{},m=(win.a0+win.a1)/2,r=(win.a1-win.a0)/2,inside=(a,z)=>a>win.a0+3&&a<win.a1-3&&z>win.z0+3&&(arch?(z<win.z1-r||(a-m)**2+(z-(win.z1-r))**2<(r-3)**2):z<win.z1-3);
+    const dot=(a,z,rad,fill,extra='')=>{const q=pr(...wp(a,z)),kk=onRight?k(a):k(0);return `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${(rad*kk).toFixed(2)}" fill="${fill}" ${extra}/>`};
+    if(dc.sun)P.push(dot(m+r*.35,win.z1-r*.75,30,'#fff3b0',`opacity=".8" filter="url(#${id}g)"`),dot(m+r*.35,win.z1-r*.75,13,'#ffd75e'));
+    if(dc.moon)P.push(dot(m-r*.3,win.z1-r*.7,20,'#fff4cf',`opacity=".7" filter="url(#${id}g)"`),dot(m-r*.3,win.z1-r*.7,11,'#f7eccb'));
+    if(dc.fireworks)[[m-r*.35,win.z1-r*.8,'#f3d27a'],[m+r*.4,win.z1-r*1.05,'#e8829a'],[m+r*.05,win.z1-r*.45,'#bfe3f5']].forEach(([a,z,c])=>{let o='';for(let i=0;i<12;i++){const ang=i/12*2*Math.PI,a1=a+Math.cos(ang)*14,z1=z+Math.sin(ang)*14;if(inside(a1,z1))o+=line(wp(a+Math.cos(ang)*4,z+Math.sin(ang)*4),wp(a1,z1),c,1.1,'stroke-linecap="round"')+dot(a1,z1,1.6,c)}P.push(o)});
+    if(dc.snow){let o='';for(let i=0;i<46;i++){const a=win.a0+((i*47)%97)/97*(win.a1-win.a0),z=win.z0+((i*61)%89)/89*(win.z1-win.z0);if(inside(a,z))o+=dot(a,z,1.3+(i%3)*.5,'#fff','opacity=".9"')}
+      o+=poly([wp(win.a0,win.z0),wp(win.a1,win.z0),wp(win.a1,win.z0+9),wp(m+r*.3,win.z0+14),wp(m-r*.4,win.z0+8),wp(win.a0,win.z0+12)],'#fbfcfd');P.push(o)}
+  }
   P.push(poly(onRight?[[W,win.a0,0],[W,win.a1,0],[W-200,win.a1+60,0],[W-200,win.a0+10,0]]:[[win.a0,0,0],[win.a1,0,0],[win.a1+40,L*.72,0],[win.a0-60,L*.72,0]],'#fff8e6',`opacity="${dark?.1:.22}" filter="url(#${id}b)"`));
 
   /* ---- drawables sorted back to front ---- */
@@ -391,21 +432,32 @@ function scene(styleName,room,H,opts={}){
     cub(x0,y0,x1,y1,8,h,col,(a,y,b,z0,z1)=>{let o='';for(let i=1;i<rows;i++)o+=line([a+3,y,z0+(z1-z0)*i/rows],[b-3,y,z0+(z1-z0)*i/rows],'rgba(0,0,0,.25)',.8);
       for(let i=0;i<rows;i++){const q=pr((a+b)/2,y,z0+(z1-z0)*(i+.5)/rows);o+=`<circle cx="${q[0]}" cy="${q[1]}" r="${Math.max(1,k(y)*1.4)}" fill="${shade(col,-45)}"/>`}return o})};
   const sprite=(y,z,fn)=>D.push({y,z,draw:fn});
-  const plant=(x,y,kind)=>sprite(y,0,()=>{const [bx,by]=pr(x,y,0),s1=k(y);let o=`<ellipse cx="${bx}" cy="${by}" rx="${16*s1}" ry="${4*s1}" fill="#000" opacity=".18" filter="url(#${id}b)"/>`;
+  const plant=(x,y,kind)=>{if(kind==='xmas')x=Math.max(46,Math.min(W-46,x));sprite(y,0,()=>{const [bx,by]=pr(x,y,0),s1=k(y);let o=`<ellipse cx="${bx}" cy="${by}" rx="${16*s1}" ry="${4*s1}" fill="#000" opacity=".18" filter="url(#${id}b)"/>`;
     const pot=dark?'#8f7a64':'#d8cbb6';o+=`<path d="M${bx-15*s1} ${by-34*s1}h${30*s1}l${-4*s1} ${34*s1}h${-22*s1}Z" fill="${pot}"/><path d="M${bx-15*s1} ${by-34*s1}h${30*s1}v${3*s1}h${-30*s1}Z" fill="${shade(pot,-18)}"/>`;
     const top=by-34*s1,lv=(cx2,cy2,rx,ry,rot,c)=>`<ellipse cx="${cx2.toFixed(1)}" cy="${cy2.toFixed(1)}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${cx2.toFixed(1)} ${cy2.toFixed(1)})" fill="${c}"/>`;
+    if(kind==='xmas'){o='';const t0=by-12*s1,g=['#2f5a43','#386a4f','#2a5140'];
+      o+=`<ellipse cx="${bx}" cy="${by-80*s1}" rx="${60*s1}" ry="${70*s1}" fill="#ffe2a0" opacity="${dark?.5:.28}" filter="url(#${id}g)"/><ellipse cx="${bx}" cy="${by}" rx="${40*s1}" ry="${6*s1}" fill="#000" opacity=".2" filter="url(#${id}b)"/>`;
+      o+=`<rect x="${bx-4*s1}" y="${t0}" width="${8*s1}" height="${12*s1}" fill="#5b4330"/>`;
+      [[0,34,46],[40,28,44],[78,20,40]].forEach(([lift,hw,ht],i)=>{o+=`<path d="M${bx-hw*s1} ${t0-lift*s1}L${bx} ${t0-(lift+ht+20)*s1}L${bx+hw*s1} ${t0-lift*s1}Z" fill="${g[i]}"/>`});
+      o+=`<path d="M${bx} ${t0-148*s1}l${2.4*s1} ${5*s1}l${5.6*s1} ${.6*s1}l${-4.2*s1} ${3.6*s1}l${1.2*s1} ${5.4*s1}l${-5*s1} ${-2.8*s1}l${-5*s1} ${2.8*s1}l${1.2*s1} ${-5.4*s1}l${-4.2*s1} ${-3.6*s1}l${5.6*s1} ${-.6*s1}z" fill="#e6c25a"/>`;
+      const bc=['#f3d27a','#c8423a','#f4efe4','#e6a33a'];for(let i=0;i<22;i++){const tier=i%3,lift=[0,40,78][tier],hw=[34,28,20][tier],ht=[46,44,40][tier],f=((i*37)%10)/10,yy=t0-(lift+4+f*(ht+8))*s1,span=hw*(1-f*.9)*s1,xx=bx+(((i*53)%20)/10-1)*span*.85;o+=`<circle cx="${xx.toFixed(1)}" cy="${yy.toFixed(1)}" r="${2*s1}" fill="${bc[i%4]}"/>`}
+      [[-30,16,'#b0302f','#e6c25a'],[2,14,'#e6c25a','#b0302f'],[24,12,'#f4efe4','#2f5a43']].forEach(([dx,w,c,rb])=>{o+=`<rect x="${bx+dx*s1}" y="${by-w*s1}" width="${w*1.3*s1}" height="${w*s1}" fill="${c}"/><rect x="${bx+(dx+w*.55)*s1}" y="${by-w*s1}" width="${2.4*s1}" height="${w*s1}" fill="${rb}"/><rect x="${bx+dx*s1}" y="${by-w*.6*s1}" width="${w*1.3*s1}" height="${2.4*s1}" fill="${rb}"/>`});
+      return o}
+    if(kind==='blossom'){o+=`<path d="M${bx} ${top}C${bx-4*s1} ${top-60*s1} ${bx-30*s1} ${top-90*s1} ${bx-40*s1} ${top-130*s1}M${bx} ${top-40*s1}C${bx+14*s1} ${top-70*s1} ${bx+30*s1} ${top-100*s1} ${bx+34*s1} ${top-140*s1}M${bx-20*s1} ${top-92*s1}l${-26*s1} ${-18*s1}M${bx+22*s1} ${top-96*s1}l${22*s1} ${-12*s1}" stroke="#4a3426" stroke-width="${2*s1}" fill="none" stroke-linecap="round"/>`;
+      for(let i=0;i<30;i++){const br=i%4,t=.35+((i*29)%20)/30,pts2=[[-40,-130],[34,-140],[-46,-110],[44,-108]][br],xx=bx+pts2[0]*t*s1+((i*13)%7-3)*s1,yy=top+pts2[1]*t*s1;o+=`<circle cx="${xx.toFixed(1)}" cy="${yy.toFixed(1)}" r="${3*s1}" fill="${i%3?'#f1a9b8':'#fbe3e8'}"/>`}
+      return o}
     if(kind==='fern'){for(let i=-4;i<=4;i++)o+=`<path d="M${bx} ${top}q${i*10*s1} ${-36*s1} ${i*20*s1} ${-(52-Math.abs(i)*5)*s1}" stroke="${i%2?'#5c8752':'#4c7444'}" stroke-width="${4.5*s1}" fill="none" stroke-linecap="round"/>`}
     else if(kind==='olive'){o+=`<path d="M${bx} ${top}C${bx-6*s1} ${top-50*s1} ${bx-24*s1} ${top-80*s1} ${bx-34*s1} ${top-104*s1}M${bx} ${top}C${bx+6*s1} ${top-60*s1} ${bx+20*s1} ${top-92*s1} ${bx+28*s1} ${top-118*s1}" stroke="#6b5640" stroke-width="${1.6*s1}" fill="none"/>`;
       for(let i=0;i<22;i++){const t=(i%11)/10,sd=i<11?-1:1,lx=bx+sd*(i<11?34:28)*t*t+sd*3*s1,ly=top-(i<11?104:118)*t*s1;o+=lv(lx+(i%3-1)*5*s1,ly,7*s1,2.6*s1,sd*35+(i%4)*8,i%3?'#7f9a70':'#6b8068')}}
     else{o+=`<path d="M${bx} ${top}V${top-140*s1}" stroke="#5b4a38" stroke-width="${2.4*s1}"/>`;for(let i=0;i<9;i++){const ly=top-30*s1-i*13*s1,d=i%2?-1:1;o+=lv(bx+d*14*s1,ly,17*s1,7*s1,d*-28,i%2?'#5f8a55':'#4c7444')}}
-    return o});
+    return o})};
   const pendant=(x,y,zb)=>{sprite(y,zb,()=>{const [tx,ty]=pr(x,y,CEIL),[bx,by]=pr(x,y,zb),s1=k(y),shadeC=dark?s.accent:'#e7ddcb';
     return `<line x1="${tx}" y1="${ty}" x2="${bx}" y2="${by}" stroke="${dark?'#d8c39a':'#3b3835'}" stroke-width="${Math.max(.6,s1*.8)}"/><ellipse cx="${bx}" cy="${by+22*s1}" rx="${40*s1}" ry="${16*s1}" fill="#ffe8a8" opacity="${dark?.55:.35}" filter="url(#${id}g)"/>
       <path d="M${bx-22*s1} ${by+20*s1}q0 ${-22*s1} ${22*s1} ${-22*s1}t${22*s1} ${22*s1}Z" fill="${shadeC}"/><ellipse cx="${bx}" cy="${by+20*s1}" rx="${22*s1}" ry="${4*s1}" fill="${shade(shadeC,-25)}"/><ellipse cx="${bx}" cy="${by+21*s1}" rx="${7*s1}" ry="${3*s1}" fill="#fff3c4"/>`});return pr(x,y,zb-14)};
   const tableLamp=(x,y,z)=>{sprite(y,z,()=>{const [bx,by]=pr(x,y,z),s1=k(y);return `<ellipse cx="${bx}" cy="${by-30*s1}" rx="${26*s1}" ry="${20*s1}" fill="#ffe8a8" opacity="${dark?.6:.4}" filter="url(#${id}g)"/><path d="M${bx-5*s1} ${by}h${10*s1}l${-2*s1} ${-20*s1}h${-6*s1}Z" fill="${s.accent}"/><path d="M${bx-13*s1} ${by-20*s1}l${4*s1} ${-18*s1}h${18*s1}l${4*s1} ${18*s1}Z" fill="#f2ead9"/>`});return pr(x,y,z+28)};
   const arcLamp=(x,y)=>{sprite(y,0,()=>{const s1=k(y),[bx,by]=pr(x,y,0),[mx,my]=pr(x,y,175),[ex,ey]=pr(x-80,y,158);const c=dark?'#c9973a':'#2f2c29';
     return `<ellipse cx="${bx}" cy="${by}" rx="${14*s1}" ry="${4*s1}" fill="${c}"/><path d="M${bx} ${by}L${mx} ${my+30*s1}Q${mx} ${my-20*s1} ${ex} ${ey-6*s1}" stroke="${c}" stroke-width="${Math.max(1,1.6*s1)}" fill="none"/><ellipse cx="${ex}" cy="${ey+12*s1}" rx="${34*s1}" ry="${14*s1}" fill="#ffe8a8" opacity="${dark?.55:.35}" filter="url(#${id}g)"/><path d="M${ex-18*s1} ${ey+6*s1}q${18*s1} ${-26*s1} ${36*s1} 0Z" fill="${shade(s.accent,10)}"/>`});return pr(x-80,y,150)};
-  const vase=(x,y,z)=>{sprite(y+1,z,()=>{const [bx,by]=pr(x,y,z),s1=k(y),c=dark?'#c8b9a2':'#d6cfc2';return `<path d="M${bx-5*s1} ${by}c${-6*s1} ${-10*s1} ${0} ${-16*s1} ${2*s1} ${-22*s1}h${6*s1}c${2*s1} ${6*s1} ${8*s1} ${12*s1} ${2*s1} ${22*s1}Z" fill="${c}"/><path d="M${bx} ${by-22*s1}c${-2*s1} ${-12*s1} ${6*s1} ${-20*s1} ${12*s1} ${-26*s1}M${bx} ${by-22*s1}c${-4*s1} ${-10*s1} ${-10*s1} ${-16*s1} ${-14*s1} ${-20*s1}" stroke="#6f8a62" stroke-width="${1.2*s1}" fill="none"/>`});return pr(x,y,z+14)};
+  const vase=(x,y,z)=>{sprite(y+1,z,()=>{const [bx,by]=pr(x,y,z),s1=k(y),c=dark?'#c8b9a2':'#d6cfc2';return `<path d="M${bx-5*s1} ${by}c${-6*s1} ${-10*s1} ${0} ${-16*s1} ${2*s1} ${-22*s1}h${6*s1}c${2*s1} ${6*s1} ${8*s1} ${12*s1} ${2*s1} ${22*s1}Z" fill="${c}"/><path d="M${bx} ${by-22*s1}c${-2*s1} ${-12*s1} ${6*s1} ${-20*s1} ${12*s1} ${-26*s1}M${bx} ${by-22*s1}c${-4*s1} ${-10*s1} ${-10*s1} ${-16*s1} ${-14*s1} ${-20*s1}" stroke="#6f8a62" stroke-width="${1.2*s1}" fill="none"/>`+(s.flower?[[12,-48],[-14,-42],[3,-38]].map(([dx,dy])=>`<circle cx="${bx+dx*s1}" cy="${by+dy*s1}" r="${3.6*s1}" fill="${s.flower}"/>`+(s.flower==='#b3261e'?`<circle cx="${bx+dx*s1}" cy="${by+dy*s1}" r="${1.1*s1}" fill="#1d1a18"/>`:'')).join(''):'')});return pr(x,y,z+14)};
   const books=(x,y,z)=>sprite(y+1,z,()=>{const [bx,by]=pr(x,y,z),s1=k(y);return `<rect x="${bx-12*s1}" y="${by-4*s1}" width="${24*s1}" height="${4*s1}" fill="${s.accent}"/><rect x="${bx-10*s1}" y="${by-7*s1}" width="${20*s1}" height="${3*s1}" fill="${shade(s.sofa,-25)}"/>`});
   const rug=(x0,y0,x1,y1)=>{P.push(poly([[x0,y0,0],[x1,y0,0],[x1,y1,0],[x0,y1,0]],s.rug));const b=lum(s.rug)<110?shade(s.rug,30):shade(s.rug,-22);
     P.push(`<polygon points="${pts([[x0+8,y0+8,0],[x1-8,y0+8,0],[x1-8,y1-8,0],[x0+8,y1-8,0]])}" fill="none" stroke="${b}" stroke-width="1.2" stroke-dasharray="${styleName==='Mid-century'?'0':'5 4'}"/>`)};
@@ -414,7 +466,16 @@ function scene(styleName,room,H,opts={}){
     const circ=(cu,cv,r,fill)=>`<polygon points="${pp(Array.from({length:18},(_,i)=>[cu+r*Math.cos(i/18*2*Math.PI)*.62,cv+r*Math.sin(i/18*2*Math.PI)]))}" fill="${fill}"/>`;
     if(s.art==='arch')o+=`<polygon points="${pp([[.38,.12],[.62,.12],[.62,.5],...Array.from({length:9},(_,i)=>[.5+.12*Math.cos(i/8*Math.PI),.5+.2*Math.sin(i/8*Math.PI)]),[.38,.5]])}" fill="${s.accent}"/>`+circ(.76,.76,.1,s.sofa==='#f1eee8'?'#d9c08f':s.sofa);
     else if(s.art==='abstract')o+=circ(.36,.5,.28,s.accent)+`<polygon points="${pp([[.6,.62],[.8,.62],[.8,.86],[.6,.86]])}" fill="${shade(s.wood,24)}"/>`+circ(.68,.32,.14,s.sofa);
+    else if(s.art==='heart')o+=`<polygon points="${pp(Array.from({length:30},(_,i)=>{const t=i/30*2*Math.PI,hx=16*Math.sin(t)**3,hy=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);return[.5+hx/58,.5+hy/44]}))}" fill="${s.accent}"/>`;
+    else if(s.art==='stars')o+=[[.25,.68],[.5,.68],[.75,.68],[.375,.36],[.625,.36]].map(([u,v])=>`<polygon points="${pp(Array.from({length:10},(_,i)=>{const r=i%2?.05:.12,a=-Math.PI/2+i*Math.PI/5;return[u+r*Math.cos(a)*.62,v-r*Math.sin(a)]}))}" fill="${s.accent}"/>`).join('')+`<polygon points="${pp([[0,0],[1,0],[1,.12],[0,.12]])}" fill="${s.sofa}"/>`;
     else o+=`<polygon points="${pp([[0,0],[0,.45],[.25,.68],[.48,.48],[.72,.74],[1,.5],[1,0]])}" fill="${s.accent}" opacity=".85"/>`+circ(.78,.8,.08,'#e2c48c');
+    if(s.art==='wreath'||s.art==='poppy'){                    /* a wreath hangs straight on the wall, no frame */
+      const cu=.5,cv=.5;o=`<polygon points="${pp(Array.from({length:28},(_,i)=>[cu+.34*Math.cos(i/28*2*Math.PI)*.62,cv+.42*Math.sin(i/28*2*Math.PI)]))}" fill="none" stroke="${s.art==='wreath'?'#2f5a43':'#3f4a3c'}" stroke-width="${7*k(0)}"/>`;
+      for(let i=0;i<16;i++){const a=i/16*2*Math.PI,q=pr(...wa(cu+.34*Math.cos(a)*.62,cv+.42*Math.sin(a))),r=k(0)*(s.art==='wreath'?2.4:3.4);
+        o+=s.art==='wreath'?`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${(r*1.6).toFixed(1)}" fill="${i%2?'#3d6b4f':'#264a37'}"/>`+(i%3===0?`<circle cx="${(q[0]+r).toFixed(1)}" cy="${q[1].toFixed(1)}" r="${(r*.6).toFixed(1)}" fill="#b0302f"/>`:'')
+          :(i%2?`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${r.toFixed(1)}" fill="#b3261e"/><circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${(r*.32).toFixed(1)}" fill="#1d1a18"/>`:`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${(r*.7).toFixed(1)}" fill="#5f6e52"/>`)}
+      const b=pr(...wa(.5,.1)),r=k(0);o+=s.art==='wreath'?`<path d="M${b[0]} ${b[1]}l${-9*r} ${-5*r}v${10*r}zM${b[0]} ${b[1]}l${9*r} ${-5*r}v${10*r}zM${b[0]} ${b[1]}l${-4*r} ${12*r}M${b[0]} ${b[1]}l${4*r} ${12*r}" fill="#b0302f" stroke="#b0302f" stroke-width="${1.6*r}"/>`
+        :`<path d="M${b[0]} ${b[1]}l${-4*r} ${14*r}M${b[0]} ${b[1]}l${4*r} ${14*r}" stroke="#2b2b2b" stroke-width="${2.2*r}"/><circle cx="${b[0]}" cy="${b[1]}" r="${3.4*r}" fill="#b3261e"/><circle cx="${b[0]}" cy="${b[1]}" r="${1.1*r}" fill="#1d1a18"/>`}
     P.push(o)};
 
   if(bare){cub(50,300,108,345,0,40,'#d8c3a0',(a,y,b,z0,z1)=>line([a,y,z1-12],[b,y,z1-12],'#b39a74',1));}
@@ -444,6 +505,40 @@ function scene(styleName,room,H,opts={}){
     plant(398,42,s.plant);
     spots.push({x:pr(150,238,58),id:'fenwick-dining-table'},{x:lp,id:'arlo-pendant'},{x:vp,id:'ida-vase'});
   }
+  if(!bare&&s.deco)decorate(s.deco);
+  function decorate(dc){
+    const k0=k(0),RS={'Living room':{bal:[72,116],pk:[[300,150],[284,176]],top:[156,214,42],cn:[212,216,42],lan:[[80,110,196],[360,130,188],[250,50,206]]},
+      'Bedroom':{bal:[74,196],pk:[[352,92],[372,70]],top:null,cn:[300,40,56],lan:[[60,120,196],[340,110,194],[200,260,210]]},
+      'Dining room':{bal:[352,92],pk:[[56,250],[80,272]],top:[212,206,76],cn:[150,222,76],lan:[[150,190,206],[270,196,200],[90,60,200]]}}[room];
+    /* a garland swagged across the back wall: bunting, light bulbs, hearts or shamrocks */
+    const swag=t=>{const x=18+(W-36)*t,ph=(t*3)%1;return[x,0,250-15*Math.sin(Math.PI*ph)]};
+    const garland=(n,fn)=>{let o=`<polyline points="${pts(Array.from({length:61},(_,i)=>swag(i/60)))}" fill="none" stroke="${dark?'#8f8a7e':'#6a6258'}" stroke-width="${Math.max(.6,.5*k0)}"/>`;for(let i=0;i<n;i++)o+=fn(swag((i+.5)/n),i);P.push(o)};
+    if(dc.bunting)garland(24,(q,i)=>{const a=pr(q[0]-6,0,q[2]),b=pr(q[0]+6,0,q[2]),c=pr(q[0],0,q[2]-14);return `<polygon points="${a[0].toFixed(1)},${a[1].toFixed(1)} ${b[0].toFixed(1)},${b[1].toFixed(1)} ${c[0].toFixed(1)},${c[1].toFixed(1)}" fill="${dc.bunting[i%dc.bunting.length]}"/>`});
+    if(dc.lights)garland(30,(q,i)=>{const c=pr(q[0],0,q[2]-3);return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${(4*k0).toFixed(1)}" fill="#ffe08a" opacity="${dark?.6:.4}" filter="url(#${id}b)"/><circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${(1.6*k0).toFixed(1)}" fill="${dark?'#fff1b8':'#e9a22e'}"/>`});
+    const heart=(c,sz,fill)=>`<path d="M${c[0]} ${c[1]+sz*.9}C${c[0]-sz*1.6} ${c[1]-sz*.1} ${c[0]-sz*.9} ${c[1]-sz*1.3} ${c[0]} ${c[1]-sz*.4}C${c[0]+sz*.9} ${c[1]-sz*1.3} ${c[0]+sz*1.6} ${c[1]-sz*.1} ${c[0]} ${c[1]+sz*.9}Z" fill="${fill}"/>`;
+    if(dc.hearts)garland(16,(q,i)=>heart(pr(q[0],0,q[2]-8),5*k0,dc.hearts[i%2]));
+    if(dc.shamrocks)garland(16,(q,i)=>{const c=pr(q[0],0,q[2]-8),r=2.6*k0,f=dc.shamrocks[i%2];return `<circle cx="${c[0]}" cy="${c[1]-r}" r="${r}" fill="${f}"/><circle cx="${c[0]-r}" cy="${c[1]+r*.5}" r="${r}" fill="${f}"/><circle cx="${c[0]+r}" cy="${c[1]+r*.5}" r="${r}" fill="${f}"/>`});
+    if(dc.bats)P.push([[120,232,1],[176,222,.8],[300,236,1.1],[360,214,.7],[60,208,.8]].filter(b=>b[0]<W).map(([x,z,sc])=>{const c=pr(x,0,z),r=7*k0*sc;return `<path d="M${c[0]} ${c[1]}c${-r*.3} ${-r*.5} ${-r} ${-r*.6} ${-r*1.6} ${-r*.2}c${r*.3} ${r*.1} ${r*.3} ${r*.5} ${r*.1} ${r*.7}c${r*.4} ${-r*.2} ${r*.8} ${-r*.1} ${r*1.5} ${-r*.5}c${r*.7} ${r*.4} ${r*1.1} ${r*.3} ${r*1.5} ${r*.5}c${-r*.2} ${-r*.2} ${-r*.2} ${-r*.6} ${r*.1} ${-r*.7}c${-r*.6} ${-r*.4} ${-r*1.3} ${-r*.3} ${-r*1.6} ${r*.2}z" fill="#141016"/>`}).join(''));
+    if(dc.web){let o='';const c=pr(0,0,CEIL);for(let i=0;i<6;i++){const ang=Math.PI/2*i/5,e=pr(48*Math.cos(ang),0,CEIL-48*Math.sin(ang));o+=`<line x1="${c[0]}" y1="${c[1]}" x2="${e[0].toFixed(1)}" y2="${e[1].toFixed(1)}" stroke="#cfc8d6" stroke-width=".6" opacity=".7"/>`}
+      for(const rr of [14,26,38]){o+=`<polyline points="${pts(Array.from({length:6},(_,i)=>{const ang=Math.PI/2*i/5;return[rr*Math.cos(ang),0,CEIL-rr*Math.sin(ang)]}))}" fill="none" stroke="#cfc8d6" stroke-width=".6" opacity=".7"/>`}P.push(o)}
+    if(dc.confetti){let o='';for(let i=0;i<90;i++){const x=20+((i*73)%101)/101*(W-40),y=60+((i*37)%89)/89*(L-20),c=pr(x,y,0),r=1.6*k(y);o+=`<rect x="${(c[0]-r).toFixed(1)}" y="${(c[1]-r*.5).toFixed(1)}" width="${(r*2).toFixed(1)}" height="${r.toFixed(1)}" transform="rotate(${(i*47)%180} ${c[0].toFixed(1)} ${c[1].toFixed(1)})" fill="${dc.confetti[i%dc.confetti.length]}"/>`}P.push(o)}
+    /* things in the room, sorted with the furniture */
+    if(dc.balloons){const [x,y]=RS.bal;sprite(y,0,()=>{const [bx,by]=pr(x,y,0),s1=k(y);let o=`<ellipse cx="${bx}" cy="${by}" rx="${10*s1}" ry="${3*s1}" fill="#000" opacity=".18" filter="url(#${id}b)"/>`;
+      [[-16,176],[6,192],[18,168],[-4,160],[-22,200]].forEach(([dx,z],i)=>{const [ex,ey]=pr(x+dx,y,z);o+=`<path d="M${bx} ${by}Q${(bx+ex)/2+6*s1} ${(by+ey)/2} ${ex} ${ey+13*s1}" stroke="#7a7266" stroke-width="${Math.max(.5,.5*s1)}" fill="none"/><ellipse cx="${ex}" cy="${ey}" rx="${11*s1}" ry="${13.5*s1}" fill="${dc.balloons[i%dc.balloons.length]}"/><ellipse cx="${ex-3.6*s1}" cy="${ey-5*s1}" rx="${2.6*s1}" ry="${4*s1}" fill="#fff" opacity=".35"/>`});return o})}
+    if(dc.pumpkins)RS.pk.forEach(([x,y],i)=>sprite(y,0,()=>{const [bx,by]=pr(x,y,0),s1=k(y)*(i?.75:1);let o=`<ellipse cx="${bx}" cy="${by}" rx="${22*s1}" ry="${5*s1}" fill="#000" opacity=".25" filter="url(#${id}b)"/><ellipse cx="${bx}" cy="${by-16*s1}" rx="${30*s1}" ry="${26*s1}" fill="#ff9a3c" opacity=".35" filter="url(#${id}g)"/>`;
+      for(const [dx,rx] of [[-9,10],[9,10],[0,11]])o+=`<ellipse cx="${bx+dx*s1}" cy="${by-12*s1}" rx="${rx*s1}" ry="${12*s1}" fill="${dx?'#d9681e':'#e57d27'}"/>`;
+      o+=`<path d="M${bx} ${by-23*s1}q${1*s1} ${-6*s1} ${4*s1} ${-7*s1}" stroke="#4d5a2a" stroke-width="${2.4*s1}" fill="none"/><path d="M${bx-8*s1} ${by-15*s1}l${3*s1} ${-4*s1}l${3*s1} ${4*s1}zM${bx+2*s1} ${by-15*s1}l${3*s1} ${-4*s1}l${3*s1} ${4*s1}zM${bx-8*s1} ${by-8*s1}q${8*s1} ${6*s1} ${16*s1} 0q${-8*s1} ${2*s1} ${-16*s1} 0z" fill="#ffd36b"/>`;return o}));
+    if(dc.lanterns)RS.lan.forEach(([x,y,z])=>sprite(y,z,()=>{const [tx,ty]=pr(x,y,CEIL),[bx,by]=pr(x,y,z),s1=k(y);
+      return `<line x1="${tx}" y1="${ty}" x2="${bx}" y2="${by}" stroke="#3b2a20" stroke-width="${Math.max(.5,.6*s1)}"/><ellipse cx="${bx}" cy="${by+16*s1}" rx="${30*s1}" ry="${26*s1}" fill="#ff8a5c" opacity=".35" filter="url(#${id}g)"/>
+        <rect x="${bx-8*s1}" y="${by}" width="${16*s1}" height="${3*s1}" fill="#d9a52b"/><ellipse cx="${bx}" cy="${by+15*s1}" rx="${15*s1}" ry="${12.5*s1}" fill="#c4302b"/><path d="M${bx} ${by+3*s1}v${25*s1}M${bx-8*s1} ${by+4*s1}q${-5*s1} ${11*s1} 0 ${23*s1}M${bx+8*s1} ${by+4*s1}q${5*s1} ${11*s1} 0 ${23*s1}" stroke="#8f1f1b" stroke-width="${.8*s1}" fill="none"/>
+        <rect x="${bx-8*s1}" y="${by+27*s1}" width="${16*s1}" height="${3*s1}" fill="#d9a52b"/><path d="M${bx} ${by+30*s1}v${9*s1}" stroke="#d9a52b" stroke-width="${1.6*s1}"/>`}));
+    if(dc.candles){const [x,y,z]=RS.cn;sprite(y+2,z,()=>{const s1=k(y);let o='';[[-6,14],[0,20],[6,10]].forEach(([dx,h])=>{const [bx,by]=pr(x+dx,y,z);o+=`<ellipse cx="${bx}" cy="${by-(h+4)*s1}" rx="${7*s1}" ry="${9*s1}" fill="#ffd98a" opacity=".55" filter="url(#${id}b)"/><rect x="${bx-2*s1}" y="${by-h*s1}" width="${4*s1}" height="${h*s1}" fill="#f6f0e2"/><ellipse cx="${bx}" cy="${by-(h+2.4)*s1}" rx="${1.2*s1}" ry="${2.4*s1}" fill="#ffb43a"/>`});return o})}
+    if(dc.top&&RS.top){const [x,y,z]=RS.top;sprite(y+2,z,()=>{const [bx,by]=pr(x,y,z),s1=k(y);
+      if(dc.top==='cake')return `<rect x="${bx-12*s1}" y="${by-14*s1}" width="${24*s1}" height="${14*s1}" fill="#f6efe6"/><path d="M${bx-12*s1} ${by-14*s1}h${24*s1}v${4*s1}q${-3*s1} ${3*s1} ${-6*s1} 0t${-6*s1} 0t${-6*s1} 0t${-6*s1} 0z" fill="${s.accent}"/><ellipse cx="${bx}" cy="${by}" rx="${16*s1}" ry="${2.4*s1}" fill="#e9e3d8"/>`+[-6,0,6].map(dx=>`<rect x="${bx+(dx-.8)*s1}" y="${by-21*s1}" width="${1.6*s1}" height="${7*s1}" fill="#7fa7c9"/><ellipse cx="${bx+dx*s1}" cy="${by-22.5*s1}" rx="${1*s1}" ry="${2*s1}" fill="#ffb43a"/>`).join('');
+      if(dc.top==='fizz')return [-6,6].map(dx=>`<path d="M${bx+(dx-3)*s1} ${by-22*s1}h${6*s1}l${-2*s1} ${8*s1}h${-2*s1}z" fill="#f3dc8c" opacity=".9"/><path d="M${bx+dx*s1} ${by-14*s1}v${12*s1}M${bx+(dx-3)*s1} ${by}h${6*s1}" stroke="#e8e6e0" stroke-width="${1*s1}"/>`).join('')+`<rect x="${bx-2.5*s1}" y="${by-26*s1}" width="${5*s1}" height="${26*s1}" rx="${2*s1}" fill="#1f3a2c"/><rect x="${bx-2.5*s1}" y="${by-26*s1}" width="${5*s1}" height="${6*s1}" fill="#d4af37"/>`;
+      const fruit=dc.top==='lemons'?'#f2d03b':'#f08a24';let o=`<path d="M${bx-14*s1} ${by-8*s1}h${28*s1}q${-2*s1} ${8*s1} ${-14*s1} ${8*s1}t${-14*s1} ${-8*s1}z" fill="${dc.top==='oranges'?'#c4302b':'#f4efe4'}"/>`;
+      [[-8,-10],[0,-12],[8,-10],[-4,-15],[4,-15]].forEach(([dx,dy])=>o+=`<ellipse cx="${bx+dx*s1}" cy="${by+dy*s1}" rx="${4.4*s1}" ry="${4*s1}" fill="${fruit}"/>`);return o+(dc.top==='oranges'?`<ellipse cx="${bx+5*s1}" cy="${by-20*s1}" rx="${3*s1}" ry="${1.4*s1}" fill="#4f7a3a"/>`:'')})}
+  }
   D.sort((a,b)=>(a.y-b.y)||(a.z-b.z)).forEach(d=>P.push(d.draw()));
   /* warm window light and a soft vignette */
   const wc=onRight?pr(W,(win.a0+win.a1)/2,150):pr((win.a0+win.a1)/2,0,150);
@@ -465,33 +560,60 @@ const ROOMS=[
   {t:'Linen and oak bedroom',st:'Japandi',room:'Bedroom',h:400,likes:1042},
   {t:'Harbour view dining',st:'Coastal',room:'Dining room',h:460,likes:587},
   {t:'Sandstone suite',st:'Warm minimal',room:'Bedroom',h:420,likes:913},
-  {t:'Mustard hour',st:'Mid-century',room:'Dining room',h:500,likes:802}
+  {t:'Mustard hour',st:'Mid-century',room:'Dining room',h:500,likes:802},
+  /* seasonal rooms only join the gallery while their look is picked */
+  {t:'Christmas Eve living room',st:'Christmas',room:'Living room',h:500,likes:2412},
+  {t:'Mince pies for eight',st:'Christmas',room:'Dining room',h:440,likes:1318},
+  {t:'Snowed-in snug',st:'Winter',room:'Living room',h:480,likes:1104},
+  {t:'Frost and flannel bedroom',st:'Winter',room:'Bedroom',h:420,likes:876},
+  {t:'Long light lounge',st:'Summer',room:'Living room',h:460,likes:1297},
+  {t:'Lemon supper table',st:'Summer',room:'Dining room',h:420,likes:742},
+  {t:'Surprise party lounge',st:'Birthday',room:'Living room',h:480,likes:958},
+  {t:'Cake at the big table',st:'Birthday',room:'Dining room',h:420,likes:611},
+  {t:'Dinner for two',st:'Valentine’s',room:'Dining room',h:480,likes:1530},
+  {t:'Rose and candle bedroom',st:'Valentine’s',room:'Bedroom',h:420,likes:1012},
+  {t:'Pumpkin night den',st:'Halloween',room:'Living room',h:500,likes:1876},
+  {t:'Haunted supper',st:'Halloween',room:'Dining room',h:420,likes:1240},
+  {t:'Bunting and stars lounge',st:'Patriots’ Day',room:'Living room',h:460,likes:684},
+  {t:'Street party table',st:'Patriots’ Day',room:'Dining room',h:420,likes:532},
+  {t:'Shamrock snug',st:'St Patrick’s Day',room:'Living room',h:460,likes:721},
+  {t:'Green table gathering',st:'St Patrick’s Day',room:'Dining room',h:420,likes:498},
+  {t:'A quiet moment',st:'Remembrance',room:'Living room',h:460,likes:904},
+  {t:'Remembrance Sunday lunch',st:'Remembrance',room:'Dining room',h:420,likes:566},
+  {t:'Countdown lounge',st:'New Year',room:'Living room',h:500,likes:1655},
+  {t:'Midnight dinner',st:'New Year',room:'Dining room',h:420,likes:981},
+  {t:'Lantern-lit reunion dinner',st:'Chinese New Year',room:'Dining room',h:480,likes:1388},
+  {t:'Spring blossom lounge',st:'Chinese New Year',room:'Living room',h:420,likes:807}
 ];
 const state={style:'Japandi',room:'All',liked:new Set()};
-try{const s=JSON.parse(localStorage.getItem('rp-insp')||'{}');if(s.liked)state.liked=new Set(s.liked);if(s.style&&STYLES[s.style])state.style=s.style}catch(e){}
-const persist=()=>{try{localStorage.setItem('rp-insp',JSON.stringify({liked:[...state.liked],style:state.style}))}catch(e){}};
+let baseStyle='Japandi';
+try{const s=JSON.parse(localStorage.getItem('rp-insp')||'{}');if(s.liked)state.liked=new Set(s.liked);if(s.style&&STYLES[s.style]&&!isSeason(s.style))state.style=baseStyle=s.style;if(s.season&&isSeason(s.season))state.style=s.season}catch(e){}
+/* the everyday style is shared with My Home, Account and My Renders; a seasonal look is kept separately */
+const persist=()=>{if(!isSeason(state.style))baseStyle=state.style;try{const s=JSON.parse(localStorage.getItem('rp-insp')||'{}');s.liked=[...state.liked];s.style=baseStyle;if(isSeason(state.style))s.season=state.style;else delete s.season;localStorage.setItem('rp-insp',JSON.stringify(s))}catch(e){}};
 
 /* ---------- renderers ---------- */
 function renderFan(){const picks=[['Mid-century','Living room'],['Japandi','Bedroom'],['Dark & moody','Dining room']];
   $('#fan').innerHTML=picks.map((p,i)=>`<div class="fc c${i+1}">${scene(p[0],p[1],300).svg}<span>${p[0]}</span></div>`).join('')}
+function styleCard(n){const s=STYLES[n],c=ROOMS.filter(r=>r.st===n).length;return `<button class="style-card" data-style="${n}" aria-pressed="${state.style===n}"><span class="sw"><i style="background:${s.wall}"></i><i style="background:${s.sofa}"></i><i style="background:${s.accent}"></i><i style="background:${s.wood}"></i>${s.icon?`<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24">${ICONS[s.icon]}</svg></span>`:''}</span><b>${s.label||n}</b><small>${s.when?s.when:`${c} rooms`}</small></button>`}
 function renderStyles(){
-  $('#styleRow').innerHTML=STYLE_NAMES.map(n=>{const s=STYLES[n];return `<button class="style-card" data-style="${n}" aria-pressed="${state.style===n}"><span class="sw"><i style="background:${s.wall}"></i><i style="background:${s.sofa}"></i><i style="background:${s.accent}"></i><i style="background:${s.wood}"></i></span><b>${n}</b><small>${ROOMS.filter(r=>r.st===n).length} rooms</small></button>`}).join('')}
+  $('#styleRow').innerHTML=STYLE_NAMES.map(styleCard).join('');
+  $('#seasonRow').innerHTML=SEASON_NAMES.map(styleCard).join('')}
 function hotspots(spots){return spots.map((p,i)=>`<button class="spot" style="left:${p.x}%;top:${p.y}%" data-spot="${p.id}" aria-label="Shop ${PRODUCTS[p.id].name}">+</button>`).join('')}
 function lookList(spots){const ids=[...new Set(spots.map(p=>p.id))];const total=ids.reduce((a,id)=>a+PRODUCTS[id].price,0);
   return `<ul class="look-list">${ids.map(id=>`<li><a href="shop.html#piece-${id}">${PRODUCTS[id].name}</a><span>${fmt(PRODUCTS[id].price)}</span></li>`).join('')}</ul><div class="look-total"><span>Whole look</span><span>${fmt(total)}</span></div>`}
 function renderFeature(){
-  const s=STYLES[state.style],room=state.style==='Dark & moody'?'Dining room':state.style==='Cottage'||state.style==='Coastal'?'Bedroom':'Living room';
+  const s=STYLES[state.style],room=s.feature||(state.style==='Dark & moody'?'Dining room':state.style==='Cottage'||state.style==='Coastal'?'Bedroom':'Living room');
   const sc=scene(state.style,room,460);const main=sc.spots[0].id;
   const pal=[s.wall,s.sofa,s.accent,s.wood,s.rug].map((c,i)=>`<div style="background:${c};color:${lum(c)<140?'#f4f1ea':'#16251f'}">${s.paint[i]}<br>${c.toUpperCase()}</div>`).join('');
   $('#feature').innerHTML=`<div class="stage" id="fStage">${sc.svg}${hotspots(sc.spots)}</div>
-    <div class="f-copy"><span class="tag">Featured look · ${room}</span><h3>${state.style}</h3><p>${s.blurb}</p>
+    <div class="f-copy"><span class="tag">${isSeason(state.style)?'Seasonal look':'Featured look'} · ${room}</span><h3>${s.label||state.style}</h3><p>${s.blurb}</p>
       <div class="palette" aria-label="Colour palette">${pal}</div>${lookList(sc.spots)}
       <div class="f-actions"><a class="btn primary" href="plan.html#add-${main}">Plan this look ${ARROW}</a><a class="btn" href="shop.html">Shop all pieces</a></div></div>`;
   document.documentElement.style.setProperty('--mood',s.wall);
 }
 function renderBA(){
   const before=scene(state.style,'Living room',300,{bare:true}).svg,after=scene(state.style,'Living room',300).svg;
-  $('#ba').innerHTML=`${before}<div class="after">${after}</div><div class="handle"></div><span class="lbl l1">Before</span><span class="lbl l2">After · ${state.style}</span><input type="range" id="baRange" min="0" max="100" value="${cut}" aria-label="Compare before and after">`;
+  $('#ba').innerHTML=`${before}<div class="after">${after}</div><div class="handle"></div><span class="lbl l1">Before</span><span class="lbl l2">After · ${STYLES[state.style].label||state.style}</span><input type="range" id="baRange" min="0" max="100" value="${cut}" aria-label="Compare before and after">`;
   $('#ba').style.setProperty('--cut',cut+'%');
   $('#baRange').addEventListener('input',e=>{cut=+e.target.value;$('#ba').style.setProperty('--cut',cut+'%')});
 }
@@ -501,9 +623,9 @@ const sceneCache={};
 function tileSvg(r,i){return sceneCache[i]||(sceneCache[i]=scene(r.st,r.room,r.h))}
 function renderGallery(){
   /* chosen style first, then the rest */
-  const list=ROOMS.map((r,i)=>({...r,i})).filter(r=>state.room==='All'||r.room===state.room).sort((a,b)=>(b.st===state.style)-(a.st===state.style));
+  const list=ROOMS.map((r,i)=>({...r,i})).filter(r=>(!isSeason(r.st)||r.st===state.style)&&(state.room==='All'||r.room===state.room)).sort((a,b)=>(b.st===state.style)-(a.st===state.style));
   $('#masonry').innerHTML=list.length?list.map(r=>{const liked=state.liked.has(r.i);return `<div class="tile" data-tile="${r.i}" role="button" tabindex="0" aria-label="Open ${r.t}">${tileSvg(r,r.i).svg}
-    <span class="pill">${r.st}</span><button class="heart" data-like="${r.i}" aria-pressed="${liked}" aria-label="Like ${r.t}">${HEART}</button>
+    <span class="pill">${STYLES[r.st].label||r.st}</span><button class="heart" data-like="${r.i}" aria-pressed="${liked}" aria-label="Like ${r.t}">${HEART}</button>
     <div class="cap"><div><b>${r.t}</b><small>${r.room}</small></div><span class="likes">♥ ${(r.likes+(liked?1:0)).toLocaleString('en-GB')}</span></div></div>`}).join(''):'<p class="empty">No rooms here yet.</p>';
 }
 function renderMarquee(){const words=STYLE_NAMES.concat(['Plan it','Shop it','Live in it']);const run=words.map(w=>`<span>${w}</span>`).join('');$('#track').innerHTML=run+run}
@@ -511,7 +633,7 @@ function renderMini(){$('#miniStack').innerHTML=[['Coastal','Living room'],['War
 
 function openLightbox(i){
   const r=ROOMS[i],sc=scene(r.st,r.room,Math.min(r.h,460));const main=sc.spots[0].id;
-  $('#lbCard').innerHTML=`<div class="stage" id="lbStage">${sc.svg}${hotspots(sc.spots)}</div><div class="lb-info"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sage)">${r.st} · ${r.room}</span><h3>${r.t}</h3><p style="margin:0;color:var(--text)">${STYLES[r.st].blurb}</p>${lookList(sc.spots)}<div class="f-actions"><a class="btn primary" href="plan.html#add-${main}">Plan this look ${ARROW}</a></div></div>`;
+  $('#lbCard').innerHTML=`<div class="stage" id="lbStage">${sc.svg}${hotspots(sc.spots)}</div><div class="lb-info"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sage)">${STYLES[r.st].label||r.st} · ${r.room}</span><h3>${r.t}</h3><p style="margin:0;color:var(--text)">${STYLES[r.st].blurb}</p>${lookList(sc.spots)}<div class="f-actions"><a class="btn primary" href="plan.html#add-${main}">Plan this look ${ARROW}</a></div></div>`;
   $('#lb').hidden=false;$('#lbClose').focus();
 }
 const closeLb=()=>{$('#lb').hidden=true;closePop()};
@@ -533,8 +655,8 @@ let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clea
 document.addEventListener('click',e=>{
   const sp=e.target.closest('[data-spot]');if(sp){e.stopPropagation();openPop(sp);return}
   if(!e.target.closest('.pop'))closePop();
-  const lk=e.target.closest('[data-like]');if(lk){e.stopPropagation();const i=+lk.dataset.like;state.liked.has(i)?state.liked.delete(i):state.liked.add(i);persist();renderGallery();toast(state.liked.has(i)?'Saved to My Home':'Removed from My Home');return}
-  const st=e.target.closest('[data-style]');if(st){state.style=st.dataset.style;persist();renderStyles();renderFeature();renderBA();renderGallery();return}
+  const lk=e.target.closest('[data-like]');if(lk){e.stopPropagation();const i=+lk.dataset.like;state.liked.has(i)?state.liked.delete(i):state.liked.add(i);persist();renderGallery();toast(state.liked.has(i)?(isSeason(ROOMS[i].st)?'Liked':'Saved to My Home'):(isSeason(ROOMS[i].st)?'Like removed':'Removed from My Home'));return}
+  const st=e.target.closest('[data-style]');if(st){state.style=st.dataset.style;persist();renderStyles();renderFeature();renderBA();renderGallery();if(isSeason(state.style)&&innerWidth<1001)$('#feature').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});return}
   const rf=e.target.closest('[data-roomf]');if(rf){state.room=rf.dataset.roomf;renderFilters();renderGallery();return}
   const tl=e.target.closest('[data-tile]');if(tl){openLightbox(+tl.dataset.tile);return}
   if(e.target===$('#lb')||e.target.closest('#lbClose')){closeLb();return}
