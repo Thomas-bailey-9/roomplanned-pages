@@ -1,5 +1,9 @@
 # RoomPlanned page examples
 
+**▶ Open the preview: https://thomas-bailey-9.github.io/roomplanned-pages/**
+
+The preview opens on the landing page (`index.html`). From there every page is one click away, and all pages link to each other.
+
 Design examples for new pages on roomplanned.com. Each one matches the live site's style so it follows on from the homepage.
 
 | Page | File | What it shows |
