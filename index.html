@@ -187,6 +187,8 @@ footer.big p{color:var(--muted);font-size:14px;max-width:34ch}
 
 @media (max-width:1000px){.nav{display:none}.icons{margin-left:auto}.pgrid,.pages{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}.roo-band .wrap{grid-template-columns:1fr}.hero-slides{inset:0}.roo-chip{display:none}footer.big .wrap{grid-template-columns:1fr 1fr}}
 @media (max-width:600px){.site .wrap{height:64px;gap:12px}.logo{font-size:20px}.hero-slides{inset:auto 0 0 0;height:46%}.slide img{object-position:var(--pos-phone,50% 50%)}.hero::before{background:linear-gradient(180deg,var(--hero-fade) 52%,transparent 80%)}.hero .wrap{padding-bottom:260px}.pgrid{gap:10px}.pc b{font-size:13px}.pc .pr{font-size:15px}.pc .vp{display:none}.pages{grid-template-columns:1fr}.pg.feature{grid-column:auto}.btn{min-width:0;width:100%}.hero-cta{align-items:stretch}}
+/* very narrow phones (320–360 px): tighten the header so the logo and three icons fit without sideways scrolling */
+@media (max-width:360px){.site .wrap{gap:8px}.logo{font-size:18px;gap:8px}.logo svg{width:26px;height:26px}.icons{gap:2px}.icon-btn{width:40px;height:40px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.hero-dot::before{transition:none}}
 .ph{display:grid;place-items:center;width:100%;height:100%}.ph img{width:88%;height:88%;object-fit:contain;mix-blend-mode:multiply}.ph>svg{display:none}.ph.err img{display:none}.ph.err>svg{display:block}
 </style>
