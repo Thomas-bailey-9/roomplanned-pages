@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>RoomPlanned Account</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: site header → profile band (avatar, name, badges, stats) → sticky section nav (left) | settings sections (right): profile, home details, preferences, notifications, privacy and data. */
+:root{
+  --bg:#f7f6f2;--surface:#ffffff;--soft:#efeee9;--line:#e3e1da;
+  --ink:#16251f;--text:#3b4641;--muted:#76807a;
+  --green:#2c4a3b;--green-ink:#ffffff;--sage:#6b8068;--sage-soft:#e6ece3;
+  --band:#2c4a3b;--band-ink:#f4f1ea;--band-muted:#b9c6bc;--cream:#efe4cf;--clay:#c98a63;--clay-soft:#f6e6da;
+  --ok:#3f7a52;--ok-soft:#e3f0e6;--warn:#a26a12;--warn-soft:#f8eedb;--bad:#b3412f;--bad-soft:#f7e3df;
+  --shadow:0 1px 2px rgba(22,37,31,.05),0 6px 20px rgba(22,37,31,.06);
+  --font:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --r-card:16px;--r-pill:999px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815;--surface:#1a221e;--soft:#222c27;--line:#2e3a34;--ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;
+  --green:#9cc0a4;--green-ink:#10201a;--sage:#a9c0a5;--sage-soft:#22302a;--band:#16261e;--clay-soft:#3a2a20;
+  --ok:#8cc79c;--ok-soft:#1f3326;--warn:#e2b25e;--warn-soft:#3a2f1a;--bad:#ee8d7c;--bad-soft:#3d221d;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815;--surface:#1a221e;--soft:#222c27;--line:#2e3a34;--ink:#eef1ec;--text:#c9d0cb;--muted:#8f9a94;
+  --green:#9cc0a4;--green-ink:#10201a;--sage:#a9c0a5;--sage-soft:#22302a;--band:#16261e;--clay-soft:#3a2a20;
+  --ok:#8cc79c;--ok-soft:#1f3326;--warn:#e2b25e;--warn-soft:#3a2f1a;--bad:#ee8d7c;--bad-soft:#3d221d;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-padding-top:100px}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+h1,h2,h3{color:var(--ink);margin:0;text-wrap:balance;letter-spacing:-.03em}
+.serif{font-family:var(--serif);font-weight:400;font-style:italic;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.demo{background:var(--sage-soft);color:var(--ink);font-size:13px;text-align:center}
+.demo .wrap{padding-block:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--surface);border-bottom:1px solid var(--line)}
+.site .wrap{display:flex;align-items:center;gap:24px;height:76px;max-width:1240px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:800;font-size:23px;letter-spacing:-.03em}
+.logo svg{width:30px;height:30px}
+.nav{display:flex;gap:34px;margin:0 auto;font-weight:500}
+.nav a{text-decoration:none;color:var(--text);padding:6px 0}
+.icons{display:flex;gap:8px;align-items:center;position:relative}
+.icon-btn{width:42px;height:42px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;color:var(--ink);text-decoration:none}
+.icon-btn:hover{background:var(--soft)}
+.icon-btn svg{width:22px;height:22px}
+.menu{position:absolute;right:0;top:54px;width:240px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:10px 0}
+.menu a{display:block;padding:10px 22px;text-decoration:none;color:var(--ink);font-weight:500}
+.menu a:hover,.menu a.on{background:var(--soft)}
+
+.btn{height:44px;border-radius:var(--r-pill);font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 20px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.btn.danger.solid{background:var(--bad);color:#fff}
+.btn.small{height:34px;font-size:13px;padding:0 14px}
+
+/* profile band */
+.band{background:var(--band);color:var(--band-ink);position:relative;overflow:hidden;isolation:isolate}
+.band::before{content:"";position:absolute;width:520px;height:520px;border-radius:50%;background:var(--clay);opacity:.22;filter:blur(70px);right:-120px;top:-220px;z-index:-1}
+.band .wrap{padding-block:44px 48px;display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.big-av{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:36px;color:#fff;border:4px solid rgba(255,255,255,.85);flex:none;letter-spacing:-.02em}
+.who{flex:1;min-width:240px}
+.crumbs{font-size:13px;color:var(--band-muted);display:flex;gap:8px;margin-bottom:6px}
+.crumbs a{text-decoration:none}
+.who h1{color:var(--band-ink);font-size:clamp(34px,5vw,56px);font-weight:800;line-height:1}
+.who h1 .serif{color:var(--cream)}
+.who p{margin:8px 0 12px;color:var(--band-muted)}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.bdg{font-size:12px;font-weight:700;border-radius:var(--r-pill);padding:5px 12px;background:rgba(255,255,255,.12);color:var(--band-ink)}
+.bdg.gold{background:var(--cream);color:#16251f}
+.bstats{display:grid;grid-template-columns:repeat(4,auto);gap:10px}
+.bstats a{text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 16px;min-width:96px}
+.bstats a:hover{background:rgba(255,255,255,.14)}
+.bstats b{display:block;font-size:26px;font-weight:800;color:var(--band-ink);font-variant-numeric:tabular-nums;line-height:1.1}
+.bstats span{font-size:12px;color:var(--band-muted)}
+
+/* layout */
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:36px;padding-block:36px 72px;align-items:start}
+.side{position:sticky;top:calc(100px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px}
+.side a{text-decoration:none;padding:10px 14px;border-radius:12px;font-weight:600;color:var(--text);font-size:14px;display:flex;justify-content:space-between}
+.side a:hover{background:var(--soft)}
+.side a.on{background:var(--green);color:var(--green-ink)}
+.side .out{margin-top:14px;font-size:13px;color:var(--muted);padding:0 14px}
+.sections{display:flex;flex-direction:column;gap:22px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:26px;min-width:0}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.card-head h2{font-size:26px;font-weight:800}
+.card-head p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:56ch}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label,.lbl{font-size:13px;font-weight:600;color:var(--ink)}
+.field small{font-size:12px;color:var(--muted)}
+.field small.err{color:var(--bad);font-weight:600}
+.inp{height:46px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 14px;outline:none;font-size:15px;width:100%;min-width:0}
+textarea.inp{height:auto;min-height:84px;padding:12px 14px;resize:vertical}
+.inp:focus{border-color:var(--sage);background:var(--surface)}
+.inp.bad{border-color:var(--bad)}
+.affix{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;background:var(--bg);height:46px;padding:0 14px;gap:6px}
+.affix input{border:0;background:transparent;outline:none;width:100%;min-width:0;font-size:15px;font-variant-numeric:tabular-nums}
+.affix span{color:var(--muted);font-size:14px;white-space:nowrap}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:36px;height:36px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--green)}
+.seg{align-self:flex-start;display:inline-flex;background:var(--soft);border-radius:var(--r-pill);padding:4px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:8px 16px;border-radius:var(--r-pill);font-weight:600;font-size:13px;color:var(--text)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{height:38px;padding:0 16px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--surface);font-weight:500;font-size:14px;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.style-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sp{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:0;overflow:hidden;text-align:left}
+.sp .bar{display:flex;height:34px}
+.sp .bar i{flex:1}
+.sp b{display:block;padding:8px 12px;font-size:13px;color:var(--ink)}
+.sp[aria-pressed="true"]{outline:2px solid var(--green);border-color:var(--green)}
+.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;align-items:center;flex-wrap:wrap}
+.saved-msg{font-size:13px;color:var(--ok);font-weight:600}
+
+.preview{margin-top:18px;border:1px dashed var(--line);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center}
+.preview .av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;font-size:15px;flex:none}
+.preview b{display:block;color:var(--ink)}
+.preview small{color:var(--muted);font-size:12px}
+.preview p{margin:4px 0 0;font-size:13px;color:var(--text)}
+.preview .k{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-left:auto;align-self:flex-start}
+
+.roo{background:var(--sage-soft);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+.roo .rav{width:32px;height:32px;border-radius:50%;background:var(--green);color:var(--green-ink);display:grid;place-items:center;font-weight:800;font-size:12px;flex:none}
+.roo p{margin:0;font-size:14px;color:var(--ink)}
+.roo ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--ink);display:flex;flex-direction:column;gap:3px}
+.roo ul span{color:var(--muted);font-variant-numeric:tabular-nums}
+
+.toggles{display:flex;flex-direction:column}
+.tg{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.tg:last-child{border-bottom:0}
+.tg b{display:block;color:var(--ink);font-size:15px}
+.tg small{color:var(--muted);font-size:13px}
+.switch{position:relative;width:48px;height:28px;border-radius:14px;border:0;background:var(--line);padding:0;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--green)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+.chan{display:flex;gap:16px;margin-bottom:6px;flex-wrap:wrap;align-items:center}
+
+.data-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.data-list li{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.data-list b{color:var(--ink);display:block}
+.data-list small{color:var(--muted);font-size:12px}
+.data-list .n{font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink);text-align:right}
+.danger-zone{margin-top:20px;border:1px solid var(--bad);background:var(--bad-soft);border-radius:16px;padding:16px 18px;display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}
+.danger-zone b{color:var(--ink);display:block}
+.danger-zone small{color:var(--text)}
+.dz-acts{display:flex;gap:8px;flex-wrap:wrap}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:var(--r-pill);font-weight:600;font-size:14px;z-index:100;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+footer.site-foot{border-top:1px solid var(--line);background:var(--surface)}
+footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);max-width:1240px}
+
+@media (max-width:900px){.nav{display:none}.icons{margin-left:auto}.layout{grid-template-columns:1fr}.side{position:static;flex-direction:row;flex-wrap:wrap;gap:6px}.side a{border:1px solid var(--line);border-radius:var(--r-pill);padding:8px 14px;background:var(--surface)}.side .out{display:none}.bstats{grid-template-columns:repeat(4,1fr);width:100%}}
+@media (max-width:600px){.site .wrap{height:64px;gap:12px}.logo{font-size:20px}.form{grid-template-columns:1fr}.card{padding:18px}.bstats{grid-template-columns:1fr 1fr}.style-pick{grid-template-columns:1fr 1fr}.data-list li{grid-template-columns:1fr auto}.data-list li .btn{grid-column:1/-1;justify-self:start}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="demo"><div class="wrap">Example page: this preview account is saved in your browser only. No sign-in, and nothing is sent anywhere.</div></div>
+
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="shop.html" aria-label="RoomPlanned home">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="28" height="28" rx="3"/><path d="M8 26V8h6a4 4 0 0 1 0 8H8m6 0 3 10M18 8h4a4 4 0 0 1 0 8h-4v10"/></svg>
+      <span>RoomPlanned.</span>
+    </a>
+    <nav class="nav" aria-label="Main"><a href="shop.html">Shop</a><a href="plan.html">Plan</a><a href="inspiration.html">Inspiration</a><a href="community.html">Community</a></nav>
+    <div class="icons">
+      <a class="icon-btn" href="shop.html" aria-label="Search furniture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></a>
+      <a class="icon-btn" href="my-home.html" aria-label="My Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></a>
+      <button class="icon-btn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="menu" id="menu" hidden><a href="shop.html">Shop furniture</a><a href="plan.html">Plan a room</a><a href="inspiration.html">Inspiration</a><a href="community.html">Community preview</a><a href="my-home.html">My Home</a><a href="my-renders.html">My Renders</a><a href="account.html" class="on">Account</a></div>
+    </div>
+  </div>
+</header>
+
+<div class="band">
+  <div class="wrap">
+    <div class="big-av" id="bigAv"></div>
+    <div class="who">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="my-home.html">My Home</a><span>/</span><span>Account</span></nav>
+      <h1 id="hello"></h1>
+      <p id="sub"></p>
+      <div class="badges" id="badges"></div>
+    </div>
+    <div class="bstats" id="bstats"></div>
+  </div>
+</div>
+
+<main class="wrap layout">
+  <nav class="side" id="side" aria-label="Account sections">
+    <a href="#profile">Profile</a><a href="#home-details">Home details</a><a href="#preferences">Preferences</a><a href="#notifications">Notifications</a><a href="#privacy">Privacy and data</a>
+    <p class="out">Signing in arrives with the full launch. Until then everything stays on this device.</p>
+  </nav>
+
+  <div class="sections">
+    <section class="card" id="profile" aria-labelledby="pH">
+      <div class="card-head"><div><h2 id="pH">Profile</h2><p>How you appear in Community. Only your name, handle and town are shown publicly.</p></div></div>
+      <form id="profileForm" novalidate>
+        <div class="form">
+          <div class="field"><label for="fName">Display name</label><input class="inp" id="fName" maxlength="40" autocomplete="name"></div>
+          <div class="field"><label for="fHandle">Handle</label><div class="affix"><span>@</span><input id="fHandle" maxlength="24" autocomplete="off" spellcheck="false"></div><small id="handleMsg">Letters, numbers, dots and underscores.</small></div>
+          <div class="field"><label for="fTown">Town or city</label><input class="inp" id="fTown" maxlength="40"></div>
+          <div class="field"><span class="lbl" id="colLbl">Avatar colour</span><div class="swatches" id="avCols" role="group" aria-labelledby="colLbl"></div></div>
+          <div class="field full"><label for="fBio">About your home</label><textarea class="inp" id="fBio" maxlength="160"></textarea><small id="bioCount"></small></div>
+        </div>
+        <div class="preview" id="pPreview" aria-live="polite"></div>
+        <div class="actions"><span class="saved-msg" id="pSaved" hidden>Saved</span><button class="btn primary" type="submit">Save profile</button></div>
+      </form>
+    </section>
+
+    <section class="card" id="home-details" aria-labelledby="hH">
+      <div class="card-head"><div><h2 id="hH">Home details</h2><p>Roo uses these to filter ideas and check deliveries before you buy.</p></div></div>
+      <div class="form">
+        <div class="field full"><span class="lbl" id="typeLbl">Type of home</span><div class="chips" id="homeType" role="group" aria-labelledby="typeLbl"></div></div>
+        <div class="field"><span class="lbl" id="tenLbl">Do you rent or own?</span><div class="seg" id="tenure" role="group" aria-labelledby="tenLbl"></div><small id="tenNote"></small></div>
+        <div class="field"><label for="fPost">Delivery postcode</label><input class="inp" id="fPost" maxlength="8" autocomplete="postal-code" style="text-transform:uppercase"><small id="postMsg">Used to check delivery times with each retailer.</small></div>
+        <div class="field"><label for="fDoor">Narrowest doorway or stairway</label><div class="affix"><input id="fDoor" type="number" min="50" max="200" step="1"><span>cm wide</span></div><small>Measure the tightest gap a delivery has to pass through.</small></div>
+        <div class="field"><label for="fFloor">Floor you live on</label><div class="affix"><input id="fFloor" type="number" min="0" max="60" step="1"><span id="floorSuffix">ground floor</span></div><small id="liftWrap"><label style="display:inline-flex;gap:6px;align-items:center;font-weight:500;color:var(--text)"><input type="checkbox" id="fLift"> There’s a lift</label></small></div>
+        <div class="field full"><div class="roo" id="doorRoo" aria-live="polite"></div></div>
+      </div>
+    </section>
+
+    <section class="card" id="preferences" aria-labelledby="prH">
+      <div class="card-head"><div><h2 id="prH">Preferences</h2><p>Your style and budget are shared with Inspiration, My Home and My Renders.</p></div></div>
+      <div class="form">
+        <div class="field"><span class="lbl" id="unitLbl">Measurements</span><div class="seg" id="units" role="group" aria-labelledby="unitLbl"></div><small id="unitEg"></small></div>
+        <div class="field"><label for="fBudget">Total budget</label><div class="affix"><span>£</span><input id="fBudget" type="number" min="0" step="100"></div><small>My Home tracks your plans against this.</small></div>
+        <div class="field full"><span class="lbl" id="styLbl">Default style</span><div class="style-pick" id="stylePick" role="group" aria-labelledby="styLbl"></div></div>
+      </div>
+    </section>
+
+    <section class="card" id="notifications" aria-labelledby="nH">
+      <div class="card-head"><div><h2 id="nH">Notifications</h2><p>Choose what Roo tells you about. Sending starts at launch.</p></div></div>
+      <div class="chan"><span class="lbl" id="chanLbl">Send to</span><div class="seg" id="channel" role="group" aria-labelledby="chanLbl"></div></div>
+      <div class="toggles" id="toggles"></div>
+    </section>
+
+    <section class="card" id="privacy" aria-labelledby="dH">
+      <div class="card-head"><div><h2 id="dH">Privacy and data</h2><p>Everything RoomPlanned has saved in this browser. Clear any part of it whenever you like.</p></div></div>
+      <div class="toggles" style="margin-bottom:12px">
+        <div class="tg"><div><b>Private profile</b><small>Hide your rooms and posts from people you don’t follow back.</small></div><button class="switch" role="switch" id="privSwitch" aria-checked="false" aria-label="Private profile"></button></div>
+      </div>
+      <ul class="data-list" id="dataList"></ul>
+      <div class="danger-zone"><div><b>Clear all RoomPlanned data</b><small>Removes your plans, saves, basket, renders and this account from this browser. This can’t be undone.</small></div><div class="dz-acts" id="dzActs"></div></div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-foot"><div class="wrap"><span>RoomPlanned. Your home, planned for real life.</span><span>Preview account. Saved on this device only.</span></div></footer>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ===== shared data copied from the other pages ===== */
+const CATALOGUE=[
+  {id:'rhianna-sofa',name:'Rhianna 3 Seater Fabric Sofa',short:'Sofa',retailer:'Furniture Village',room:'Living room',price:1095,colour:'#3f5a57',dims:[222,95,78]},
+  {id:'sienna-corner-sofa',name:'Sienna Velvet Corner Sofa',short:'Corner sofa',retailer:'Linden & Co',room:'Living room',price:1499,colour:'#6d6b3c',dims:[268,180,84]},
+  {id:'mabel-armchair',name:'Mabel Bouclé Armchair',short:'Armchair',retailer:'Linden & Co',room:'Living room',price:449,colour:'#e6dfd2',dims:[82,86,80]},
+  {id:'earth-coffee-table',name:'Earth Coffee Table',short:'Coffee table',retailer:'Furniture Village',room:'Living room',price:299,colour:'#c39a62',dims:[120,60,45]},
+  {id:'wren-bookcase',name:'Wren Tall Bookcase',short:'Bookcase',retailer:'Oakhaven Home',room:'Living room',price:259,colour:'#d7c2a0',dims:[80,32,180]},
+  {id:'veron-ottoman-bed',name:'Duo+ Collection Veron End Lift Ottoman Bed Frame',short:'Ottoman bed',retailer:'Furniture Village',room:'Bedroom',price:549,colour:'#a7a9ad',dims:[150,210,120]},
+  {id:'rowan-bed',name:'Rowan Upholstered Double Bed',short:'Double bed',retailer:'Linden & Co',room:'Bedroom',price:699,colour:'#bdb5a6',dims:[145,205,115]},
+  {id:'hollis-bedside',name:'Hollis Oak Bedside Table',short:'Bedside',retailer:'Oakhaven Home',room:'Bedroom',price:179,colour:'#c49a6c',dims:[48,40,58]},
+  {id:'grace-chest',name:'Grace 6 Drawer Wide Chest',short:'Chest',retailer:'Furniture Village',room:'Bedroom',price:null,colour:'#efeee8',dims:[140,45,85]},
+  {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',short:'Dining table',retailer:'Oakhaven Home',room:'Dining room',price:649,colour:'#8a6440',dims:[160,90,76]}
+];
+
+const STYLES={
+  'Japandi':{blurb:'Pale oak, linen and one sculptural branch. Calm, low and uncluttered.',wall:'#e9e3d8',floor:'#cfae83',sofa:'#d9d0c1',accent:'#6b8068',wood:'#8a6440',rug:'#efe9de',sky:'#dbe7e3',art:'arch',lamp:'pendant',plant:'olive',win:'arch',panel:false,paint:['Rice paper','Pale oak','Moss','Walnut','Linen']},
+  'Warm minimal':{blurb:'Sand and caramel tones with soft curves and nothing on show that doesn’t earn it.',wall:'#efe5d8',floor:'#d9c3a2',sofa:'#c9b79f',accent:'#b07a58',wood:'#a77b52',rug:'#e6d8c4',sky:'#e8e4da',art:'abstract',lamp:'arc',plant:'tall',win:'square',panel:false,paint:['Oat','Sand','Terracotta','Caramel','Bone']},
+  'Cottage':{blurb:'Panelled walls, sage paint and pieces that look like they’ve always been there.',wall:'#d9e0d0',floor:'#a8825a',sofa:'#7d8a63',accent:'#c98f7a',wood:'#8a6440',rug:'#c9b48e',sky:'#d7e4e8',art:'landscape',lamp:'table',plant:'fern',win:'square',panel:true,paint:['Sage','Honey oak','Rose clay','Fern','Straw']},
+  'Mid-century':{blurb:'Teak, mustard and teal with tapered legs and confident shapes.',wall:'#ebe1cc',floor:'#a0734b',sofa:'#c9973a',accent:'#3f5a57',wood:'#7a5233',rug:'#3f5a57',sky:'#d5e3e6',art:'abstract',lamp:'arc',plant:'tall',win:'square',panel:false,paint:['Cream','Mustard','Teal','Teak','Rust']},
+  'Coastal':{blurb:'Washed blues, white linen and pale timber, like a room that smells of salt.',wall:'#e5ecee',floor:'#d8ccb6',sofa:'#f1eee8',accent:'#4f6178',wood:'#c9b48e',rug:'#cfd8dc',sky:'#cfe2ec',art:'landscape',lamp:'table',plant:'olive',win:'arch',panel:false,paint:['Sea mist','Driftwood','Harbour blue','Sand','Shell']},
+  'Dark & moody':{blurb:'Deep green walls, rust velvet and brass. Built for evenings.',wall:'#2d3a35',floor:'#5a4130',sofa:'#8a3f2c',accent:'#c9973a',wood:'#3a2a20',rug:'#4a4035',sky:'#9fb3b5',art:'arch',lamp:'pendant',plant:'fern',win:'arch',panel:true,paint:['Forest','Rust velvet','Brass','Espresso','Smoke']}
+};
+
+const STYLE_NAMES=Object.keys(STYLES);
+
+/* ===== storage shared with the other pages ===== */
+const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}};
+const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const KEYS=[
+  ['rp-plan','Room plans','Planner',v=>v&&v.plans?Object.values(v.plans).reduce((s,p)=>s+(p.items||[]).length,0)+' pieces placed':null],
+  ['rp-shop','Saved pieces and basket','Shop',v=>v?`${(v.saved||[]).length} saved · ${(v.bag||[]).reduce((s,l)=>s+l.qty,0)} in basket`:null],
+  ['rp-insp','Liked rooms and style','Inspiration',v=>v?`${(v.liked||[]).length} liked · ${v.style||'no'} style`:null],
+  ['rp-comm','Community activity','Community',v=>v?`${(v.saved||[]).length} saved · ${(v.following||[]).length} following${v.joined?' · on waitlist':''}`:null],
+  ['rp-renders','Renders','My Renders',v=>v?`${v.length} renders`:null],
+  ['rp-home','Budget','My Home',v=>v&&v.budget?'£'+v.budget.toLocaleString('en-GB'):null],
+  ['rp-account','This account','Account',v=>v?'Profile and settings':null]
+];
+const COLOURS=['#2c4a3b','#6b8068','#c98a63','#8a6440','#4f6178','#c9973a','#8a3f2c','#3a3836'];
+const TYPES=['Flat','Terraced house','Semi-detached','Detached','Bungalow','Studio'];
+const NOTES=[
+  ['priceDrop','Price drops on saved pieces','When something you bookmarked gets cheaper.'],
+  ['stock','Back in stock','When a sold-out piece in your plan is available again.'],
+  ['replies','Replies and comments','When someone answers your question or comments on your room.'],
+  ['challenge','Weekly challenge','The new theme every Monday and results on Sunday.'],
+  ['tips','Roo’s tips','Short ideas based on the rooms you’re planning, about twice a month.']
+];
+const DEFAULT={name:'Alex',handle:'alex.at.home',town:'Leeds',colour:'#2c4a3b',bio:'Two-bed flat, renting, slowly making the living room feel like ours.',
+  type:'Flat',tenure:'Rent',post:'',door:76,floor:2,lift:false,units:'cm',channel:'Email',notes:{priceDrop:true,stock:true,replies:true,challenge:false,tips:true},private:false,since:Date.now()};
+let acc=Object.assign({},DEFAULT,read('rp-account')||{});acc.notes=Object.assign({},DEFAULT.notes,acc.notes||{});
+const isNew=!read('rp-account');
+const saveAcc=()=>{write('rp-account',acc);if(typeof renderData==='function')renderData()};
+const initials=n=>(n||'?').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'?';
+
+/* ===== band ===== */
+function renderBand(){
+  const comm=read('rp-comm')||{},plan=read('rp-plan'),shop=read('rp-shop')||{},rend=read('rp-renders')||[],insp=read('rp-insp')||{};
+  $('#bigAv').style.background=acc.colour;$('#bigAv').textContent=initials(acc.name);
+  $('#hello').innerHTML=`Hi, <span class="serif">${esc(acc.name||'there')}.</span>`;
+  const m=new Date(acc.since).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  $('#sub').textContent=`@${acc.handle||'yourname'} · ${acc.town||'Somewhere lovely'} · Member since ${m}`;
+  $('#badges').innerHTML=(comm.joined?'<span class="bdg gold">Founding member</span>':'<span class="bdg">Preview member</span>')+`<span class="bdg">${esc(acc.type)} · ${acc.tenure==='Rent'?'Renting':'Owner'}</span>`+(insp.style?`<span class="bdg">${esc(insp.style)}</span>`:'');
+  const rooms=plan&&plan.plans?Object.keys(plan.plans).length:0;
+  $('#bstats').innerHTML=[[rooms,'rooms planned','my-home.html'],[(shop.saved||[]).length,'pieces saved','my-home.html'],[rend.length,'renders','my-renders.html'],[(comm.following||[]).length,'following','community.html']]
+    .map(([n,l,h])=>`<a href="${h}"><b>${n}</b><span>${l}</span></a>`).join('');
+}
+
+/* ===== profile ===== */
+const HANDLE=/^[a-z0-9._]{3,24}$/;
+function renderProfile(){
+  $('#fName').value=acc.name;$('#fHandle').value=acc.handle;$('#fTown').value=acc.town;$('#fBio').value=acc.bio;
+  $('#avCols').innerHTML=COLOURS.map(c=>`<button type="button" class="sw" data-col="${c}" aria-pressed="${acc.colour===c}" aria-label="Colour ${c}" style="background:${c}"></button>`).join('');
+  livePreview();
+}
+function livePreview(){
+  const n=$('#fName').value.trim()||'Your name',h=$('#fHandle').value.trim().toLowerCase(),t=$('#fTown').value.trim(),b=$('#fBio').value.trim();
+  $('#bioCount').textContent=`${b.length} / 160`;
+  const ok=HANDLE.test(h);$('#handleMsg').textContent=ok||!h?'Letters, numbers, dots and underscores.':'Use 3 to 24 lowercase letters, numbers, dots or underscores.';
+  $('#handleMsg').className=ok||!h?'':'err';
+  $('#pPreview').innerHTML=`<span class="av" style="background:${acc.colour}">${initials(n)}</span><div><b>@${esc(h||'yourname')}</b><small>${esc(n)}${t?' · '+esc(t):''}</small><p>${esc(b||'Tell people about your home.')}</p></div><span class="k">Preview</span>`;
+}
+['fName','fHandle','fTown','fBio'].forEach(id=>$('#'+id).addEventListener('input',livePreview));
+$('#profileForm').addEventListener('submit',e=>{e.preventDefault();
+  const h=$('#fHandle').value.trim().toLowerCase();if(!HANDLE.test(h)){$('#fHandle').focus();toast('Check your handle before saving');return}
+  Object.assign(acc,{name:$('#fName').value.trim()||'Alex',handle:h,town:$('#fTown').value.trim(),bio:$('#fBio').value.trim()});
+  saveAcc();renderBand();$('#pSaved').hidden=false;setTimeout(()=>$('#pSaved').hidden=true,2200);toast('Profile saved')});
+
+/* ===== home details ===== */
+const POSTCODE=/^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i;
+const toUnit=cm=>acc.units==='in'?(cm/2.54).toFixed(1)+' in':cm+' cm';
+function renderHome(){
+  $('#homeType').innerHTML=TYPES.map(t=>`<button class="chip" data-type="${t}" aria-pressed="${acc.type===t}">${t}</button>`).join('');
+  $('#tenure').innerHTML=['Rent','Own'].map(t=>`<button data-ten="${t}" aria-pressed="${acc.tenure===t}">${t}</button>`).join('');
+  $('#tenNote').textContent=acc.tenure==='Rent'?'We’ll lean towards freestanding, no-drill ideas.':'We’ll include built-in and decorating ideas too.';
+  $('#fPost').value=acc.post;$('#fDoor').value=acc.door;$('#fFloor').value=acc.floor;$('#fLift').checked=acc.lift;
+  $('#floorSuffix').textContent=+acc.floor===0?'ground floor':ordinal(+acc.floor)+' floor';
+  $('#liftWrap').hidden=+acc.floor===0;
+  doorCheck();
+}
+const ordinal=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
+/* A piece fits through a gap if its slimmest side is narrower than the gap (standard door height assumed). */
+function doorCheck(){
+  const w=+acc.door||0;
+  const tight=CATALOGUE.map(c=>({c,slim:Math.min(...c.dims)})).filter(x=>x.slim>w-2).sort((a,b)=>b.slim-a.slim);
+  const stairs=+acc.floor>0&&!acc.lift;
+  $('#doorRoo').innerHTML=`<span class="rav">Roo</span><div><p>${w?tight.length?`At ${toUnit(w)}, ${tight.length} ${tight.length===1?'piece':'pieces'} in the shop may not get through. I’ll flag ${tight.length===1?'it':'them'} before you add ${tight.length===1?'it':'them'} to your basket.`:`At ${toUnit(w)}, every piece in the shop should get through.`:'Add your narrowest gap and I’ll check every piece before you buy.'}${stairs?' You’re up stairs with no lift, so I’ll suggest flat-pack versions where they exist.':''}</p>
+    ${w&&tight.length?`<ul>${tight.slice(0,5).map(x=>`<li>${esc(x.c.name)} <span>· slimmest side ${toUnit(x.slim)}</span></li>`).join('')}</ul>`:''}</div>`;
+}
+$('#fPost').addEventListener('change',e=>{const v=e.target.value.trim().toUpperCase();const ok=!v||POSTCODE.test(v);
+  e.target.classList.toggle('bad',!ok);$('#postMsg').textContent=ok?'Used to check delivery times with each retailer.':'Enter a UK postcode, like LS1 4AP.';$('#postMsg').className=ok?'':'err';
+  if(ok){acc.post=v.replace(/^(.+?)\s*(\d[A-Z]{2})$/,'$1 $2');e.target.value=acc.post;saveAcc();if(v)toast('Postcode saved')}});
+$('#fDoor').addEventListener('input',e=>{acc.door=Math.max(0,Math.min(200,+e.target.value||0));saveAcc();doorCheck()});
+$('#fFloor').addEventListener('input',e=>{acc.floor=Math.max(0,Math.min(60,+e.target.value||0));saveAcc();renderHome();$('#fFloor').focus()});
+$('#fLift').addEventListener('change',e=>{acc.lift=e.target.checked;saveAcc();doorCheck()});
+
+/* ===== preferences (style and budget are shared) ===== */
+function renderPrefs(){
+  $('#units').innerHTML=[['cm','Centimetres'],['in','Inches']].map(([k,l])=>`<button data-unit="${k}" aria-pressed="${acc.units===k}">${l}</button>`).join('');
+  $('#unitEg').textContent=`Example: the Rhianna sofa is ${toUnit(222)} wide.`;
+  const home=read('rp-home')||{};$('#fBudget').value=home.budget||4000;
+  const style=(read('rp-insp')||{}).style||'Japandi';
+  $('#stylePick').innerHTML=STYLE_NAMES.map(n=>{const s=STYLES[n];return `<button class="sp" data-sty="${n}" aria-pressed="${style===n}"><span class="bar"><i style="background:${s.wall}"></i><i style="background:${s.sofa}"></i><i style="background:${s.accent}"></i><i style="background:${s.wood}"></i></span><b>${n}</b></button>`}).join('');
+}
+$('#fBudget').addEventListener('change',e=>{const home=read('rp-home')||{};home.budget=Math.max(0,+e.target.value||0);write('rp-home',home);renderData();toast('Budget updated in My Home')});
+
+/* ===== notifications ===== */
+function renderNotes(){
+  $('#channel').innerHTML=['Email','Push','Both'].map(c=>`<button data-chan="${c}" aria-pressed="${acc.channel===c}">${c}</button>`).join('');
+  $('#toggles').innerHTML=NOTES.map(([k,t,d])=>`<div class="tg"><div><b>${t}</b><small>${d}</small></div><button class="switch" role="switch" data-note="${k}" aria-checked="${!!acc.notes[k]}" aria-label="${t}"></button></div>`).join('');
+}
+
+/* ===== privacy and data ===== */
+let confirmAll=false;
+function renderData(){
+  $('#privSwitch').setAttribute('aria-checked',!!acc.private);
+  $('#dataList').innerHTML=KEYS.map(([k,label,page,sum])=>{const v=read(k),s=sum(v);
+    return `<li><span><b>${label}</b><small>From ${page}</small></span><span class="n">${s?esc(s):'<span style="color:var(--muted);font-weight:500">Nothing saved</span>'}</span>${s?`<button class="btn small" data-clear="${k}">Clear</button>`:'<span></span>'}</li>`}).join('');
+  $('#dzActs').innerHTML=confirmAll?`<button class="btn small" id="dzCancel">Keep my data</button><button class="btn small danger solid" id="dzYes">Yes, clear everything</button>`:`<button class="btn small danger" id="dzAsk">Clear all data</button>`;
+}
+
+/* ===== events ===== */
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+document.addEventListener('click',e=>{
+  const g=k=>e.target.closest(`[data-${k}]`);let b;
+  if(b=g('col')){acc.colour=b.dataset.col;saveAcc();renderProfile();renderBand();return}
+  if(b=g('type')){acc.type=b.dataset.type;saveAcc();renderHome();renderBand();return}
+  if(b=g('ten')){acc.tenure=b.dataset.ten;saveAcc();renderHome();renderBand();return}
+  if(b=g('unit')){acc.units=b.dataset.unit;saveAcc();renderPrefs();doorCheck();return}
+  if(b=g('sty')){const insp=read('rp-insp')||{};insp.style=b.dataset.sty;write('rp-insp',insp);renderPrefs();renderBand();renderData();toast(`${b.dataset.sty} is now your style everywhere`);return}
+  if(b=g('chan')){acc.channel=b.dataset.chan;saveAcc();renderNotes();return}
+  if(b=g('note')){const k=b.dataset.note;acc.notes[k]=!acc.notes[k];saveAcc();b.setAttribute('aria-checked',acc.notes[k]);return}
+  if(b=g('clear')){try{localStorage.removeItem(b.dataset.clear)}catch(err){}
+    if(b.dataset.clear==='rp-account'){acc=Object.assign({},DEFAULT,{notes:{...DEFAULT.notes},since:Date.now()});renderAll()}else{renderData();renderBand();renderPrefs()}toast('Cleared');return}
+  if(e.target.closest('#privSwitch')){acc.private=!acc.private;saveAcc();renderData();toast(acc.private?'Your profile is private':'Your profile is public');return}
+  if(e.target.closest('#dzAsk')){confirmAll=true;renderData();$('#dzYes').focus();return}
+  if(e.target.closest('#dzCancel')){confirmAll=false;renderData();return}
+  if(e.target.closest('#dzYes')){KEYS.forEach(([k])=>{try{localStorage.removeItem(k)}catch(err){}});confirmAll=false;acc=Object.assign({},DEFAULT,{notes:{...DEFAULT.notes},since:Date.now()});renderAll();toast('All RoomPlanned data cleared from this browser');return}
+  if(!e.target.closest('#menu,#menuBtn')){$('#menu').hidden=true;$('#menuBtn').setAttribute('aria-expanded','false')}
+});
+$('#menuBtn').onclick=()=>{const m=$('#menu');m.hidden=!m.hidden;$('#menuBtn').setAttribute('aria-expanded',!m.hidden)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#menu').hidden=true});
+
+/* highlight the section in view */
+const links=[...document.querySelectorAll('#side a')];
+const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting)links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+en.target.id))})},{rootMargin:'-40% 0px -55% 0px'});
+document.querySelectorAll('.sections > section').forEach(s=>io.observe(s));
+links[0].classList.add('on');
+
+function renderAll(){renderBand();renderProfile();renderHome();renderPrefs();renderNotes();renderData()}
+if(isNew)saveAcc();
+renderAll();
+</script>
+</body>
+</html>

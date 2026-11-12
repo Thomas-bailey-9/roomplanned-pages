@@ -10,9 +10,14 @@ Design examples for new pages on roomplanned.com. Each one matches the live site
 | Community preview | [`community.html`](community.html) | A coming-soon preview of the community: waitlist sign-up, a feed of room posts with real sizes and costs, likes, saves, comments and follows, topic filters (Small spaces, Under £1,000, Rentals…), a "Share your room" composer that previews your post, a weekly challenge with a live countdown, a top-planners board and community Q&A with Roo's answers. |
 | My Home | [`my-home.html`](my-home.html) | Brings together what you save on the other pages: your room plans as mini floor plans with Roo's checks, a budget tracker split by room, saved furniture and basket, rooms you liked and posts you saved, people you follow, and a suggested next step. Sections show example data, marked "Example", until you save something. |
 | My Renders | [`my-renders.html`](my-renders.html) | A render studio for your planned rooms: pick a room, one of six styles, the light (morning, golden hour, evening) and a format, see a live preview, then create a render with a progress animation. Renders use the colours of the pieces in your plan and are saved to a gallery with favourites, filters, delete and a pop-up that switches between the render and its floor plan. |
+| Account | [`account.html`](account.html) | Profile with a live preview of how you appear in Community, home details (home type, rent or own, UK postcode check, narrowest doorway and floor, with Roo listing pieces that won't fit through), preferences (cm or inches, budget and default style shared with the other pages), notification switches, and a privacy section listing everything saved in the browser with per-item and clear-all controls. |
 
 Products, prices and some retailers are sample data. Product images are simple drawings standing in for retailer photos.
 
 Open any file in a browser to view it. No build step needed.
 
 The pages link to each other: "Add to room" in the shop opens `plan.html` with that piece placed in the right room. Everything you save (shop bookmarks, basket, room plans, liked rooms, community saves and follows) is stored in your browser and shows up on `my-home.html`.
+
+## Pages
+
+Shop → Plan a room → Inspiration → Community preview → My Home → My Renders → Account. Every page's menu links to the others.
