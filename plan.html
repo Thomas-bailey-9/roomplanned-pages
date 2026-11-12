@@ -136,6 +136,43 @@ svg#plan{width:100%;height:auto;display:block;touch-action:none;user-select:none
 footer.site-foot{border-top:1px solid var(--line);background:var(--surface)}
 footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 
+.canvas-bar .preview-btn{margin-left:auto}
+.canvas-bar .preview-btn svg{width:17px;height:17px}
+/* room preview */
+.pv-scrim{position:fixed;inset:0;z-index:90;background:rgba(10,18,14,.55);backdrop-filter:blur(4px);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.pv{background:var(--surface);border-radius:20px;width:min(980px,100%);max-height:100%;overflow:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.5)}
+.pv-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px 12px}
+.pv-head h2{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.pv-head small{display:block;margin-top:2px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pv-close{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;flex:none}
+.pv-close svg{width:18px;height:18px}
+.pv-view{position:relative;margin:0 20px;border-radius:14px;overflow:hidden;background:#e9e2d6;aspect-ratio:900/560;max-width:calc(100% - 40px)}
+.pv-view svg{display:block;width:100%;height:100%;transition:opacity .5s ease}
+.pv-view svg.building{opacity:0}
+.pv-building{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:12px;color:#3b4641;font-weight:600;font-size:14px;background:linear-gradient(110deg,#ece5d9 30%,#f5f0e7 50%,#ece5d9 70%);background-size:200% 100%;animation:pvshine 1.1s linear infinite}
+.pv-building span{width:160px;height:4px;border-radius:2px;background:rgba(44,74,59,.15);overflow:hidden}
+.pv-building span i{display:block;height:100%;width:40%;background:#2c4a3b;border-radius:2px;animation:pvbar 1.1s ease-in-out infinite}
+@keyframes pvshine{to{background-position:-200% 0}}
+@keyframes pvbar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+.pv-tag{position:absolute;left:12px;top:12px;background:rgba(22,37,31,.78);color:#f4f1ea;font-size:12px;font-weight:600;border-radius:999px;padding:5px 12px}
+.pv-controls{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 20px 4px}
+.pv-styles{display:flex;gap:8px;flex-wrap:wrap}
+.pv-style{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px 0 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:13px}
+.pv-style i{width:22px;height:22px;border-radius:50%;border:1px solid rgba(0,0,0,.12);background:linear-gradient(135deg,var(--w) 50%,var(--f) 50%)}
+.pv-style[aria-pressed="true"]{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.pv-note{font-size:12px;color:var(--muted);margin:0}
+.pv-strip{display:flex;gap:12px;overflow-x:auto;padding:12px 20px 4px;scrollbar-width:thin}
+.pv-item{flex:0 0 170px;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.pv-item .pimg{display:grid;place-items:center;aspect-ratio:4/3;background:#fff;position:relative}
+.pv-item .pimg svg{width:86%;height:auto}
+.pv-item b{display:block;font-size:12.5px;line-height:1.3;padding:8px 10px 0}
+.pv-item small{display:block;font-size:12px;color:var(--muted);padding:2px 10px 10px;font-variant-numeric:tabular-nums}
+.pv-item:hover{border-color:var(--ink)}
+.pv-foot{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;padding:14px 20px 20px}
+.pv :focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.ph{display:block;position:relative;width:100%;height:100%}.ph img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;mix-blend-mode:multiply}.ph>svg{display:none}.ph.err img{display:none}.ph.err>svg{display:block;width:86%;margin:auto;position:absolute;inset:0}
+@media (max-width:600px){.pv-head{padding:14px 14px 10px}.pv-view{margin:0 14px;max-width:calc(100% - 28px)}.pv-controls,.pv-strip{padding-left:14px;padding-right:14px}.pv-foot{padding:12px 14px 16px}.pv-foot .btn{flex:1}.pv-item{flex-basis:140px}}
+@media (prefers-reduced-motion:reduce){.pv-building,.pv-building span i{animation:none}}
 @media (max-width:1000px){.work{grid-template-columns:1fr}.nav{display:none}.icons{margin-left:auto}}
 @media (max-width:520px){.site .wrap{height:64px;gap:12px}.logo{font-size:20px}.stage{padding:8px}.legend{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -175,6 +212,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
     <section class="canvas-card" aria-label="Floor plan">
       <div class="canvas-bar">
         <span class="area" id="area"></span>
+        <button class="btn small primary preview-btn" id="previewBtn" type="button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5v9L12 24l-9-5.5z" transform="translate(0 -2)"/><path d="M3 7.5 12 13l9-5.5M12 13v9"/></svg>Preview room</button>
         <div class="legend"><span><i style="background:var(--wall)"></i>Wall</span><span><i style="background:var(--sage-soft);border:1px dashed var(--sage)"></i>Door swing</span><span><i style="background:var(--bad-soft);border:1px solid var(--bad)"></i>Clash</span><span>Grid: 50 cm</span></div>
       </div>
       <div class="stage"><svg id="plan" aria-label="Top-down floor plan"></svg></div>
@@ -204,6 +242,18 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 
 <footer class="site-foot"><div class="wrap"><span>RoomPlanned. Your home, planned for real life.</span><span>Measurements are from each retailer. Check before you order.</span></div></footer>
 <div class="toast" id="toast" hidden role="status"></div>
+<div class="pv-scrim" id="pvScrim" hidden>
+  <div class="pv" role="dialog" aria-modal="true" aria-labelledby="pvTitle" aria-describedby="pvNote">
+    <div class="pv-head"><div><h2 id="pvTitle">Room preview</h2><small id="pvSub"></small></div>
+      <button class="pv-close" id="pvClose" type="button" aria-label="Close preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="pv-view"><svg id="pvSvg" viewBox="0 0 900 560" role="img" aria-label="Illustrated view of the planned room"></svg><span class="pv-tag">Illustrative preview</span>
+      <div class="pv-building" id="pvBuilding" role="status">Building your preview…<span><i></i></span></div></div>
+    <div class="pv-controls"><div class="pv-styles" id="pvStyles" role="group" aria-label="Wall colour"></div>
+      <p class="pv-note" id="pvNote">Built from your floor plan using each piece’s real size. Not a photograph.</p></div>
+    <div class="pv-strip" id="pvStrip" aria-label="Pieces in this room"></div>
+    <div class="pv-foot"><a class="btn" href="shop.html">Shop more pieces</a><a class="btn primary" href="my-renders.html">Create a styled render</a></div>
+  </div>
+</div>
 
 <script src="catalogue.js"></script>
 <script>
@@ -398,6 +448,101 @@ function fromHash(){const h=location.hash.slice(1);if(!h.startsWith('add-'))retu
   if(c){current=c.room;renderAdd();addPiece(c.id)}else toast('That piece has no floor footprint, so it isn’t shown on the plan.');
   try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
 window.addEventListener('hashchange',fromHash);
+
+/* ===== Room preview: an eye-level 3D view built from the plan ===== */
+const PV_STYLES={'Warm white':{wall:'#efe6d8',floor:'#c9a274',ceil:'#f7f2ea',sky:'#dfe9ec'},'Sage':{wall:'#cdd7c4',floor:'#b8916a',ceil:'#eef1ea',sky:'#dde9e6'},'Forest':{wall:'#33473b',floor:'#7a5536',ceil:'#e9e6df',sky:'#cbd9d8'}};
+let pvStyle='Warm white',pvOpen=false,pvTimer;
+try{const v=localStorage.getItem('rp-preview-style');if(PV_STYLES[v])pvStyle=v}catch(e){}
+function shadeHex(hex,amt){const n=parseInt(hex.slice(1),16);const c=v=>Math.max(0,Math.min(255,v));return'#'+((1<<24)+(c((n>>16)+amt)<<16)+(c((n>>8&255)+amt)<<8)+c((n&255)+amt)).toString(16).slice(1)}
+function renderPreview(){
+  const p=P(),W=p.w,L=p.l,H=255,EYE=150,VW=900,VH=560,f=(VW/2)/Math.tan(36*Math.PI/180),HZ=VH*.42,D0=Math.max(250,W*.55),cx=W/2,st=PV_STYLES[pvStyle];
+  const pr=(x,y,z)=>{const D=L+D0-y;return[VW/2+f*(x-cx)/D,HZ+f*(EYE-z)/D]};
+  const pts=a=>a.map(q=>pr(...q).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const poly=(a,fill,extra='')=>`<polygon points="${pts(a)}" fill="${fill}" ${extra}/>`;
+  let o=`<defs><linearGradient id="pvSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbfdfd"/><stop offset="1" stop-color="${st.sky}"/></linearGradient>
+    <radialGradient id="pvLight" cx="${(pr(p.win.x+p.win.size/2,0,150)[0]/VW).toFixed(3)}" cy=".45" r=".8"><stop offset="0" stop-color="#fff6df" stop-opacity=".38"/><stop offset="1" stop-color="#fff6df" stop-opacity="0"/></radialGradient>
+    <radialGradient id="pvVig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient></defs>`;
+  /* room shell */
+  o+=poly([[0,0,H],[W,0,H],[W,L,H],[0,L,H]],st.ceil);
+  o+=poly([[0,0,0],[W,0,0],[W,L,0],[0,L,0]],st.floor);
+  for(let x=18;x<W;x+=18)o+=`<line x1="${pr(x,0,0)[0]}" y1="${pr(x,0,0)[1]}" x2="${pr(x,L,0)[0]}" y2="${pr(x,L,0)[1]}" stroke="${shadeHex(st.floor,-28)}" stroke-width=".7" opacity=".45"/>`;
+  o+=poly([[0,0,0],[0,L,0],[0,L,H],[0,0,H]],shadeHex(st.wall,-14));
+  o+=poly([[W,0,0],[W,L,0],[W,L,H],[W,0,H]],shadeHex(st.wall,-10));
+  o+=poly([[0,0,0],[W,0,0],[W,0,H],[0,0,H]],st.wall);
+  const skirt=shadeHex(st.wall,st.wall<'#6'?18:-16);
+  o+=poly([[0,0,0],[W,0,0],[W,0,9],[0,0,9]],skirt)+poly([[0,0,0],[0,L,0],[0,L,9],[0,0,9]],skirt)+poly([[W,0,0],[W,L,0],[W,L,9],[W,0,9]],skirt);
+  /* window on the back wall, with light falling on the floor */
+  const wx=p.win.x,ws=p.win.size;
+  o+=poly([[wx-5,0,85],[wx+ws+5,0,85],[wx+ws+5,0,215],[wx-5,0,215]],'#f7f3ec')+poly([[wx,0,90],[wx+ws,0,90],[wx+ws,0,210],[wx,0,210]],'url(#pvSky)');
+  for(const fx of [wx+ws/2])o+=poly([[fx-2,0,90],[fx+2,0,90],[fx+2,0,210],[fx-2,0,210]],'#f7f3ec');
+  o+=poly([[wx,0,150],[wx+ws,0,150],[wx+ws,0,153],[wx,0,153]],'#f7f3ec');
+  o+=poly([[wx,0,0],[wx+ws,0,0],[wx+ws+40,L*.75,0],[wx-40,L*.75,0]],'#fff8e6','opacity=".2"');
+  /* door on the left wall */
+  const dy=p.door.y,ds=p.door.size;
+  o+=poly([[0,dy-4,0],[0,dy+ds+4,0],[0,dy+ds+4,209],[0,dy-4,209]],'#f4efe6')+poly([[0,dy,0],[0,dy+ds,0],[0,dy+ds,204],[0,dy,204]],shadeHex(st.wall,st.wall<'#6'?30:-26));
+  { const [hx,hy]=pr(0,dy+ds-10,100);o+=`<circle cx="${hx}" cy="${hy}" r="3" fill="#b89b62"/>`; }
+  /* furniture as simple solids, placed from the plan */
+  const boxes=[],shadows=[];let ghosts=0;
+  p.items.forEach(i=>{const c=byId(i.id);if(!c)return;const pc=RoomPlannedCatalogue.product(i.id)||{};const sh=pc.shape||'';const fp=foot(i),h=c.dims[2],r=((i.r%360)+360)%360,base=c.colour;
+    const map=(u,v)=>r===0?[i.x+u*fp.w,i.y+v*fp.d]:r===90?[i.x+(1-v)*fp.w,i.y+u*fp.d]:r===180?[i.x+(1-u)*fp.w,i.y+(1-v)*fp.d]:[i.x+v*fp.w,i.y+(1-u)*fp.d];
+    const near=i.y+fp.d>L-15&&i.y>L*.5;   /* standing against the wall behind the viewer */if(near)ghosts++;
+    const add=(u0,u1,v0,v1,z0,z1,fill,front)=>{const a=map(u0,v0),b=map(u1,v1);boxes.push({x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0]),y0:Math.min(a[1],b[1]),y1:Math.max(a[1],b[1]),z0,z1,fill,front:r===0&&!near?front:null,near})};
+    if(!near)shadows.push([i.x-4,i.y-4,i.x+fp.w+4,i.y+fp.d+4]);
+    const lw=c.dims[0],ld=c.dims[1];   /* local cm sizes before rotation */
+    if(/sofa|corner|armchair/.test(sh)){const seat=Math.min(44,h*.55),arm=Math.min(h*.8,seat+22);
+      add(0,1,0,1,4,seat,base);add(0,1,0,.24,seat,h,shadeHex(base,-6));add(0,.11,.18,1,seat,arm,shadeHex(base,-4));add(.89,1,.18,1,seat,arm,shadeHex(base,-4));
+      if(lw>120){add(.13,.29,.2,.32,seat,seat+28,'#efe8da');add(.71,.87,.2,.32,seat,seat+28,'#6f7140')}}
+    else if(sh==='bed'){add(0,1,0,.06,0,h,base);add(0,1,.05,1,0,30,shadeHex(base,-8));add(.02,.98,.06,.99,30,52,'#f3eee4');add(0,1,.68,.84,30,54,shadeHex(base,-18));
+      add(.07,.46,.08,.2,52,64,'#fbf8f1');add(.54,.93,.08,.2,52,64,'#fbf8f1')}
+    else if(sh==='coffee'||sh==='dining'){const t=4,lg=6,inset=Math.min(10,lw*.08);const U=x=>x/lw,V=y=>y/ld,leg=shadeHex(base,-30);
+      add(0,1,0,1,h-t,h,base);for(const [a,b] of [[U(inset),V(inset)],[1-U(inset+lg),V(inset)],[U(inset),1-V(inset+lg)],[1-U(inset+lg),1-V(inset+lg)]])add(a,a+U(lg),b,b+V(lg),0,h-t,leg)}
+    else if(sh==='chest'||sh==='bedside'){add(.02,.98,.04,.96,0,8,shadeHex(base,-35));add(0,1,0,1,8,h,base,{rows:sh==='chest'?3:2,split:sh==='chest'})}
+    else if(sh==='bookcase'){add(0,1,0,1,0,h,base,{shelves:4})}
+    else add(0,1,0,1,0,h,base)});
+  shadows.forEach(([a,b,c2,d])=>{o+=poly([[a,b,0],[c2,b,0],[c2,d,0],[a,d,0]],'#000','opacity=".13"')});
+  boxes.sort((a,b)=>((a.y0+a.y1)/2-(b.y0+b.y1)/2)||(a.z0-b.z0));
+  boxes.forEach(B=>{const {x0,x1,y0,y1,z0,z1}=B,fill=B.fill,stroke=B.near?'fill-opacity=".12" stroke="rgba(22,37,31,.55)" stroke-width="1.2" stroke-dasharray="5 4"':'stroke="rgba(0,0,0,.16)" stroke-width=".8"';
+    if(cx<x0)o+=poly([[x0,y0,z0],[x0,y1,z0],[x0,y1,z1],[x0,y0,z1]],shadeHex(fill,-24),stroke);
+    if(cx>x1)o+=poly([[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],[x1,y0,z1]],shadeHex(fill,-24),stroke);
+    if(z1<EYE)o+=poly([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]],shadeHex(fill,16),stroke);
+    o+=poly([[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]],fill,stroke);
+    if(B.front){const fr=B.front,ln=(xa,za,xb,zb)=>{const a=pr(xa,y1,za),b=pr(xb,y1,zb);return `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="rgba(0,0,0,.25)" stroke-width="1"/>`};
+      if(fr.rows)for(let k=1;k<fr.rows;k++)o+=ln(x0+3,z0+(z1-z0)*k/fr.rows,x1-3,z0+(z1-z0)*k/fr.rows);
+      if(fr.split)o+=ln((x0+x1)/2,z0+2,(x0+x1)/2,z1-2);
+      if(fr.shelves)for(let k=1;k<=fr.shelves;k++)o+=ln(x0+3,z0+(z1-z0)*k/(fr.shelves+1),x1-3,z0+(z1-z0)*k/(fr.shelves+1))}});
+  o+=`<rect width="${VW}" height="${VH}" fill="url(#pvLight)"/><rect width="${VW}" height="${VH}" fill="url(#pvVig)"/>`;
+  if(!p.items.length)o+=`<text x="450" y="300" text-anchor="middle" font-family="Figtree, sans-serif" font-size="18" font-weight="600" fill="#3b4641">Add furniture to the plan to see it here.</text>`;
+  $('#pvSvg').innerHTML=o;
+  $('#pvNote').textContent='Built from your floor plan using each piece’s real size. Not a photograph.'+(ghosts?` ${ghosts===1?'The piece':ghosts+' pieces'} against the wall behind you ${ghosts===1?'is':'are'} shown as ${ghosts===1?'an outline':'outlines'}.`:'');
+  $('#pvSvg').setAttribute('aria-label',`Illustrated view of your ${current.toLowerCase()} with ${p.items.length} ${p.items.length===1?'piece':'pieces'}, seen from the door end of the room`);
+}
+function renderPvChrome(){
+  const p=P(),n=p.items.length;
+  $('#pvTitle').textContent=`${current} preview`;
+  $('#pvSub').textContent=`${(p.w/100).toFixed(2).replace(/\.?0+$/,'')} × ${(p.l/100).toFixed(2).replace(/\.?0+$/,'')} m · ${n} ${n===1?'piece':'pieces'} · ${pvStyle} walls`;
+  $('#pvStyles').innerHTML=Object.entries(PV_STYLES).map(([k,v])=>`<button type="button" class="pv-style" data-pvstyle="${k}" aria-pressed="${k===pvStyle}" style="--w:${v.wall};--f:${v.floor}"><i aria-hidden="true"></i>${k}</button>`).join('');
+  const ids=[...new Set(p.items.map(i=>i.id))];
+  $('#pvStrip').innerHTML=ids.length?ids.map(id=>{const pc=RoomPlannedCatalogue.product(id);if(!pc)return'';const qty=p.items.filter(i=>i.id===id).length;
+    return `<a class="pv-item" href="shop.html#piece-${id}"><span class="pimg">${RoomPlannedCatalogue.art(pc)}</span><b>${qty>1?qty+' × ':''}${pc.name}</b><small>${pc.retailer} · ${pc.price===null?'Price to check':'£'+(pc.price*qty).toLocaleString('en-GB')}</small></a>`}).join(''):'<p class="pv-note">No pieces yet.</p>';
+}
+function openPreview(){
+  pvOpen=true;$('#pvScrim').hidden=false;renderPvChrome();
+  const svg=$('#pvSvg'),bld=$('#pvBuilding'),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  svg.classList.add('building');bld.hidden=false;clearTimeout(pvTimer);
+  pvTimer=setTimeout(()=>{renderPreview();bld.hidden=true;svg.classList.remove('building')},reduce?0:900);
+  $('#pvClose').focus();document.body.style.overflow='hidden';
+}
+function closePreview(){if(!pvOpen)return;pvOpen=false;clearTimeout(pvTimer);$('#pvScrim').hidden=true;document.body.style.overflow='';$('#previewBtn').focus()}
+$('#previewBtn').addEventListener('click',openPreview);
+$('#pvClose').addEventListener('click',closePreview);
+$('#pvScrim').addEventListener('click',e=>{if(e.target===$('#pvScrim'))closePreview()});
+$('#pvStyles').addEventListener('click',e=>{const b=e.target.closest('[data-pvstyle]');if(!b)return;pvStyle=b.dataset.pvstyle;try{localStorage.setItem('rp-preview-style',pvStyle)}catch(err){}
+  renderPvChrome();if($('#pvBuilding').hidden)renderPreview();$(`[data-pvstyle="${pvStyle}"]`).focus()});
+document.addEventListener('keydown',e=>{if(!pvOpen)return;
+  if(e.key==='Escape'){e.preventDefault();closePreview();return}
+  if(e.key==='Tab'){const f=[...document.querySelectorAll('.pv a[href],.pv button')].filter(x=>x.offsetParent);const first=f[0],last=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}
+  e.stopImmediatePropagation()},true);
 
 renderChips();renderAdd();draw();fromHash();
 </script>
