@@ -489,7 +489,7 @@ function scene(styleName,room,H,opts={}){
     let lp;if(s.lamp==='arc'){lp=arcLamp(420,170);plant(30,40,s.plant)}
     else if(s.lamp==='table'){box(286,8,334,52,52,s.wood,1);lp=tableLamp(310,30,52);plant(422,40,s.plant)}
     else{lp=pendant(166,196,218);plant(422,40,s.plant)}
-    spots.push({x:pr(92,56,62),id:styleName==='Dark & moody'||styleName==='Mid-century'?'sienna-corner-sofa':'rhianna-sofa'},{x:pr(128,226,26),id:'earth-coffee-table'},{x:vp,id:'ida-vase'},{x:lp,id:'arlo-pendant'});
+    spots.push({x:pr(92,56,62),id:styleName==='Dark & moody'||styleName==='Mid-century'?'sienna-corner-sofa':'rhianna-sofa'},{x:pr(128,226,26),id:'earth-coffee-table'},{x:vp,id:'tahara-vase'},{x:lp,id:'arlo-pendant'});
   }else if(room==='Bedroom'){
     art(142,258,136,196);rug(78,150,322,372);
     const bx0=116,bx1=284,by1=218,c=s.sofa;shadow(bx0-6,6,bx1+6,by1+8);const p=part(bx0,6,bx1,by1,'n');
@@ -505,7 +505,7 @@ function scene(styleName,room,H,opts={}){
     chair(140,104,184,148,'n');chair(236,104,280,148,'n');chair(76,172,118,216,'w');chair(302,172,344,216,'e');
     table(120,150,300,238,76,s.wood,8);const vp=vase(244,192,76);books(176,196,76);const lp=pendant(210,194,212);
     plant(398,42,s.plant);
-    spots.push({x:pr(150,238,58),id:'fenwick-dining-table'},{x:lp,id:'arlo-pendant'},{x:vp,id:'ida-vase'});
+    spots.push({x:pr(150,238,58),id:'fenwick-dining-table'},{x:lp,id:'arlo-pendant'},{x:vp,id:'tahara-vase'});
   }
   if(!bare&&s.deco)decorate(s.deco);
   function decorate(dc){

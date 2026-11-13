@@ -43,7 +43,15 @@
       dims:[29,29,16],material:'Metal, gloss finish',delivery:'Check with retailer',popular:9,url:'https://www.dunelm.com/product/galley-easy-fit-pendant-shade-1000120313',
       desc:'A dome-shaped gloss metal pendant shade. It attaches to your existing ceiling light fitting, so no wiring or electrician is needed. The cord and bulb holder shown in the photos are not included.',
       notes:'Shade only: 1 × pendant shade. Takes 1 bulb, maximum 8W (bulb not included). Indoor use. Wipe clean with a soft cloth.',checked:'Price checked on Dunelm, 12 November 2026'},
-    {id:'ida-vase',name:'Ida Stoneware Vase',retailer:'Harbour Living',cat:'Decor',room:'Living room',price:34,shape:'vase',colours:[{n:'Speckled stone',hex:'#d8d1c4'},{n:'Clay',hex:'#c08d6b'}],dims:[18,18,26],material:'Hand-glazed stoneware',delivery:'3–5 days',popular:7},
+    /* Tahara: details and price checked on dunelm.com on 13 November 2026. Not a live price, stock or delivery check.
+       One colour and one size only. A decor piece, so it has no floor footprint in the planner. */
+    {id:'tahara-vase',name:'Cedar & Sage Tahara Stoneware Vase',retailer:'Dunelm',brand:'Cedar & Sage',cat:'Decor',room:'Living room',price:13,shape:'vase',
+      colours:[{n:'Cream',hex:'#d6d0c4'}],dims:[13.5,13.5,14.5],material:'Stoneware',delivery:'Check with retailer',popular:7,
+      url:'https://www.dunelm.com/product/cedar-sage-tahara-stoneware-vase-1000273493',
+      desc:'A compact cream stoneware vase with a glossy glaze and a classic milk-churn shape. A neutral finishing touch for shelves, sideboards and bedside tables.',
+      notes:'1 × vase.',
+      specs:[['Finish','Soft cream glaze, glossy'],['Shape','Classic milk-churn silhouette'],['Use','Indoor'],['Care','Wipe clean with a soft cloth']],
+      checked:'Price checked on Dunelm, 13 November 2026'},
     {id:'rowan-bed',name:'Rowan Upholstered Double Bed',short:'Double bed',retailer:'Linden & Co',cat:'Beds',room:'Bedroom',price:699,shape:'bed',colours:[{n:'Stone',hex:'#bdb5a6'},{n:'Forest',hex:'#3d5545'}],dims:[145,205,115],material:'Linen blend, slatted base',delivery:'3–5 weeks',popular:5}
   ];
 
@@ -61,7 +69,8 @@
     'grace-chest':'https://media.furniturevillage.co.uk/i/fv/PRODZFRSP000000000054937_grace_6-drawer-wide-chest_white?$medium$&fmt=auto',
     'mabel-armchair':'images/products/mabel-natural-boucle-swivel-armchair.webp',
     'arlo-pendant':'images/products/galley-pendant-shade-ivory.webp',
-    'holden-bedside':'images/products/holden-1-drawer-bedside-table-oak.webp'
+    'holden-bedside':'images/products/holden-1-drawer-bedside-table-oak.webp',
+    'tahara-vase':'images/products/cedar-sage-tahara-stoneware-vase-cream.webp'
   };
 
   /* ---------- drawings (used when there is no photo) ---------- */
@@ -116,51 +125,63 @@
      Sample products that were replaced by real ones. Old ids still saved in visitors' browsers are moved to the
      replacement once (plans keep their position, rotation and count; basket lines keep their quantity), and a
      one-time notice explains what changed, because the size and price differ. */
-  const RETIRED={'hollis-bedside':{to:'holden-bedside',name:'Hollis Oak Bedside Table',retailer:'Oakhaven Home',price:179,dims:[48,40,58]}};
+  const RETIRED={
+    'hollis-bedside':{to:'holden-bedside',name:'Hollis Oak Bedside Table',retailer:'Oakhaven Home',price:179,dims:[48,40,58],floor:true},
+    'ida-vase':{to:'tahara-vase',name:'Ida Stoneware Vase',retailer:'Harbour Living',price:34}
+  };
   const resolve=id=>RETIRED[id]?RETIRED[id].to:id;
   const NOTICE_KEY='rp-notices';
   function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
   function load(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
   function migrate(){
-    const where=new Set();
+    const hits={},hit=(id,place)=>{(hits[id]=hits[id]||new Set()).add(place)};
     /* room plans: swap the id in place */
     const plan=load('rp-plan');
     if(plan&&plan.plans&&typeof plan.plans==='object'){let n=0;
-      Object.values(plan.plans).forEach(r=>(r&&Array.isArray(r.items)?r.items:[]).forEach(i=>{if(i&&RETIRED[i.id]){i.id=RETIRED[i.id].to;n++}}));
-      if(n&&store('rp-plan',plan))where.add('plan')}
+      Object.values(plan.plans).forEach(r=>[].concat(r&&Array.isArray(r.items)?r.items:[],r&&Array.isArray(r.ceiling)?r.ceiling:[]).forEach(i=>{if(i&&RETIRED[i.id]){hit(i.id,'plan');i.id=RETIRED[i.id].to;n++}}));
+      if(n&&!store('rp-plan',plan))Object.values(hits).forEach(s=>s.delete('plan'))}
     /* shop: saved pieces, their saved options, and basket lines (same piece and colour are merged, quantities added) */
     const shop=load('rp-shop');
-    if(shop&&typeof shop==='object'){let n=0;
-      if(Array.isArray(shop.saved)&&shop.saved.some(id=>RETIRED[id])){shop.saved=[...new Set(shop.saved.map(resolve))];n++}
-      if(shop.savedVar&&typeof shop.savedVar==='object')Object.keys(shop.savedVar).forEach(id=>{if(RETIRED[id]){const to=RETIRED[id].to;if(!shop.savedVar[to])shop.savedVar[to]={colour:byId[to].colours[0].n};delete shop.savedVar[id];n++}});
+    if(shop&&typeof shop==='object'){let n=0;const local={};
+      if(Array.isArray(shop.saved)&&shop.saved.some(id=>RETIRED[id])){shop.saved.forEach(id=>{if(RETIRED[id])local[id]=1});shop.saved=[...new Set(shop.saved.map(resolve))];n++}
+      if(shop.savedVar&&typeof shop.savedVar==='object')Object.keys(shop.savedVar).forEach(id=>{if(RETIRED[id]){const to=RETIRED[id].to;if(!shop.savedVar[to])shop.savedVar[to]={colour:byId[to].colours[0].n};delete shop.savedVar[id];local[id]=1;n++}});
       if(Array.isArray(shop.bag)&&shop.bag.some(l=>l&&RETIRED[l.id])){const out=[];
-        shop.bag.forEach(l=>{if(!l)return;if(RETIRED[l.id]){const p=byId[RETIRED[l.id].to],c=p.colours[0];l={id:p.id,colour:c.n,hex:c.hex,qty:Math.max(1,+l.qty||1)}}
+        shop.bag.forEach(l=>{if(!l)return;if(RETIRED[l.id]){local[l.id]=1;const p=byId[RETIRED[l.id].to],c=p.colours[0];l={id:p.id,colour:c.n,hex:c.hex,qty:Math.max(1,+l.qty||1)}}
           const same=out.find(o=>o.id===l.id&&o.colour===l.colour&&o.size===l.size);same?same.qty+=l.qty:out.push(l)});
         shop.bag=out;n++}
-      if(n&&store('rp-shop',shop))where.add('shop')}
+      if(n&&store('rp-shop',shop))Object.keys(local).forEach(id=>hit(id,'shop'))}
     /* saved renders keep a list of the piece ids in the room */
     const rend=load('rp-renders');
-    if(Array.isArray(rend)){let n=0;rend.forEach(r=>{if(r&&r.snap&&Array.isArray(r.snap.items))r.snap.items=r.snap.items.map(id=>{if(RETIRED[id]){n++;return RETIRED[id].to}return id})});
-      if(n&&store('rp-renders',rend))where.add('renders')}
-    if(where.size){const notes=load(NOTICE_KEY)||{};const k='hollis-bedside';
-      notes[k]={where:[...new Set([...(notes[k]&&!notes[k].seen?notes[k].where:[]),...where])],seen:false,at:Date.now()};store(NOTICE_KEY,notes)}
+    if(Array.isArray(rend)){const local={};rend.forEach(r=>{if(r&&r.snap&&Array.isArray(r.snap.items))r.snap.items=r.snap.items.map(id=>{if(RETIRED[id]){local[id]=1;return RETIRED[id].to}return id})});
+      if(Object.keys(local).length&&store('rp-renders',rend))Object.keys(local).forEach(id=>hit(id,'renders'))}
+    const ids=Object.keys(hits).filter(id=>hits[id].size);
+    if(ids.length){const notes=load(NOTICE_KEY)||{};
+      ids.forEach(id=>{const prev=notes[id]&&!notes[id].seen?notes[id].where:[];notes[id]={where:[...new Set([...prev,...hits[id]])],seen:false,at:Date.now()}});
+      store(NOTICE_KEY,notes)}
   }
   migrate();
 
   /* one-time notice, shown on any page that loads the catalogue, until the visitor dismisses it */
+  const PLACES={plan:'your room plans',shop:'your saved pieces and basket',renders:'your saved renders'};
+  const listJoin=a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a[a.length-1]:a[0];
+  const dimText=a=>`${a[0]} × ${a[1]} × ${a[2]} cm`;
+  function noticeText(id,n){
+    const o=RETIRED[id],p=byId[o.to],c=p.colours[0].n,where=listJoin(n.where.map(w=>PLACES[w]).filter(Boolean));
+    const size=o.floor?`It’s a different size (${dimText(p.dims)}, was ${dimText(o.dims)}) and price (${money(p.price)}, was ${money(o.price)}).`:`It costs ${money(p.price)} (was ${money(o.price)}).`;
+    const end=o.floor&&n.where.includes('plan')?'Positions and quantities are unchanged, so check your room’s fit notes and totals.':'Quantities are unchanged, so check your totals.';
+    return `The ${o.name} from ${o.retailer} was example data. In ${where} it’s now the real ${p.name} from ${p.retailer}. ${size} It comes in one ${o.floor?'finish':'colour'}, ${c}, so any other colour you’d chosen is now ${c}. ${end}`;
+  }
   function showNotice(){
-    const notes=load(NOTICE_KEY);const n=notes&&notes['hollis-bedside'];if(!n||n.seen||document.getElementById('rpNotice'))return;
-    const o=RETIRED['hollis-bedside'],p=byId[o.to],d=a=>`${a[0]} × ${a[1]} × ${a[2]} cm`;
-    const parts={plan:'your room plans',shop:'your saved pieces and basket',renders:'your saved renders'};
+    const notes=load(NOTICE_KEY)||{};const ids=Object.keys(notes).filter(id=>RETIRED[id]&&notes[id]&&!notes[id].seen&&Array.isArray(notes[id].where));
+    if(!ids.length||document.getElementById('rpNotice'))return;
     const box=document.createElement('div');box.id='rpNotice';box.setAttribute('role','status');
-    box.style.cssText='position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:120;width:min(560px,calc(100% - 24px));'+
+    box.style.cssText='position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:120;width:min(560px,calc(100% - 24px));max-height:calc(100vh - 120px);overflow:auto;'+
       'background:var(--surface,#fff);color:var(--ink,#16251f);border:1px solid var(--line,#e3e1da);border-left:5px solid var(--green,#2c4a3b);border-radius:14px;'+
       'box-shadow:0 10px 30px rgba(0,0,0,.18);padding:14px 16px;font:14px/1.45 var(--font,system-ui,sans-serif);display:flex;gap:12px;align-items:flex-start';
-    box.innerHTML=`<div style="flex:1;min-width:0"><b style="display:block;margin-bottom:2px">We’ve replaced a sample piece</b>`+
-      `The ${o.name} was example data. In ${n.where.map(w=>parts[w]).join(', ').replace(/, ([^,]*)$/,' and $1')} it’s now the real ${p.name} from ${p.retailer}. `+
-      `It’s a different size (${d(p.dims)}, was ${d(o.dims)}) and price (${money(p.price)}, was ${money(o.price)}). It comes in one finish, ${p.colours[0].n}, so any other colour you’d chosen is now ${p.colours[0].n}. Positions and quantities are unchanged, so check your room’s fit notes and totals.`+
+    box.innerHTML=`<div style="flex:1;min-width:0"><b style="display:block;margin-bottom:2px">${ids.length>1?'We’ve replaced some sample pieces':'We’ve replaced a sample piece'}</b>`+
+      ids.map(id=>`<p style="margin:0 0 6px">${noticeText(id,notes[id])}</p>`).join('')+
       `</div><button type="button" style="flex:none;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--green,#2c4a3b);background:var(--green,#2c4a3b);color:var(--green-ink,#fff);font:600 14px var(--font,system-ui,sans-serif);cursor:pointer">OK</button>`;
-    box.querySelector('button').addEventListener('click',()=>{const cur=load(NOTICE_KEY)||{};if(cur['hollis-bedside'])cur['hollis-bedside'].seen=true;store(NOTICE_KEY,cur);box.remove()});
+    box.querySelector('button').addEventListener('click',()=>{const cur=load(NOTICE_KEY)||{};ids.forEach(id=>{if(cur[id])cur[id].seen=true});store(NOTICE_KEY,cur);box.remove()});
     document.body.appendChild(box);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showNotice);else showNotice();
