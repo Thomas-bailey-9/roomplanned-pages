@@ -117,22 +117,37 @@ input[type=range]{width:100%;accent-color:var(--green)}
 .save{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e3e1da;display:grid;place-items:center;color:#16251f}
 .save svg{width:18px;height:18px}
 .save[aria-pressed="true"] svg{fill:#2c4a3b;color:#2c4a3b}
-.view{position:absolute;bottom:10px;right:12px;font-size:12px;font-weight:600;color:#16251f;display:flex;gap:6px;align-items:center;border:0;background:none;padding:4px}
-.view svg{width:14px;height:14px}
 .card .body{padding:16px 8px 8px;display:flex;flex-direction:column;gap:4px;flex:1}
 .retailer{font-size:12px;color:var(--muted)}
 .card h3{font-size:15px;font-weight:700;letter-spacing:-.01em;line-height:1.3;min-height:2.6em}
+.card h3 a{color:inherit;text-decoration:none;border-radius:4px}
+.card h3 a:hover{text-decoration:underline;text-underline-offset:3px}
 .price{font-size:18px;font-weight:700;color:var(--ink);margin-top:10px;font-variant-numeric:tabular-nums}
 .price.check-p{font-size:16px}
 .dots{display:flex;gap:6px;margin:8px 0 12px}
 .dot{width:16px;height:16px;border-radius:50%;border:1px solid var(--line)}
+/* card colour swatches: a 44px tap area around an 18px dot */
+.dots.pick{gap:0;margin:2px -13px 2px}
+.cs{width:44px;height:44px;border:0;background:none;padding:0;display:grid;place-items:center;border-radius:50%}
+.cs i{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.18);transition:box-shadow .15s}
+.cs:hover i{box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--muted)}
+.cs[aria-pressed="true"] i{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--green)}
+.cs:focus-visible{outline:2px solid var(--sage);outline-offset:-4px}
+/* card actions: View piece (primary) above Add to room */
+.card-acts{display:flex;flex-direction:column;gap:10px;margin-top:auto;padding-top:4px}
+.card .card-acts .btn{height:48px;border-radius:12px;padding:0 16px;font-size:14px;gap:8px;margin:0}
+.card .btn.view-btn{background:#2c4a3b;border-color:#2c4a3b;color:#f7f2e8}
+.card .btn.view-btn:hover{background:#1f3a2d;border-color:#1f3a2d}
+.card .btn.add-btn:hover{background:var(--soft);border-color:var(--ink)}
+.card .btn:focus-visible{outline:2px solid var(--sage);outline-offset:3px}
+.card .btn svg{flex:none}
+.card .card-acts .btn{white-space:nowrap}
 .btn{height:44px;border-radius:var(--r-pill);font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:0 22px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none}
 .btn svg{width:16px;height:16px}
 .btn:hover{border-color:var(--ink)}
 .btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
 .btn.primary:hover{filter:brightness(1.12)}
 .btn.block{width:100%}
-.card .btn{margin-top:auto}
 .empty{grid-column:1/-1;text-align:center;padding:60px 16px;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r-card)}
 
 /* piece page */
@@ -222,11 +237,13 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
   .card{padding:6px}
   .card h3{font-size:13px}
   .price{font-size:15px}
-  .card .btn{height:38px;font-size:12px;padding:0 10px}
-  .view{display:none}
+  .card .card-acts{gap:8px}
+  .card .card-acts .btn{height:44px;font-size:13px;padding:0 8px;gap:6px}
+  .card .card-acts .btn svg{width:14px;height:14px}
   .save{width:32px;height:32px;top:6px;right:6px}
   .chip{height:36px;padding:0 14px}
 }
+@media (max-width:360px){.card .card-acts .btn{font-size:12px;padding:0 4px;gap:4px}.card .card-acts .btn svg{width:12px;height:12px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .ph{display:block;position:relative;width:100%;height:100%}.ph img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;mix-blend-mode:multiply}.ph>svg{display:none}.ph.err img{display:none}.ph.err>svg{display:block}
 </style>
@@ -271,6 +288,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 <script>
 const $ = s => document.querySelector(s);
 const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
+const PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 const BOOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg>';
 
 
@@ -303,19 +321,27 @@ function filtered(){
   return list.sort(by[state.sort]);
 }
 
+/* colour picked on a card: {id: colour index}. The details view opens in that colour. */
+const cardColour={};
+let openColour=null;
+const cardCi=p=>Math.min(cardColour[p.id]||0,p.colours.length-1);
 function card(p){
-  const saved=state.saved.has(p.id);
-  return `<article class="card">
-    <div class="img" data-open="${p.id}">${art(p)}
+  const saved=state.saved.has(p.id),ci=cardCi(p),c=p.colours[ci];
+  /* the image and name open the same details view as "View piece"; the bookmark, swatches and "Add to room" only do their own job */
+  return `<article class="card" data-card="${p.id}">
+    <div class="img" data-open="${p.id}" title="View ${p.name}">${art(p,c.hex)}
       <button class="save" data-save="${p.id}" aria-pressed="${saved}" aria-label="Save ${p.name}">${BOOK}</button>
-      <button class="view" data-open="${p.id}">View piece ${ARROW}</button>
     </div>
     <div class="body">
       <span class="retailer">${p.retailer}</span>
-      <h3>${p.name}</h3>
+      <h3><a href="#piece-${p.id}" data-open="${p.id}">${p.name}</a></h3>
       <div class="price ${p.price===null?'check-p':''}">${priceText(p)}</div>
-      <div class="dots">${p.colours.map(c=>`<span class="dot" title="${c.n}" style="background:${c.hex}"></span>`).join('')}</div>
-      <button class="btn block" data-room="${p.id}">Add to room ${ARROW}</button>
+      ${p.colours.length>1?`<div class="dots pick" role="group" aria-label="Colour for ${p.name}">${p.colours.map((x,i)=>`<button type="button" class="cs" data-card-ci="${i}" aria-pressed="${i===ci}" aria-label="${x.n}" title="${x.n}"><i style="background:${x.hex}"></i></button>`).join('')}</div>`
+        :`<div class="dots">${p.colours.map(x=>`<span class="dot" title="${x.n}" style="background:${x.hex}"></span>`).join('')}</div>`}
+      <div class="card-acts">
+        <a class="btn block view-btn" href="#piece-${p.id}" data-open="${p.id}">View piece ${ARROW}</a>
+        <button type="button" class="btn block add-btn" data-room="${p.id}">${PLUS} Add to room</button>
+      </div>
     </div></article>`;
 }
 
@@ -371,6 +397,7 @@ function pieceView(id){
   const p=PRODUCTS.find(x=>x.id===id); if(!p){location.hash='shop';return}
   let ci=0, qty=1, si=p.sizes?(p.defaultSize||0):-1;
   const sv=state.savedVar[p.id];if(sv){ci=Math.max(0,p.colours.indexOf(colourOf(p,sv.colour)));if(p.sizes)si=p.sizes.indexOf(sizeOf(p,sv.size))}
+  if(openColour&&openColour.id===p.id)ci=openColour.ci;openColour=null;
   const size=()=>p.sizes?p.sizes[si]:null,variant=()=>({colour:p.colours[ci].n,size:size()?size().n:undefined});
   const related=PRODUCTS.filter(x=>x.id!==p.id&&(x.room===p.room||x.cat===p.cat)).slice(0,4);
   const [w,d,h]=p.dims;
@@ -471,8 +498,13 @@ document.addEventListener('click',e=>{
   const s=e.target.closest('[data-save]');if(s){e.stopPropagation();const id=s.dataset.save;state.saved.has(id)?state.saved.delete(id):state.saved.add(id);
     const sp=PRODUCTS.find(x=>x.id===id);if(state.saved.has(id)&&s.dataset.variant&&pieceVariant&&(sp.sizes||sp.colours.length>1))state.savedVar[id]=pieceVariant();else delete state.savedVar[id];persist();
     document.querySelectorAll(`[data-save="${id}"]`).forEach(b=>b.setAttribute('aria-pressed',state.saved.has(id)));toast(state.saved.has(id)?'Saved to My Home':'Removed from My Home');return}
-  const o=e.target.closest('[data-open]');if(o){location.hash='piece-'+o.dataset.open;return}
-  const r=e.target.closest('[data-room]');if(r){const v=r.dataset.variant&&pieceVariant?pieceVariant():null;
+  const sw=e.target.closest('[data-card-ci]');if(sw){e.preventDefault();const cd=sw.closest('[data-card]'),p=PRODUCTS.find(x=>x.id===cd.dataset.card),i=+sw.dataset.cardCi;cardColour[p.id]=i;
+    cd.querySelector('.img').firstElementChild.outerHTML=art(p,p.colours[i].hex);cd.querySelectorAll('[data-card-ci]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.cardCi===i));return}
+  const o=e.target.closest('[data-open]');if(o){e.preventDefault();const id=o.dataset.open;openColour=cardColour[id]!==undefined?{id,ci:cardColour[id]}:null;
+    if(location.hash==='#piece-'+id)route();else location.hash='piece-'+id;return}
+  const r=e.target.closest('[data-room]');if(r){let v=r.dataset.variant&&pieceVariant?pieceVariant():null;
+    /* from a card, a piece the planner can show in sizes (the pendant) takes the card's colour and its default size */
+    const rp=PRODUCTS.find(x=>x.id===r.dataset.room);if(!v&&rp&&rp.sizes&&cardColour[rp.id]!==undefined)v={colour:rp.colours[cardCi(rp)].n,size:sizeOf(rp).n};
     location.href='plan.html#add-'+r.dataset.room+(v&&v.size?`&colour=${encodeURIComponent(v.colour)}&size=${encodeURIComponent(v.size)}`:'');return}
   const c=e.target.closest('[data-cat]');if(c){state.cat=c.dataset.cat;renderGrid();return}
   const col=e.target.closest('[data-col]');if(col){state.colour=state.colour===col.dataset.col?null:col.dataset.col;renderGrid();return}
