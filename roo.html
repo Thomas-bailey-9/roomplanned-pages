@@ -252,7 +252,7 @@ function reset(){S={step:0,room:null,w:null,l:null,needs:[],budget:null,style:nu
 /* ===== layout rules ===== */
 function pickPiece(need){
   const dark=['Dark & moody','Mid-century'].includes(S.style),cosy=['Cottage','Dark & moody'].includes(S.style);
-  return {sofa:(dark&&S.w>=420&&S.l>=380)?'sienna-corner-sofa':'rhianna-sofa',armchair:'mabel-armchair',coffee:'earth-coffee-table',bookcase:'wren-bookcase',
+  return {sofa:(dark&&S.w>=420&&S.l>=380)?'abel-corner-sofa':'rhianna-sofa',armchair:'mabel-armchair',coffee:'earth-coffee-table',bookcase:'wren-bookcase',
     bed:cosy?'rowan-bed':'veron-ottoman-bed',bedsides:'holden-bedside',chest:'grace-chest',table:'fenwick-dining-table'}[need]}
 const door=()=>({y:S.l-98,size:80});
 const win=()=>({x:Math.round(S.w*.25),size:Math.round(S.w*.45)});
@@ -289,7 +289,7 @@ function layout(){
   const order=['wren-bookcase','mabel-armchair','grace-chest','holden-bedside','earth-coffee-table'];
   const cost=()=>kept.reduce((s,i)=>s+(cat(i.id).price||0),0);
   for(const id of order){if(cost()<=S.budget)break;const idx=kept.map(k=>k.id).lastIndexOf(id);if(idx>-1){kept.splice(idx,1);notes.push({t:'warn',m:`I dropped the ${cat(id).short.toLowerCase()} to keep you under ${fmt(S.budget)}. Add it back later if the budget stretches.`})}}
-  if(cost()>S.budget&&kept.some(k=>k.id==='sienna-corner-sofa')){kept.find(k=>k.id==='sienna-corner-sofa').id='rhianna-sofa';notes.push({t:'warn',m:'I swapped the corner sofa for the Rhianna 3 seater to stay on budget.'})}
+  if(cost()>S.budget&&kept.some(k=>k.id==='abel-corner-sofa')){const k=kept.find(k=>k.id==='abel-corner-sofa');k.id='rhianna-sofa';delete k.colour;notes.push({t:'warn',m:'I swapped the Abel corner sofa for the Rhianna 3 seater to stay on budget.'})}
   /* walkway check */
   for(let a=0;a<kept.length;a++)for(let b=a+1;b<kept.length;b++){const A=box(kept[a]),B=box(kept[b]);
     const pair=[kept[a].id,kept[b].id].join();if(/sofa/.test(pair)&&/coffee/.test(pair))continue;

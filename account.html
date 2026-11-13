@@ -636,7 +636,7 @@ function renderHome(){
 /* A piece fits through a gap if its slimmest side is narrower than the gap (standard door height assumed). */
 function doorCheck(){
   const w=+acc.door||0;
-  const tight=CATALOGUE.map(c=>({c,slim:Math.min(...c.dims)})).filter(x=>x.slim>w-2).sort((a,b)=>b.slim-a.slim);
+  const tight=CATALOGUE.filter(c=>!c.replaced).map(c=>({c,slim:Math.min(...c.dims)})).filter(x=>x.slim>w-2).sort((a,b)=>b.slim-a.slim);
   const stairs=+acc.floor>0&&!acc.lift;
   $('#doorRoo').innerHTML=`<span class="rav">Roo</span><div><p>${w?tight.length?`At ${toUnit(w)}, ${tight.length} ${tight.length===1?'piece':'pieces'} in the shop may not get through. I’ll point ${tight.length===1?'it':'them'} out so you can check with the retailer.`:`At ${toUnit(w)}, every piece in the shop should get through.`:'Add your narrowest gap and I’ll check every piece in the shop against it.'}${stairs?' You’re up stairs with no lift, so look for flat-pack versions where they exist.':''}</p>
     ${w&&tight.length?`<ul>${tight.slice(0,5).map(x=>`<li>${esc(x.c.name)} <span>· slimmest side ${toUnit(x.slim)}</span></li>`).join('')}</ul>`:''}</div>`;

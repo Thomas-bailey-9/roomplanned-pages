@@ -224,6 +224,38 @@ input[type=range]{width:100%;accent-color:var(--green)}
 .roo label{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .roo input{width:80px;height:32px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 8px;font-variant-numeric:tabular-nums}
 .facts{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+/* collection: version selector, comparison, notes */
+.versions{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px 16px}
+.v-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.v-head h2{font-size:17px;letter-spacing:-.01em;margin-right:auto}
+.v-pos{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.v-nav{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center}
+.v-nav:hover:not(:disabled){border-color:var(--ink)}.v-nav:disabled{opacity:.4;cursor:default}
+.v-nav svg{width:18px;height:18px}
+.v-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:2px}
+.v-card{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:8px 10px 10px;background:var(--surface);min-height:44px;height:100%}
+.v-card:hover{border-color:var(--muted)}
+.v-card[aria-current="true"]{border-color:var(--green);box-shadow:0 0 0 2px var(--green)}
+.v-card:focus-visible{outline:2px solid var(--sage);outline-offset:3px}
+.v-card .vt{background:var(--img-bg);border-radius:10px;aspect-ratio:16/10;display:grid;place-items:center;position:relative;overflow:hidden}
+.v-card .vt .ph img{inset:4%;width:92%;height:92%}
+.v-card .vt svg{width:86%;height:auto}
+.v-card b{font-size:14px;line-height:1.25}
+.v-card span.vp{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.compare{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.compare caption{text-align:left;font-weight:700;color:var(--ink);font-size:17px;padding-bottom:8px}
+.compare th,.compare td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.compare thead th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.compare tr[aria-current="true"] th,.compare tr[aria-current="true"] td{background:var(--soft)}
+.compare a{color:var(--ink)}
+.cmp-wrap{overflow-x:auto;margin-top:8px}
+.listed{font-size:13px;color:var(--muted);margin:-8px 0 0}
+.legacy-panel{border:1px solid #a87a22;background:color-mix(in srgb,#a87a22 10%,var(--surface));border-radius:14px;padding:14px 16px;font-size:14px;color:var(--ink)}
+.legacy-panel b{display:block;margin-bottom:4px}
+.legacy-panel .btn{margin-top:10px}
+.v-count{font-size:13px;color:var(--muted);margin-top:2px}
+.line .legacy-note{color:#8a5a0e;font-weight:600}
+.line a.choose{color:var(--ink);font-size:12px;font-weight:700}
 .facts li{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
 .facts li span:first-child{color:var(--muted)}
 .facts li span:last-child{color:var(--ink);text-align:right}
@@ -264,6 +296,11 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
   aside.side.open{display:flex}
   .filters-btn{display:inline-flex}
   .piece{grid-template-columns:1fr;gap:28px}
+}
+@media (max-width:760px){
+  /* phones: swipe the version strip; previous and next still work */
+  .v-strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:2px 2px 10px;scrollbar-width:thin}
+  .v-strip>li{flex:0 0 58%;scroll-snap-align:start}
 }
 @media (max-width:520px){
   .site .wrap{height:64px;gap:12px}
@@ -329,10 +366,17 @@ const BOOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 
 
 /* ---------- products, photos and drawings come from catalogue.js ---------- */
-const {products:PRODUCTS, art, sizeOf, colourOf, unitPrice, priceText, fixVariant}=RoomPlannedCatalogue;
+const {products:PRODUCTS, art, sizeOf, colourOf, unitPrice, priceText, fixVariant, families:FAMILIES}=RoomPlannedCatalogue;
+const RC=RoomPlannedCatalogue;
+const prodById=id=>PRODUCTS.find(x=>x.id===id);
+const membersOf=f=>f.members.map(prodById).filter(Boolean);
+/* the shop grid shows each collection as one card; searching shows its individual versions */
+const entryOf=p=>p.family?FAMILIES[p.family]:p;
+const LEG_ID='sienna-corner-sofa';
 const CATS = ['All','Sofas','Beds','Tables','Storage','Lighting','Decor'];
 const RETAILERS = [...new Set(PRODUCTS.map(p=>p.retailer))];
 const ROOMS = [...new Set(PRODUCTS.map(p=>p.room))];
+const ENTRIES=[...new Set(PRODUCTS.map(entryOf))];   /* products and collections as the grid shows them */
 const PALETTE = [{n:'Neutral',hex:'#e6dfd2'},{n:'Green',hex:'#6d7f5f'},{n:'Grey',hex:'#a7a9ad'},{n:'Wood',hex:'#b98d55'},{n:'Blue',hex:'#4f6178'},{n:'Dark',hex:'#3a3836'}];
 const family = hex => {const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255,mx=Math.max(r,g,b),mn=Math.min(r,g,b);
   if(mx<90)return'Dark';if(mx-mn<14)return mx>200?'Neutral':'Grey';if(b>r&&b>g)return'Blue';if(g>=r&&g>b)return'Green';if(r-b>55&&mx<215)return'Wood';return'Neutral'};
@@ -345,15 +389,20 @@ state.savedVar={};
 try{const s=JSON.parse(localStorage.getItem('rp-shop')||'{}');if(s.bag)state.bag=s.bag.map(fixVariant);if(s.saved)state.saved=new Set(s.saved);if(s.savedVar)state.savedVar=s.savedVar}catch(e){}
 const persist=()=>{try{const s=JSON.parse(localStorage.getItem('rp-shop')||'{}');Object.assign(s,{bag:state.bag,saved:[...state.saved],savedVar:state.savedVar});localStorage.setItem('rp-shop',JSON.stringify(s))}catch(e){}};
 
+const searchText=p=>(p.name+' '+p.retailer+' '+p.cat+' '+p.room+' '+p.colours.map(c=>c.n).join(' ')+(p.family?' '+FAMILIES[p.family].name+' '+p.version+' sofa '+(p.listedColours||[]).join(' '):'')).toLowerCase();
 function filtered(){
-  let list = PRODUCTS.filter(p=>
-    (state.cat==='All'||p.cat===state.cat) &&
-    (!state.q || (p.name+' '+p.retailer+' '+p.cat+' '+p.room+' '+p.colours.map(c=>c.n).join(' ')).toLowerCase().includes(state.q.toLowerCase())) &&
+  const q=state.q.trim().toLowerCase();
+  const pass=p=>(state.cat==='All'||p.cat===state.cat) &&
+    (!q || q.split(/\s+/).every(w=>new RegExp('(^|[^a-z0-9])'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).test(searchText(p)))) &&   /* each word matches from the start of a word */
     (!state.retailers.size||state.retailers.has(p.retailer)) &&
     (!state.rooms.size||state.rooms.has(p.room)) &&
     (!state.colour||p.colours.some(c=>family(c.hex)===state.colour)) &&
-    (p.price===null||p.price<=state.max));
-  const by={popular:(a,b)=>b.popular-a.popular,low:(a,b)=>(a.price??1e9)-(b.price??1e9),high:(a,b)=>(b.price??-1)-(a.price??-1),az:(a,b)=>a.name.localeCompare(b.name)};
+    (p.price===null||p.price<=state.max);
+  const hits=PRODUCTS.filter(pass);
+  /* without a search, a collection's matching versions fold into one card */
+  let list=q?hits:[...new Set(hits.map(entryOf))];
+  const price=e=>e.members?Math.min(...membersOf(e).map(m=>m.price)):e.price;
+  const by={popular:(a,b)=>b.popular-a.popular,low:(a,b)=>(price(a)??1e9)-(price(b)??1e9),high:(a,b)=>(price(b)??-1)-(price(a)??-1),az:(a,b)=>a.name.localeCompare(b.name)};
   return list.sort(by[state.sort]);
 }
 
@@ -381,9 +430,29 @@ function card(p){
     </div></article>`;
 }
 
+/* a collection card: opens the collection's details; "Choose sofa" opens them at the version selector */
+function familyCard(f){
+  const ms=membersOf(f),photo=prodById(f.cardPhoto),from=Math.min(...ms.map(m=>m.price)),first=ms[0].id;
+  const cols=[...new Map(ms.flatMap(m=>m.colours).map(c=>[c.n,c])).values()];
+  return `<article class="card" data-card="${f.id}">
+    <div class="img" data-open="${first}" title="View the ${f.name}">${art(photo,photo.colours[0].hex)}</div>
+    <div class="body">
+      <span class="retailer">${f.retailer}</span>
+      <h3><a href="#piece-${first}" data-open="${first}">${f.name}</a></h3>
+      <span class="v-count">${f.styles}</span>
+      <div class="price">From ${fmt(from)}</div>
+      <div class="dots">${cols.map(x=>`<span class="dot" title="${x.n}" style="background:${x.hex}"></span>`).join('')}</div>
+      <div class="card-acts">
+        <a class="btn block view-btn" href="#piece-${first}" data-open="${first}">View piece ${ARROW}</a>
+        <a class="btn block add-btn" href="#piece-${first}" data-choose="${first}">Choose sofa ${ARROW}</a>
+      </div>
+    </div></article>`;
+}
+const cardFor=e=>e.members?familyCard(e):card(e);
+
 /* ---------- views ---------- */
 function shopView(){
-  const count=(k,v)=>PRODUCTS.filter(p=>p[k]===v).length;
+  const count=(k,v)=>ENTRIES.filter(p=>p[k]===v).length;
   $('#app').innerHTML = `
   <div class="wrap">
     <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>Shop furniture</span></nav>
@@ -426,38 +495,69 @@ function shopView(){
 function renderGrid(){
   const list=filtered();
   $('#count').textContent=`${list.length} ${list.length===1?'piece':'pieces'}`;
-  $('#grid').innerHTML=list.length?list.map(card).join(''):`<div class="empty">No pieces match these filters. Try a higher price or clear a filter.</div>`;
+  $('#grid').innerHTML=list.length?list.map(cardFor).join(''):`<div class="empty">No pieces match these filters. Try a higher price or clear a filter.</div>`;
   document.querySelectorAll('[data-cat]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cat===state.cat));
   document.querySelectorAll('[data-col]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.col===state.colour));
 }
 
 let pieceVariant=null;  /* the colour and size chosen on the open product page */
+let carryColour=null;   /* colour kept when moving between versions of a collection */
+const chev=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="${d<0?'m15 6-6 6 6 6':'m9 6 6 6-6 6'}"/></svg>`;
+function versionSelector(f,p){
+  const ms=membersOf(f),i=ms.indexOf(p),prev=ms[i-1],next=ms[i+1];
+  return `<section class="versions" id="versions" aria-labelledby="vH">
+    <div class="v-head"><h2 id="vH">Choose a sofa</h2><span class="v-pos" id="vPos" aria-live="polite">${i+1} of ${ms.length}</span>
+      <button type="button" class="v-nav" data-vstep="-1" ${prev?'':'disabled'} aria-label="${prev?'Previous sofa: '+prev.version:'No previous sofa'}">${chev(-1)}</button>
+      <button type="button" class="v-nav" data-vstep="1" ${next?'':'disabled'} aria-label="${next?'Next sofa: '+next.version:'No next sofa'}">${chev(1)}</button></div>
+    <ul class="v-strip" id="vStrip" aria-label="Sofa styles in the ${f.name}">${ms.map(m=>`<li><a class="v-card" href="#piece-${m.id}" data-version="${m.id}" aria-current="${m===p}">
+      <span class="vt">${art(m,m.colours[0].hex,'')}</span><b>${m.version}</b><span class="vp">${fmt(m.price)} · ${m.dims[0]} cm wide</span></a></li>`).join('')}</ul>
+  </section>`;
+}
+function compareTable(f,p){
+  const ms=membersOf(f);
+  return `<div class="cmp-wrap"><table class="compare"><caption>Compare the ${f.name.replace(' Collection','s')}</caption>
+    <thead><tr><th scope="col">Sofa</th><th scope="col">Price</th><th scope="col">Width</th><th scope="col">Overall depth</th><th scope="col">Seating</th></tr></thead>
+    <tbody>${ms.map(m=>`<tr ${m===p?'aria-current="true"':''}><th scope="row"><a href="#piece-${m.id}" data-version="${m.id}">${m.version}</a></th><td>${fmt(m.price)}</td><td>${m.dims[0]} cm</td><td>${m.dims[1]} cm</td><td>${m.seating}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function legacyPanel(p){
+  const r=RC.legacyRefs(LEG_ID);if(!r.any)return '';const o=RC.legacy[LEG_ID];
+  const where=[r.saved&&'saved pieces',r.bag&&`basket (${r.bag})`,r.plan.length&&('room plans: '+r.plan.map(x=>x.room.toLowerCase()).join(', ')),r.renders&&'saved renders'].filter(Boolean);
+  return `<div class="legacy-panel" id="legacyPanel"><b>Sample product replaced</b>Your ${where.join(', ').replace(/, ([^,]*)$/,' and $1')} still include the sample ${o.name} (${o.dims[0]} × ${o.dims[1]} cm). Choose the Abel sofa you want instead. Quantities and room positions are kept, and your plan’s fit notes and totals are recalculated.
+    <br><button type="button" class="btn small primary" id="replaceLegacy">Replace my sample sofa with this ${p.version}</button></div>`;
+}
 function pieceView(id){
   pieceVariant=null;
   const p=PRODUCTS.find(x=>x.id===id); if(!p){location.hash='shop';return}
-  let ci=0, qty=1, si=p.sizes?(p.defaultSize||0):-1;
+  const fam=p.family?FAMILIES[p.family]:null;
+  let ci=0, qty=1, si=p.sizes?(p.defaultSize||0):-1, colourMsg='';
   const sv=state.savedVar[p.id];if(sv){ci=Math.max(0,p.colours.indexOf(colourOf(p,sv.colour)));if(p.sizes)si=p.sizes.indexOf(sizeOf(p,sv.size))}
   if(openColour&&openColour.id===p.id)ci=openColour.ci;openColour=null;
+  /* moving between versions keeps the colour if this version has it; otherwise say what changed */
+  if(fam&&carryColour){const k=p.colours.findIndex(c=>c.n===carryColour);if(k>=0)ci=k;else{colourMsg=`${carryColour} isn’t available for the ${p.version}, so it’s shown in ${p.colours[ci].n}.`}}carryColour=null;
   const size=()=>p.sizes?p.sizes[si]:null,variant=()=>({colour:p.colours[ci].n,size:size()?size().n:undefined});
-  const related=PRODUCTS.filter(x=>x.id!==p.id&&(x.room===p.room||x.cat===p.cat)).slice(0,4);
+  const related=PRODUCTS.filter(x=>x.id!==p.id&&!(fam&&x.family===p.family)&&(x.room===p.room||x.cat===p.cat)).slice(0,4);
   const [w,d,h]=p.dims;
   $('#app').innerHTML=`
   <div class="wrap">
     <a class="back" href="#shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m6-6-6 6 6 6"/></svg>Back to shop</a>
-    <nav class="crumbs" aria-label="Breadcrumb"><a href="#shop">Shop furniture</a><span>/</span><a href="#shop" data-cat-link="${p.cat}">${p.cat}</a><span>/</span><span>${p.name}</span></nav>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="#shop">Shop furniture</a><span>/</span><a href="#shop" data-cat-link="${p.cat}">${p.cat}</a><span>/</span>${fam?`<span>${fam.name}</span><span>/</span>`:''}<span>${p.name}</span></nav>
+    ${fam?versionSelector(fam,p):''}
+    <p class="sr" id="vLive" aria-live="polite">${colourMsg}</p>
     <div class="piece" style="margin-top:18px">
       <div class="gallery">
         <div class="hero-img" id="hero">${art(p,p.colours[ci].hex)}<button class="save" data-save="${p.id}" aria-pressed="${state.saved.has(p.id)}" aria-label="Save ${p.name}">${BOOK}</button></div>
         ${p.colours.length>1?`<div class="thumbs" id="thumbs">${p.colours.slice(0,4).map((c,i)=>`<button class="thumb" data-thumb="${i}" aria-pressed="${i===ci}" aria-label="${c.n} view">${art(p,c.hex,'')}</button>`).join('')}</div>`:''}
       </div>
       <div class="info">
-        <div class="meta"><span>${p.retailer}</span><span class="pill">${p.room}</span></div>
+        <div class="meta"><span>${p.retailer}</span><span class="pill">${p.room}</span>${fam?`<span>${fam.name}</span>`:''}</div>
         <h1>${p.name}</h1>
         <div class="big-price" id="bigPrice">${p.sizes?priceText(p,size().n):priceText(p)}</div>${p.checked?`
         <p class="desc-note">${p.checked}. Prices can change, so check at <a href="${p.url}" target="_blank" rel="noopener">${p.retailer}</a> before you buy.</p>`:''}${p.desc?`
         <p class="desc">${p.desc}</p>`:''}
         <div><div class="label">Colour: <span id="cname" style="color:var(--ink);text-transform:none;letter-spacing:0">${p.colours[ci].n}</span></div>
-          <div class="colour-opts">${p.colours.map((c,i)=>`<button class="sw" data-ci="${i}" aria-pressed="${i===ci}" aria-label="${c.n}" title="${c.n}" style="background:${c.hex}"></button>`).join('')}</div></div>${p.sizes?`
+          <div class="colour-opts">${p.colours.map((c,i)=>`<button class="sw" data-ci="${i}" aria-pressed="${i===ci}" aria-label="${c.n}" title="${c.n}" style="background:${c.hex}"></button>`).join('')}</div></div>${p.listedColours&&p.listedColours.length?`
+        <p class="listed">Dunelm also lists this sofa in ${p.listedColours.join(' and ')}. We don’t have photos of ${p.listedColours.length>1?'those':'that'} yet, so only ${p.colours.map(c=>c.n).join(' and ')} can be chosen here.</p>`:''}${colourMsg?`
+        <p class="listed" role="status">${colourMsg}</p>`:''}${legacyPanel(p)}${p.sizes?`
         <div><div class="label" id="sizeLbl">Size: <span id="sname" style="color:var(--ink);text-transform:none;letter-spacing:0">${size().n}</span></div>
           <div class="size-opts" role="group" aria-labelledby="sizeLbl">${p.sizes.map((s,i)=>`<button class="chip" data-si="${i}" aria-pressed="${i===si}">${s.n}</button>`).join('')}</div></div>
         <div><div class="label">Dimensions</div>
@@ -466,7 +566,9 @@ function pieceView(id){
         <div class="roo"><span class="av">Roo</span><div><b style="color:var(--ink)">Will it fit?</b>
           <p>It attaches to the light fitting already on your ceiling, so you don’t need an electrician. Use a bulb of 8W or less.</p></div></div>`:`
         <div><div class="label">Dimensions</div>
-          <div class="dims"><div><b>${w}</b><span>Width, cm</span></div><div><b>${d}</b><span>Depth, cm</span></div><div><b>${h}</b><span>Height, cm</span></div></div></div>
+          <div class="dims"><div><b>${w}</b><span>Width, cm</span></div><div><b>${d}</b><span>${p.footprint?'Overall depth, cm':'Depth, cm'}</span></div><div><b>${h}</b><span>Height, cm</span></div></div>${p.dimsNote?`
+          <p class="dims-note">${p.dimsNote}</p>`:''}${p.footprint&&p.footprint.kind==='L'?`
+          <p class="dims-note">In the room planner it’s an approximate L shape: an 81 cm deep sofa with a 71 cm wide chaise.</p>`:''}</div>
         <div class="roo"><span class="av">Roo</span><div><b style="color:var(--ink)">Will it fit?</b>
           <p id="fit"></p>
           <label for="wall">Your wall length <input id="wall" type="number" min="50" max="2000" value="340"> cm</label></div></div>`}
@@ -484,9 +586,10 @@ function pieceView(id){
           <li><span>Delivery</span><span>${p.delivery}</span></li>
           <li><span>Returns</span><span>Handled by ${p.retailer}</span></li>
         </ul>
+        ${fam?compareTable(fam,p):''}
       </div>
     </div>
-    ${related.length?`<section class="related"><h2>Goes well with</h2><div class="grid">${related.map(card).join('')}</div></section>`:''}
+    ${related.length?`<section class="related"><h2>Goes well with</h2><div class="grid">${[...new Set(related.map(entryOf))].filter(e=>!(fam&&e===fam)).map(cardFor).join('')}</div></section>`:''}
   </div>`;
   const setColour=i=>{ci=i;const c=p.colours[i];
     $('#hero').firstElementChild.outerHTML=art(p,c.hex);$('#cname').textContent=c.n;
@@ -509,22 +612,44 @@ function pieceView(id){
   $('#plus').addEventListener('click',()=>{qty=Math.min(9,qty+1);$('#qty').textContent=qty});
   if(p.price!==null)$('#addBag').addEventListener('click',()=>{
     /* each colour and size is its own basket line */
-    const c=p.colours[ci].n,sz=size()?size().n:undefined,ex=state.bag.find(l=>l.id===p.id&&l.colour===c&&l.size===sz);
-    ex?ex.qty+=qty:state.bag.push(Object.assign({id:p.id,colour:c,hex:p.colours[ci].hex,qty},sz?{size:sz}:{}));
+    const c=p.colours[ci].n,sz=size()?size().n:undefined,cfg=p.config||undefined,ex=state.bag.find(l=>l.id===p.id&&l.colour===c&&l.size===sz&&l.config===cfg);
+    ex?ex.qty+=qty:state.bag.push(Object.assign({id:p.id,colour:c,hex:p.colours[ci].hex,qty},sz?{size:sz}:{},cfg?{config:cfg}:{}));
     persist();updateBag();openBag();});
   const cl=document.querySelector('[data-cat-link]');cl&&cl.addEventListener('click',()=>{state.cat=cl.dataset.catLink});
+  if(fam){
+    const ms=membersOf(fam),go=to=>{carryColour=p.colours[ci].n;keepPlace=true;location.hash='piece-'+to};
+    document.querySelectorAll('[data-vstep]').forEach(b=>b.addEventListener('click',()=>{const n=ms[ms.indexOf(p)+(+b.dataset.vstep)];if(n){focusAfter='vstep'+b.dataset.vstep;go(n.id)}}));
+    document.querySelectorAll('[data-version]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();if(a.dataset.version===p.id)return;focusAfter=a.closest('#vStrip')?'version':null;go(a.dataset.version)}));
+    /* arrow keys move between versions inside the strip */
+    $('#vStrip').addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;const n=ms[ms.indexOf(p)+(e.key==='ArrowRight'?1:-1)];if(n){e.preventDefault();focusAfter='version';go(n.id)}});
+    const cur=document.querySelector('.v-card[aria-current="true"]');if(cur&&cur.scrollIntoView)cur.scrollIntoView({block:'nearest',inline:'center'});
+    if(focusAfter==='version')cur&&cur.focus({preventScroll:true});
+    else if(focusAfter&&focusAfter.startsWith('vstep')){const b=document.querySelector(`[data-vstep="${focusAfter.slice(5)}"]`);(b&&!b.disabled?b:cur).focus({preventScroll:true})}
+    else if(focusAfter==='choose'){$('#versions').scrollIntoView({block:'start'});cur&&cur.focus({preventScroll:true})}
+    focusAfter=null;
+    const rb=$('#replaceLegacy');rb&&rb.addEventListener('click',()=>{
+      if(!RC.replaceLegacy(LEG_ID,p.id,p.colours[ci].n)){toast('Couldn’t save: this browser’s storage is full or blocked');return}
+      try{const s=JSON.parse(localStorage.getItem('rp-shop')||'{}');state.bag=(s.bag||[]).map(fixVariant);state.saved=new Set(s.saved||[]);state.savedVar=s.savedVar||{}}catch(e){}
+      updateBag();$('#legacyPanel').remove();const lb=document.getElementById('rpLegacy');lb&&lb.remove();
+      document.querySelectorAll(`[data-save="${p.id}"]`).forEach(b=>b.setAttribute('aria-pressed',state.saved.has(p.id)));
+      toast(`Replaced with the ${p.version}. Open your plan to check the fit.`)});
+  }
 }
+let keepPlace=false,focusAfter=null;
 
 /* ---------- basket ---------- */
 function updateBag(){
   const n=state.bag.reduce((a,l)=>a+l.qty,0);
   $('#bagCount').hidden=!n;$('#bagCount').textContent=n;
   if(!state.bag.length){$('#lines').innerHTML='<p class="empty-b">Your basket is empty.<br>Add pieces from the shop to see them here.</p>';$('#bagFoot').innerHTML=`<a class="btn primary block" href="#shop" id="keep">Browse furniture</a>`;$('#keep').onclick=closeBag;return}
-  $('#lines').innerHTML=state.bag.map((l,i)=>{const p=PRODUCTS.find(x=>x.id===l.id);return `<div class="line"><div class="mini">${art(p,l.hex,'')}</div><div><b>${p.name}</b><small>${p.retailer} · ${l.colour}${l.size?' · '+l.size:''} · Qty ${l.qty}</small><br><button class="rm" data-rm-line="${i}">Remove</button></div><div class="lp">${fmt(unitPrice(p,l.size)*l.qty)}</div></div>`}).join('');
-  const sub=state.bag.reduce((a,l)=>a+unitPrice(PRODUCTS.find(x=>x.id===l.id),l.size)*l.qty,0);
-  const shops=new Set(state.bag.map(l=>PRODUCTS.find(x=>x.id===l.id).retailer));
-  $('#bagFoot').innerHTML=`<div class="sum"><span>Subtotal</span><span>${fmt(sub)}</span></div><div class="sum"><span>Delivery</span><span>Set by each retailer</span></div><div class="sum total"><span>Total</span><span>${fmt(sub)}</span></div>
-    <button class="btn primary block" id="checkout">Checkout with ${shops.size} ${shops.size===1?'retailer':'retailers'} ${ARROW}</button>
+  $('#lines').innerHTML=state.bag.map((l,i)=>{const p=prodById(l.id);
+    if(!p){const o=RC.legacy[l.id];return `<div class="line"><div class="mini"></div><div><b>${o?o.name:'Item no longer available'}</b><small>${o?o.retailer+' · ':''}Qty ${l.qty} · <span class="legacy-note">Sample product replaced</span></small><br>${o?`<a class="choose" href="#piece-${FAMILIES[o.family].members[0]}">Choose an Abel sofa</a> · `:''}<button class="rm" data-rm-line="${i}">Remove</button></div><div class="lp">–</div></div>`}
+    return `<div class="line"><div class="mini">${art(p,l.hex,'')}</div><div><b>${p.name}</b><small>${p.retailer} · ${l.colour}${l.size?' · '+l.size:''}${l.config?' · '+l.config:''} · Qty ${l.qty}</small><br><button class="rm" data-rm-line="${i}">Remove</button></div><div class="lp">${fmt(unitPrice(p,l.size)*l.qty)}</div></div>`}).join('');
+  const priced=state.bag.filter(l=>prodById(l.id)),unpriced=state.bag.length-priced.length;
+  const sub=priced.reduce((a,l)=>a+unitPrice(prodById(l.id),l.size)*l.qty,0);
+  const shops=new Set(priced.map(l=>prodById(l.id).retailer));
+  $('#bagFoot').innerHTML=`<div class="sum"><span>Subtotal</span><span>${fmt(sub)}</span></div><div class="sum"><span>Delivery</span><span>Set by each retailer</span></div><div class="sum total"><span>Total</span><span>${fmt(sub)}</span></div>${unpriced?`<p class="note">${unpriced===1?'1 sample item isn’t':unpriced+' sample items aren’t'} included. Choose a replacement or remove ${unpriced===1?'it':'them'}.</p>`:''}
+    <button class="btn primary block" id="checkout" ${shops.size?'':'disabled'}>Checkout with ${shops.size} ${shops.size===1?'retailer':'retailers'} ${ARROW}</button>
     <p class="note">RoomPlanned passes your basket to ${[...shops].join(', ')}. You pay each retailer directly.</p>`;
   $('#checkout').onclick=()=>toast('Example only: this is where checkout hands over to each retailer.');
   document.querySelectorAll('[data-rm-line]').forEach(b=>b.onclick=()=>{state.bag.splice(+b.dataset.rmLine,1);persist();updateBag()});
@@ -537,16 +662,18 @@ $('#bagBtn').onclick=openBag;$('#closeBag').onclick=closeBag;$('#scrim').onclick
 let tt;function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
 document.addEventListener('click',e=>{
   const s=e.target.closest('[data-save]');if(s){e.stopPropagation();const id=s.dataset.save;state.saved.has(id)?state.saved.delete(id):state.saved.add(id);
-    const sp=PRODUCTS.find(x=>x.id===id);if(state.saved.has(id)&&s.dataset.variant&&pieceVariant&&(sp.sizes||sp.colours.length>1))state.savedVar[id]=pieceVariant();else delete state.savedVar[id];persist();
+    const sp=PRODUCTS.find(x=>x.id===id);if(state.saved.has(id)&&s.dataset.variant&&pieceVariant&&(sp.sizes||sp.colours.length>1||sp.family))state.savedVar[id]=pieceVariant();else delete state.savedVar[id];persist();
     document.querySelectorAll(`[data-save="${id}"]`).forEach(b=>b.setAttribute('aria-pressed',state.saved.has(id)));toast(state.saved.has(id)?'Saved to My Home':'Removed from My Home');return}
   const sw=e.target.closest('[data-card-ci]');if(sw){e.preventDefault();const cd=sw.closest('[data-card]'),p=PRODUCTS.find(x=>x.id===cd.dataset.card),i=+sw.dataset.cardCi;cardColour[p.id]=i;
     cd.querySelector('.img').firstElementChild.outerHTML=art(p,p.colours[i].hex);cd.querySelectorAll('[data-card-ci]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.cardCi===i));return}
+  const ch=e.target.closest('[data-choose]');if(ch){e.preventDefault();focusAfter='choose';if(location.hash==='#piece-'+ch.dataset.choose)route();else location.hash='piece-'+ch.dataset.choose;return}
   const o=e.target.closest('[data-open]');if(o){e.preventDefault();const id=o.dataset.open;openColour=cardColour[id]!==undefined?{id,ci:cardColour[id]}:null;
     if(location.hash==='#piece-'+id)route();else location.hash='piece-'+id;return}
   const r=e.target.closest('[data-room]');if(r){let v=r.dataset.variant&&pieceVariant?pieceVariant():null;
     /* from a card, a piece the planner can show in sizes (the pendant) takes the card's colour and its default size */
     const rp=PRODUCTS.find(x=>x.id===r.dataset.room);if(!v&&rp&&rp.sizes&&cardColour[rp.id]!==undefined)v={colour:rp.colours[cardCi(rp)].n,size:sizeOf(rp).n};
-    location.href='plan.html#add-'+r.dataset.room+(v&&v.size?`&colour=${encodeURIComponent(v.colour)}&size=${encodeURIComponent(v.size)}`:'');return}
+    if(!v&&rp&&rp.family)v={colour:rp.colours[cardCi(rp)].n};
+    location.href='plan.html#add-'+r.dataset.room+(v&&v.size?`&colour=${encodeURIComponent(v.colour)}&size=${encodeURIComponent(v.size)}`:v&&rp&&rp.family?`&colour=${encodeURIComponent(v.colour)}`:'');return}
   const c=e.target.closest('[data-cat]');if(c){state.cat=c.dataset.cat;renderGrid();return}
   const col=e.target.closest('[data-col]');if(col){state.colour=state.colour===col.dataset.col?null:col.dataset.col;renderGrid();return}
   if(!e.target.closest('#menu,#menuBtn')){$('#menu').hidden=true;$('#menuBtn').setAttribute('aria-expanded','false')}
@@ -561,8 +688,11 @@ $('#searchJump').onclick=()=>{if(!location.hash.startsWith('#piece-')){$('#q')&&
 
 function route(){const h=location.hash.slice(1);
   /* an old link to a retired sample piece opens its replacement */
-  if(h.startsWith('piece-')){const id=h.slice(6),to=RoomPlannedCatalogue.resolve(id);if(to!==id){history.replaceState(null,'','#piece-'+to);return route()}}
-  h.startsWith('piece-')?pieceView(h.slice(6)):shopView();window.scrollTo(0,0)}
+  if(h.startsWith('piece-')){const id=h.slice(6);let to=RC.linkTarget(id);
+    const f=Object.values(FAMILIES).find(f=>f.id===id);if(f)to=f.members[0];
+    if(to!==id){history.replaceState(null,'','#piece-'+to);return route()}}
+  const keep=keepPlace;keepPlace=false;
+  h.startsWith('piece-')?pieceView(h.slice(6)):shopView();if(!keep)window.scrollTo(0,0)}
 window.addEventListener('hashchange',route);
 updateBag();route();
 </script>

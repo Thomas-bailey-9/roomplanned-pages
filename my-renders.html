@@ -324,7 +324,7 @@ function scene(styleName,room,H,opts={}){
     else if(s.lamp==='table'){P.push(`<rect x="318" y="${fy-26}" width="56" height="52" rx="3" fill="${s.wood}"/><path d="M346 ${fy-26}v-24" stroke="${s.accent}" stroke-width="7" stroke-linecap="round"/><path d="M326 ${fy-50}l8-26h24l8 26Z" fill="#f2ead9"/>`);lampSpot=[346,fy-64]}
     else{P.push(pendant(240,Math.round(fy*.22)));lampSpot=[240,Math.round(fy*.22)+14]}
     if(s.lamp!=='table')P.push(plant(350));
-    spots.push({x:sx+sw/2,y:sy+30,id:styleName==='Dark & moody'||styleName==='Mid-century'?'sienna-corner-sofa':'rhianna-sofa'},{x:tx,y:ty+12,id:'earth-coffee-table'},{x:tx+25,y:ty-18,id:'tahara-vase'},{x:lampSpot[0],y:lampSpot[1],id:'arlo-pendant'});
+    spots.push({x:sx+sw/2,y:sy+30,id:styleName==='Dark & moody'||styleName==='Mid-century'?'abel-corner-sofa':'rhianna-sofa'},{x:tx,y:ty+12,id:'earth-coffee-table'},{x:tx+25,y:ty-18,id:'tahara-vase'},{x:lampSpot[0],y:lampSpot[1],id:'arlo-pendant'});
   } else if(room==='Bedroom'){
     const bx=96,bw=196;
     P.push(shadow(bx+bw/2,fy+72,140));
@@ -392,7 +392,7 @@ function miniPlan(p,stroke=6){
   for(let x=50;x<p.w;x+=50)s+=`<path d="M${x} 0V${p.l}" stroke="#ecebe5" stroke-width="1.5"/>`;for(let y=50;y<p.l;y+=50)s+=`<path d="M0 ${y}H${p.w}" stroke="#ecebe5" stroke-width="1.5"/>`;
   s+=`<rect x="${-stroke/2}" y="${-stroke/2}" width="${p.w+stroke}" height="${p.l+stroke}" fill="none" stroke="#16251f" stroke-width="${stroke}"/>`;
   if(p.door)s+=`<path d="M0 ${p.door.y}L${p.door.size} ${p.door.y}A${p.door.size} ${p.door.size} 0 0 1 0 ${p.door.y+p.door.size}Z" fill="#e6ece3" stroke="#6b8068" stroke-dasharray="5 5" stroke-width="2"/>`;
-  it.forEach(i=>{const [w,d]=foot(i);s+=`<rect x="${i.x}" y="${i.y}" width="${w}" height="${d}" rx="4" fill="${cat(i.id).colour}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`});
+  it.forEach(i=>RoomPlannedCatalogue.rects(i).forEach(r=>{s+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.d}" rx="3" fill="${cat(i.id).colour}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`}));
   return s+'</svg>'}
 
 /* ===== state ===== */

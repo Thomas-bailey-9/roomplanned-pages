@@ -363,7 +363,7 @@ function scene(styleName,room,H,opts={}){
     else if(s.lamp==='table'){P.push(`<rect x="318" y="${fy-26}" width="56" height="52" rx="3" fill="${s.wood}"/><path d="M346 ${fy-26}v-24" stroke="${s.accent}" stroke-width="7" stroke-linecap="round"/><path d="M326 ${fy-50}l8-26h24l8 26Z" fill="#f2ead9"/>`);lampSpot=[346,fy-64]}
     else{P.push(pendant(240,Math.round(fy*.22)));lampSpot=[240,Math.round(fy*.22)+14]}
     if(s.lamp!=='table')P.push(plant(350));
-    spots.push({x:sx+sw/2,y:sy+30,id:styleName==='Dark & moody'||styleName==='Mid-century'?'sienna-corner-sofa':'rhianna-sofa'},{x:tx,y:ty+12,id:'earth-coffee-table'},{x:tx+25,y:ty-18,id:'tahara-vase'},{x:lampSpot[0],y:lampSpot[1],id:'arlo-pendant'});
+    spots.push({x:sx+sw/2,y:sy+30,id:styleName==='Dark & moody'||styleName==='Mid-century'?'abel-corner-sofa':'rhianna-sofa'},{x:tx,y:ty+12,id:'earth-coffee-table'},{x:tx+25,y:ty-18,id:'tahara-vase'},{x:lampSpot[0],y:lampSpot[1],id:'arlo-pendant'});
   } else if(room==='Bedroom'){
     const bx=96,bw=196;
     P.push(shadow(bx+bw/2,fy+72,140));
@@ -458,10 +458,11 @@ const cat=id=>CATALOGUE.find(c=>c.id===id);
 function foot(i){const c=cat(i.id);return i.r%180?{w:c.dims[1],d:c.dims[0]}:{w:c.dims[0],d:c.dims[1]}}
 function box(i){const f=foot(i);return{x:i.x,y:i.y,w:f.w,d:f.d}}
 const ov=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.d&&b.y<a.y+a.d;
+const RC=RoomPlannedCatalogue;
 function check(p){const it=p.items.filter(i=>cat(i.id));let clash=0,door=0;
-  for(let a=0;a<it.length;a++)for(let b=a+1;b<it.length;b++)if(ov(box(it[a]),box(it[b])))clash++;
-  const dz={x:0,y:p.door.y,w:p.door.size,d:p.door.size};it.forEach(i=>{if(ov(box(i),dz))door++});
-  const used=it.reduce((s,i)=>{const f=foot(i);return s+f.w*f.d},0),free=Math.round(100-used/(p.w*p.l)*100);
+  for(let a=0;a<it.length;a++)for(let b=a+1;b<it.length;b++)if(RC.rectsOverlap(RC.rects(it[a]),RC.rects(it[b])))clash++;
+  const dz={x:0,y:p.door.y,w:p.door.size,d:p.door.size};it.forEach(i=>{if(RC.rectsOverlap(RC.rects(i),[dz]))door++});
+  const used=it.reduce((s,i)=>s+RC.area(i),0),free=Math.round(100-used/(p.w*p.l)*100);
   const cost=it.reduce((s,i)=>s+(cat(i.id).price||0),0),unpriced=it.filter(i=>cat(i.id).price===null).length;
   const issues=clash+door;return{it,clash,door,free,cost,unpriced,issues}}
 function miniPlan(p){
@@ -472,7 +473,7 @@ function miniPlan(p){
   s+=`<rect x="-5" y="-5" width="${p.w+10}" height="${p.l+10}" fill="none" style="stroke:var(--wall)" stroke-width="10"/>`;
   s+=`<rect x="-10" y="${p.door.y}" width="10" height="${p.door.size}" style="fill:var(--bg)"/><path d="M0 ${p.door.y}L${p.door.size} ${p.door.y}A${p.door.size} ${p.door.size} 0 0 1 0 ${p.door.y+p.door.size}Z" style="fill:var(--sage-soft);stroke:var(--sage)" stroke-dasharray="5 5" stroke-width="2"/>`;
   s+=`<rect x="${p.win.x}" y="-10" width="${p.win.size}" height="10" style="fill:var(--bg)"/><path d="M${p.win.x} -5h${p.win.size}" style="stroke:var(--sage)" stroke-width="4"/>`;
-  it.forEach(i=>{const f=foot(i);s+=`<rect x="${i.x}" y="${i.y}" width="${f.w}" height="${f.d}" rx="5" fill="${cat(i.id).colour}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`});
+  it.forEach(i=>RC.rects(i).forEach(r=>{s+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.d}" rx="3" fill="${cat(i.id).colour}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`}));
   return s+'</svg>'}
 
 /* ===== renderers ===== */
@@ -514,17 +515,21 @@ function render(){
   /* saved furniture + basket */
   $('#savedTag').innerHTML=tag(live.saved);
   const saved=D.saved.map(prod).filter(Boolean);
+  /* a withdrawn sample (Sienna) stays saved until the visitor chooses its replacement */
+  const LEG=RoomPlannedCatalogue.legacy,legacySaved=D.saved.filter(id=>LEG[id]);
+  const legacyCard=id=>{const o=LEG[id],to=RoomPlannedCatalogue.families[o.family].members[0];return `<article class="card pc-card"><div class="img" style="display:grid;place-items:center;color:var(--muted);font-size:13px;text-align:center;padding:12px">Sample product replaced<button class="rm" data-unsave="${id}" aria-label="Remove ${o.name} from saved">✕</button></div>
+    <div class="body"><small>${o.retailer} · sample</small><b>${o.name}</b><div class="pr" style="font-size:14px;color:var(--muted)">No longer available</div><a class="btn" href="shop.html#piece-${to}">Choose an Abel sofa ${ARROW}</a></div></article>`};
   /* a piece saved in a particular colour and size shows that photo, price and option; ceiling pieces can go on the plan too */
   const sv=(live.saved&&shop.savedVar)||{},RPC=RoomPlannedCatalogue;
-  $('#savedGrid').innerHTML=saved.length?`<div class="pgrid">${saved.map(p=>{const v=sv[p.id],c=v?RPC.colourOf(p,v.colour):null,sz=v&&p.sizes?RPC.sizeOf(p,v.size).n:null,ceil=RPC.ceiling.includes(p.id);
-    const planHref='plan.html#add-'+p.id+(ceil&&c?`&colour=${encodeURIComponent(c.n)}&size=${encodeURIComponent(sz)}`:''),canPlan=cat(p.id)||ceil;
+  $('#savedGrid').innerHTML=saved.length||legacySaved.length?`<div class="pgrid">${legacySaved.map(legacyCard).join('')}${saved.map(p=>{const v=sv[p.id],c=v?RPC.colourOf(p,v.colour):null,sz=v&&p.sizes?RPC.sizeOf(p,v.size).n:null,ceil=RPC.ceiling.includes(p.id);
+    const planHref='plan.html#add-'+p.id+(ceil&&c?`&colour=${encodeURIComponent(c.n)}&size=${encodeURIComponent(sz)}`:p.family&&c?`&colour=${encodeURIComponent(c.n)}`:''),canPlan=cat(p.id)||ceil;
     return `<article class="card pc-card"><div class="img">${art(p,c?c.hex:undefined)}<button class="rm" data-unsave="${p.id}" aria-label="Remove ${p.name} from saved">✕</button></div>
     <div class="body"><small>${p.retailer}${c&&(sz||p.colours.length>1)?` · ${c.n}${sz?' · '+sz:''}`:''}</small><b>${p.name}</b><div class="pr">${RPC.priceText(p,sz||undefined)}</div><a class="btn" href="${canPlan?planHref:'shop.html#piece-'+p.id}">${canPlan?'Add to room':'View piece'} ${ARROW}</a></div></article>`}).join('')}</div>`
     :`<div class="empty-s">Nothing saved yet. Tap the bookmark on any piece in the shop.</div>`;
   D.bag.forEach(RoomPlannedCatalogue.fixVariant);
   const linePrice=l=>{const p=prod(l.id);return p?(RoomPlannedCatalogue.unitPrice(p,l.size)||0)*l.qty:0};
   const bagTotal=D.bag.reduce((s,l)=>s+linePrice(l),0);
-  $('#basket').innerHTML=`<h3>Basket ${tag(live.bag)}</h3>`+(D.bag.length?`<ul>${D.bag.map(l=>{const p=prod(l.id);return p?`<li><span>${l.qty>1?l.qty+' × ':''}${p.name}<br><small style="color:var(--muted)">${l.colour}${l.size?' · '+l.size:''}</small></span><span>${fmt(linePrice(l))}</span></li>`:''}).join('')}</ul><div class="tot"><span>Total</span><span>${fmt(bagTotal)}</span></div><a class="btn primary" style="width:100%" href="shop.html">Go to checkout</a>`
+  $('#basket').innerHTML=`<h3>Basket ${tag(live.bag)}</h3>`+(D.bag.length?`<ul>${D.bag.map(l=>{const p=prod(l.id);return p?`<li><span>${l.qty>1?l.qty+' × ':''}${p.name}<br><small style="color:var(--muted)">${l.colour}${l.size?' · '+l.size:''}${l.config?' · '+l.config:''}</small></span><span>${fmt(linePrice(l))}</span></li>`:LEG[l.id]?`<li><span>${l.qty>1?l.qty+' × ':''}${LEG[l.id].name}<br><small style="color:#8a5a0e;font-weight:600">Sample product replaced · not in total</small> <a href="shop.html#piece-${RoomPlannedCatalogue.families[LEG[l.id].family].members[0]}" style="font-size:12px;font-weight:700">Choose an Abel sofa</a></span><span>–</span></li>`:''}).join('')}</ul><div class="tot"><span>Total</span><span>${fmt(bagTotal)}</span></div><a class="btn primary" style="width:100%" href="shop.html">Go to checkout</a>`
     :`<p style="color:var(--muted);font-size:14px;margin:0 0 14px">Your basket is empty.</p><a class="btn" style="width:100%" href="shop.html">Browse the shop</a>`);
 
   /* loved rooms: inspiration likes + saved community posts */

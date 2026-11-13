@@ -135,6 +135,12 @@ svg#plan{width:100%;height:auto;display:block;touch-action:none;user-select:none
 .add-sep{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;padding:10px 6px 4px}
 
 .piece-bar{position:absolute;z-index:5;display:flex;align-items:center;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 28px -12px rgba(0,0,0,.4);white-space:nowrap}
+.legacy-bar{margin:0 0 12px;border:1px solid #a87a22;background:color-mix(in srgb,#a87a22 10%,var(--surface));border-radius:14px;padding:12px 14px;font-size:14px;color:var(--ink)}
+.legacy-bar b{display:block}
+.legacy-bar .lb-opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.legacy-bar .lb-opts button{min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;text-align:left;font:inherit;font-size:13px;line-height:1.3;cursor:pointer}
+.legacy-bar .lb-opts button:hover{border-color:var(--ink)}
+.legacy-bar .lb-opts small{display:block;color:var(--muted);font-variant-numeric:tabular-nums}
 .pb-name{display:flex;flex-direction:column;padding:0 10px 0 8px;margin-right:2px;line-height:1.2;border-right:1px solid var(--line)}
 .pb-name b{font-size:13px;color:var(--ink)}
 .pb-name small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -252,6 +258,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
         <button class="btn small primary preview-btn" id="previewBtn" type="button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5v9L12 24l-9-5.5z" transform="translate(0 -2)"/><path d="M3 7.5 12 13l9-5.5M12 13v9"/></svg>Preview room</button>
         <div class="legend"><span><i style="background:var(--wall)"></i>Wall</span><span><i style="background:var(--sage-soft);border:1px dashed var(--sage)"></i>Door swing</span><span><i style="background:var(--bad-soft);border:1px solid var(--bad)"></i>Clash</span><span>Grid: 50 cm</span></div>
       </div>
+      <div class="legacy-bar" id="legacyBar" hidden></div>
       <div class="stage"><svg id="plan" aria-label="Top-down floor plan"></svg><div class="piece-bar" id="pieceBar" role="toolbar" hidden></div></div>
       <div class="hint">Tap a piece for its tools, or drag it to move. Keys: <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> nudge 5 cm, <kbd>R</kbd> rotate right, <kbd>Shift</kbd>+<kbd>R</kbd> rotate left, <kbd>Delete</kbd> remove, <kbd>Esc</kbd> deselect.</div>
     </section>
@@ -339,27 +346,37 @@ function textOn(hex){const n=parseInt(hex.slice(1),16),l=(0.299*(n>>16)+0.587*(n
 
 /* ---------- analysis ---------- */
 function doorZone(p){return{x:0,y:p.door.y,w:p.door.size,d:p.door.size}}
+const shape=i=>RPC.rects(i);   /* rectangles covered by a piece: one for most, two for the chaise sofa's L */
+const shapesOverlap=(a,b)=>RPC.rectsOverlap(shape(a),shape(b));
+/* smallest walking gap between two pieces that sit side by side or one behind the other */
+function gapBetween(a,b){let best=null;shape(a).forEach(A=>shape(b).forEach(B=>{if(overlaps(A,B))return;
+  const xOver=A.x<B.x+B.w&&B.x<A.x+A.w,yOver=A.y<B.y+B.d&&B.y<A.y+A.d;let g=null;
+  if(xOver)g=Math.max(B.y-(A.y+A.d),A.y-(B.y+B.d));else if(yOver)g=Math.max(B.x-(A.x+A.w),A.x-(B.x+B.w));
+  if(g!==null&&(best===null||g<best))best=g}));return best}
+const pieceColour=i=>{const pc=RPC.product(i.id),c=byId(i.id);return pc&&i.colour?RPC.colourOf(pc,i.colour).hex:c.colour};
 function analyse(){
   const p=P(),items=p.items,bad=new Set(),out=[];
   for(let a=0;a<items.length;a++)for(let b=a+1;b<items.length;b++){
-    if(overlaps(box(items[a]),box(items[b]))){bad.add(items[a].uid);bad.add(items[b].uid);
+    if(shapesOverlap(items[a],items[b])){bad.add(items[a].uid);bad.add(items[b].uid);
       out.push({t:'bad',m:`${byId(items[a].id).short} and ${byId(items[b].id).short.toLowerCase()} overlap. Move one of them.`})}}
   const dz=doorZone(p);
-  items.forEach(i=>{if(overlaps(box(i),dz)){bad.add(i.uid);out.push({t:'bad',m:`${byId(i.id).short} blocks the door. It needs ${p.door.size} cm to swing open.`})}});
+  items.forEach(i=>{if(RPC.rectsOverlap(shape(i),[dz])){bad.add(i.uid);out.push({t:'bad',m:`${byId(i.id).short} blocks the door. It needs ${p.door.size} cm to swing open.`})}});
   items.forEach(i=>{const f=foot(i);if(f.w>p.w||f.d>p.l)out.push({t:'bad',m:`${byId(i.id).short} is bigger than the room in one direction.`})});
   /* walkways: pieces side by side or one above another with a gap under 60 cm */
   for(let a=0;a<items.length;a++)for(let b=a+1;b<items.length;b++){
-    const A=box(items[a]),B=box(items[b]);if(overlaps(A,B))continue;
+    if(shapesOverlap(items[a],items[b]))continue;
     const pair=[items[a].id,items[b].id].join();if(/sofa/.test(pair)&&/coffee/.test(pair))continue;
-    const xOver=A.x<B.x+B.w&&B.x<A.x+A.w,yOver=A.y<B.y+B.d&&B.y<A.y+A.d;
-    let gap=null;if(xOver)gap=Math.max(B.y-(A.y+A.d),A.y-(B.y+B.d));else if(yOver)gap=Math.max(B.x-(A.x+A.w),A.x-(B.x+B.w));
+    const gap=gapBetween(items[a],items[b]);
     if(gap!==null&&gap>15&&gap<60)out.push({t:'warn',m:`Only ${gap} cm between the ${byId(items[a].id).short.toLowerCase()} and ${byId(items[b].id).short.toLowerCase()}. Aim for 60 cm to walk through.`})}
   /* coffee table distance from sofa: 40–50 cm is comfortable */
-  const sofa=items.find(i=>/sofa/.test(i.id)),table=items.find(i=>i.id==='earth-coffee-table');
-  if(sofa&&table){const S=box(sofa),T=box(table);if(S.x<T.x+T.w&&T.x<S.x+S.w){const g=Math.max(T.y-(S.y+S.d),S.y-(T.y+T.d));
+  const sofa=items.find(i=>/sofa/.test(i.id)&&!byId(i.id).replaced),table=items.find(i=>i.id==='earth-coffee-table');
+  if(sofa&&table){const S=shape(sofa)[0],T=box(table);   /* the sofa body, not the chaise */if(S.x<T.x+T.w&&T.x<S.x+S.w){const g=Math.max(T.y-(S.y+S.d),S.y-(T.y+T.d));
     if(g>=35&&g<=55)out.push({t:'ok',m:`Coffee table sits ${g} cm from the sofa. That’s within easy reach.`});
     else if(g>55)out.push({t:'warn',m:`Coffee table is ${g} cm from the sofa. Around 45 cm is easier to reach.`})}}
-  const used=items.reduce((s,i)=>{const f=foot(i);return s+f.w*f.d},0),free=Math.round(100-used/(p.w*p.l)*100);
+  const used=items.reduce((s,i)=>s+RPC.area(i),0),free=Math.round(100-used/(p.w*p.l)*100);
+  if(items.some(i=>RPC.product(i.id)&&RPC.product(i.id).footprint))out.push({t:'warn',m:'The Abel chaise and corner sofas use approximate shapes, so treat their clearances as a guide.'});
+  const legacy=items.filter(i=>byId(i.id)&&byId(i.id).replaced).length;
+  if(legacy)out.push({t:'warn',m:`${legacy===1?'A sample sofa in this room has':legacy+' sample sofas in this room have'} been replaced. Choose an Abel sofa above the plan, then check these notes again.`});
   out.push(free<45?{t:'warn',m:`Only ${free}% of the floor is free. Rooms feel cramped below 50%.`}:{t:'ok',m:`${free}% of the floor is free.`});
   if(!out.some(o=>o.t!=='ok'))out.unshift({t:'ok',m:'Everything fits, with clear walkways and a clear door.'});
   return{bad,out};
@@ -394,19 +411,22 @@ function draw(){
   sm(p.win.x+p.win.size/2,-18,'Window');
   /* furniture */
   p.items.forEach(i=>{
-    const c=byId(i.id),f=foot(i),isSel=i.uid===selected,isBad=bad.has(i.uid);
-    const g=el('g',{class:'piece',transform:`translate(${i.x} ${i.y})`,'data-uid':i.uid,tabindex:0,role:'button','aria-label':`${c.name}, ${f.w} by ${f.d} cm`},svg);
-    el('rect',{x:0,y:0,width:f.w,height:f.d,rx:5,fill:c.colour,stroke:isBad?'var(--bad)':isSel?'var(--green)':'rgba(0,0,0,.25)','stroke-width':isBad||isSel?3:1,'stroke-dasharray':isSel&&!isBad?'6 4':''},g);
-    if(isBad)el('rect',{x:0,y:0,width:f.w,height:f.d,rx:5,fill:'var(--bad)',opacity:.18},g);
+    const c=byId(i.id),f=foot(i),isSel=i.uid===selected,isBad=bad.has(i.uid),pc=RPC.product(i.id),fp=pc&&pc.footprint,col=pieceColour(i);
+    const lbl=c.replaced?`${c.name}. Choose an Abel sofa to replace it`:`${c.name}${i.colour?', '+i.colour:''}, ${f.w} by ${f.d} cm${fp&&fp.kind==='L'?', approximate L shape with the chaise on the '+((i.side||fp.side)==='right'?'right':'left')+' as you face it':fp?', overall size':''}`;
+    const g=el('g',{class:'piece',transform:`translate(${i.x} ${i.y})`,'data-uid':i.uid,tabindex:0,role:'button','aria-label':lbl},svg);
+    const st={stroke:isBad?'var(--bad)':isSel?'var(--green)':'rgba(0,0,0,.25)','stroke-width':isBad||isSel?3:1,'stroke-dasharray':isSel&&!isBad?'6 4':c.replaced||(fp&&fp.kind==='box')?'3 3':''};
+    if(fp&&fp.kind==='L'){const d='M'+RPC.outline(i).map(q=>q.join(' ')).join('L')+'Z';el('path',Object.assign({d,fill:col,'stroke-linejoin':'round'},st),g);if(isBad)el('path',{d,fill:'var(--bad)',opacity:.18},g)}
+    else{el('rect',Object.assign({x:0,y:0,width:f.w,height:f.d,rx:5,fill:col},st),g);if(isBad)el('rect',{x:0,y:0,width:f.w,height:f.d,rx:5,fill:'var(--bad)',opacity:.18},g)}
     /* backrest hint for seating and beds: a darker band on the "back" edge */
     if(/sofa|armchair|bed/.test(i.id)){const band=/bed/.test(i.id)?10:16;const r=i.r%360;
       const bb=r===0?{x:0,y:0,width:f.w,height:band}:r===90?{x:f.w-band,y:0,width:band,height:f.d}:r===180?{x:0,y:f.d-band,width:f.w,height:band}:{x:0,y:0,width:band,height:f.d};
       el('rect',Object.assign(bb,{fill:'#000',opacity:.18,rx:4}),g)}
     const fs=Math.min(14,Math.max(9,Math.min(f.w,f.d)/5));
     const tw=c.short.length*fs*.58,vert=tw>f.w-8&&f.d>f.w,fits=vert?tw<f.d-8:tw<f.w-8;
-    const t=el('text',{x:f.w/2,y:f.d/2+fs/3,'text-anchor':'middle','font-size':fs,'font-weight':700,fill:textOn(c.colour),'font-family':'Figtree, sans-serif','pointer-events':'none',transform:vert?`rotate(-90 ${f.w/2} ${f.d/2})`:''},g);t.textContent=fits?c.short:'';
-    if(isSel){const d=el('text',{x:f.w/2,y:f.d+16,'text-anchor':'middle','font-size':12,'font-weight':600,fill:'var(--green)','font-family':'Figtree, sans-serif','pointer-events':'none'},g);d.textContent=`${f.w} × ${f.d} cm`}
+    const t=el('text',{x:f.w/2,y:f.d/2+fs/3,'text-anchor':'middle','font-size':fs,'font-weight':700,fill:textOn(col),'font-family':'Figtree, sans-serif','pointer-events':'none',transform:vert?`rotate(-90 ${f.w/2} ${f.d/2})`:''},g);t.textContent=fits?c.short:'';
+    if(isSel){const d=el('text',{x:f.w/2,y:f.d+16,'text-anchor':'middle','font-size':12,'font-weight':600,fill:'var(--green)','font-family':'Figtree, sans-serif','pointer-events':'none'},g);d.textContent=`${f.w} × ${f.d} cm${fp?' overall':''}`}
   });
+  renderLegacyBar();
   /* ceiling pieces: drawn as the shade seen from below, on top of the floor plan */
   p.ceiling.forEach(i=>{
     const c=spec(i),f=foot(i),r=f.w/2,isSel=i.uid===selected;
@@ -440,6 +460,13 @@ function renderSel(){
     <button type="button" class="pb-btn" data-act="dup" aria-label="Duplicate ${c.short.toLowerCase()}" title="Duplicate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>
     <a class="pb-btn" data-act="shop" href="shop.html#piece-${c.id}" aria-label="View ${c.name} in the shop" title="View in shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></a>
     <button type="button" class="pb-btn danger" data-act="del" aria-label="Remove ${c.short.toLowerCase()}" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>`;
+  const pc=RPC.product(i.id),fp=pc&&pc.footprint,small=bar.querySelector('.pb-name small');
+  if(fp&&fp.kind==='L'){const right=(i.side||fp.side)==='right';small.textContent=`${f.w} × ${f.d} cm · chaise ${right?'right':'left'} (facing)`;
+    bar.querySelector('[data-act="dup"]').insertAdjacentHTML('beforebegin',`<button type="button" class="pb-btn" data-act="side" aria-label="Move the chaise to the other end. It’s now on the ${right?'right':'left'} as you face the sofa. The product photo isn’t changed." title="Move chaise to the other end (as you face the sofa)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg></button>`)}
+  else if(fp)small.textContent=`${f.w} × ${f.d} cm overall`;
+  if(c.replaced){bar.innerHTML=`<span class="pb-name"><b>Sample sofa</b><small>Replaced. Choose an Abel sofa</small></span>
+    <button type="button" class="pb-btn" data-act="choose" aria-label="Choose an Abel sofa to replace it" title="Choose a replacement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h12m-4-5 5 5-5 5"/></svg></button>
+    <button type="button" class="pb-btn danger" data-act="del" aria-label="Remove the sample sofa" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>`}
   bar.hidden=false;placeBar();
   if(keep){const k=bar.querySelector(`[data-act="${keep}"]`);k&&k.focus()}
 }
@@ -458,24 +485,42 @@ function placeBar(){
 }
 $('#pieceBar').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.dataset.act==='shop')return;
   const i=findSel();if(!i)return;
+  if(b.dataset.act==='side'){const fp=RPC.product(i.id).footprint;i.side=(i.side||fp.side)==='right'?'left':'right';fitIn(i);save();draw();toast(`Chaise moved to the ${i.side} as you face the sofa. Roo has rechecked the fit.`);return}
+  if(b.dataset.act==='choose'){const lb=$('#legacyBar');lb.scrollIntoView({block:'nearest'});const f=lb.querySelector('button');f&&f.focus();return}
   if(b.dataset.act==='left')rotateBy(-90);else if(b.dataset.act==='right')rotateBy(90);else if(b.dataset.act==='del'){remove();toast('Piece removed');svg.focus()}
   else if(b.dataset.act==='dup'){const n=Object.assign({},i,{x:i.x+20,y:i.y+20,uid:uid++});(isCeil(i.id)?P().ceiling:P().items).push(n);fitIn(n);selected=n.uid;save();draw();toast('Piece duplicated')}});
 addEventListener('resize',renderSel);
 function renderShop(){
   /* one line per piece, and per colour and size for pieces that come in sizes */
-  const groups={};allPieces().forEach(i=>{const c=spec(i),k=c.ceil?`${i.id}|${c.colourName}|${c.sizeName}`:i.id;(groups[k]=groups[k]||{c,n:0}).n++});
-  const keys=Object.keys(groups);let total=0,unpriced=0;
-  $('#shoplist').innerHTML=keys.length?keys.map(k=>{const {c,n}=groups[k];if(c.price===null)unpriced++;else total+=c.price*n;
-    return `<li><a href="shop.html#piece-${c.id}">${n>1?n+' × ':''}${c.name}${c.ceil?` <small>(${c.colourName}, ${c.sizeName})</small>`:''}</a><span class="p">${c.price===null?'Price to check':fmt(c.price*n)}</span></li>`}).join(''):'<li><span>No furniture in this room yet.</span></li>';
-  $('#total').textContent=fmt(total)+(unpriced?' + 1 to check':'');
+  const groups={};allPieces().forEach(i=>{const c=spec(i),k=c.ceil?`${i.id}|${c.colourName}|${c.sizeName}`:i.colour?`${i.id}|${i.colour}`:i.id;(groups[k]=groups[k]||{c,n:0,colour:i.colour}).n++});
+  const keys=Object.keys(groups);let total=0,unpriced=0,replaced=0;
+  $('#shoplist').innerHTML=keys.length?keys.map(k=>{const {c,n,colour}=groups[k];
+    if(c.replaced){replaced+=n;return `<li><span>${n>1?n+' × ':''}${c.name}</span><span class="p">Choose a replacement</span></li>`}
+    if(c.price===null)unpriced++;else total+=c.price*n;
+    return `<li><a href="shop.html#piece-${c.id}">${n>1?n+' × ':''}${c.name}${c.ceil?` <small>(${c.colourName}, ${c.sizeName})</small>`:colour?` <small>(${colour})</small>`:''}</a><span class="p">${c.price===null?'Price to check':fmt(c.price*n)}</span></li>`}).join(''):'<li><span>No furniture in this room yet.</span></li>';
+  $('#total').textContent=fmt(total)+(unpriced?' + 1 to check':'')+(replaced?` (sample sofa not included)`:'');
   const n=allPieces().length;$('#pieceCount').textContent=`${n} ${n===1?'piece':'pieces'}`;
 }
 function renderAdd(){
   const groups=[current,...ROOMS.filter(r=>r!==current)];
   const ceil=RPC.ceiling.map(id=>ceilSpec({id}));
-  $('#addList').innerHTML=groups.map(r=>{const list=CATALOGUE.filter(c=>c.room===r).concat(ceil.filter(c=>c.room===r));
+  $('#addList').innerHTML=groups.map(r=>{const list=CATALOGUE.filter(c=>c.room===r&&!c.replaced).concat(ceil.filter(c=>c.room===r));
     return `<div class="add-sep">${r===current?'For this room':r}</div>`+list.map(c=>`<button class="add-item" data-add="${c.id}"><span class="sq" style="background:${c.colour}"></span><span><b>${c.name}</b><small>${c.ceil?`${c.colourName} · Ø ${c.dims[0]} cm · ceiling`:`${c.dims[0]} × ${c.dims[1]} cm`} · ${c.price===null?'Price to check':fmt(c.price)}</small></span><span class="plus" aria-hidden="true">+</span></button>`).join('')}).join('');
 }
+/* a withdrawn sample (Sienna) in this room: the visitor chooses which Abel sofa replaces it */
+function renderLegacyBar(){
+  const bar=$('#legacyBar'),ids=[...new Set(P().items.filter(i=>byId(i.id)&&byId(i.id).replaced).map(i=>i.id))];
+  if(!ids.length){bar.hidden=true;bar.innerHTML='';return}
+  const o=RPC.legacy[ids[0]],fam=RPC.families[o.family],ms=fam.members.map(RPC.product);
+  if(bar.dataset.for===ids[0]&&!bar.hidden)return;bar.dataset.for=ids[0];
+  bar.innerHTML=`<b>Sample product replaced: choose an Abel sofa</b>The ${o.name} in this room (${o.dims[0]} × ${o.dims[1]} cm) was example data. Choose the sofa you want instead. It keeps its position and turn, then Roo rechecks the fit and your total.
+    <div class="lb-opts" role="group" aria-label="Choose a replacement sofa">${ms.map(m=>`<button type="button" data-legacy-to="${m.id}">${m.version}<small>${m.dims[0]} × ${m.dims[1]} cm${m.footprint?' overall':''} · ${fmt(m.price)}</small></button>`).join('')}</div>`;
+  bar.hidden=false;
+}
+$('#legacyBar').addEventListener('click',e=>{const b=e.target.closest('[data-legacy-to]');if(!b)return;const to=b.dataset.legacyTo,pc=RPC.product(to);let n=0;
+  P().items.forEach(i=>{const c=byId(i.id);if(c&&c.replaced){i.id=to;i.colour=pc.colours[0].n;if(pc.footprint&&pc.footprint.kind==='L')i.side=pc.footprint.side;else delete i.side;fitIn(i);n++;selected=i.uid}});
+  $('#legacyBar').dataset.for='';save();draw();renderAdd();toast(`Replaced with the Abel ${pc.version}. Roo has rechecked the fit and your total.`);
+  const g=svg.querySelector(`.piece[data-uid="${selected}"]`);g&&g.focus()});
 function renderChips(){$('#roomChips').innerHTML=ROOMS.map(r=>`<button class="chip" data-room="${r}">${r}</button>`).join('')}
 
 /* ---------- actions ---------- */
@@ -486,10 +531,11 @@ function addPiece(id,quiet,v){
     n.x=cx-f.w/2;n.y=cy-f.d/2;for(let k=0;k<8&&p.ceiling.some(o=>Math.abs(o.x-n.x)<30&&Math.abs(o.y-n.y)<30);k++)n.x+=k%2?-(k+1)*25:(k+1)*25;
     fitIn(n);n.x=snap(n.x);n.y=snap(n.y);p.ceiling.push(n);selected=n.uid;save();draw();
     if(!quiet)toast(`Added the ${c.colourName.toLowerCase()} ${c.sizeName} pendant to your ${current.toLowerCase()} ceiling`);return}
-  const c=byId(id);if(!c)return;const p=P(),n={id,x:0,y:0,r:0,uid:uid++};const f={w:c.dims[0],d:c.dims[1]};
+  const c=byId(id);if(!c||c.replaced)return;const p=P(),n={id,x:0,y:0,r:0,uid:uid++};const f={w:c.dims[0],d:c.dims[1]};
+  const pc=RPC.product(id);if(pc&&pc.family){n.colour=RPC.colourOf(pc,v&&v.colour).n;if(pc.footprint&&pc.footprint.kind==='L')n.side=pc.footprint.side}
   let placed=false;
   outer:for(let y=0;y<=p.l-f.d;y+=10)for(let x=0;x<=p.w-f.w;x+=10){n.x=x;n.y=y;
-    if(!p.items.some(o=>overlaps(box(o),box(n)))&&!overlaps(box(n),doorZone(p))){placed=true;break outer}}
+    if(!p.items.some(o=>shapesOverlap(o,n))&&!RPC.rectsOverlap(shape(n),[doorZone(p)])){placed=true;break outer}}
   if(!placed){n.x=Math.max(0,(p.w-f.w)/2);n.y=Math.max(0,(p.l-f.d)/2)}
   n.x=snap(n.x);n.y=snap(n.y);p.items.push(n);selected=n.uid;save();draw();
   if(!quiet)toast(placed?`Added ${c.short.toLowerCase()} to your ${current.toLowerCase()}`:`Added ${c.short.toLowerCase()}. There’s no free space, so check Roo’s notes.`);
@@ -544,7 +590,9 @@ let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clea
 /* pieces in sizes add the colour and size chosen in the shop: plan.html#add-<id>&colour=<colour>&size=<size> */
 function fromHash(){const h=location.hash.slice(1);if(!h.startsWith('add-'))return;const [raw,...rest]=h.slice(4).split('&'),id=RPC.resolve(raw),q=new URLSearchParams(rest.join('&')),c=byId(id);  /* an old retired id adds its replacement */
   if(isCeil(id)){current=RPC.product(id).room;renderAdd();addPiece(id,false,{colour:q.get('colour'),size:q.get('size')})}
-  else if(c){current=c.room;renderAdd();addPiece(c.id)}else toast('That piece has no floor footprint, so it isn’t shown on the plan.');
+  else if(c&&!c.replaced){current=c.room;renderAdd();addPiece(c.id,false,{colour:q.get('colour')})}
+  else if(RPC.legacy[raw])toast('That sample sofa has been replaced. Choose an Abel sofa in the shop.');
+  else toast('That piece has no floor footprint, so it isn’t shown on the plan.');
   try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
 window.addEventListener('hashchange',fromHash);
 
@@ -582,13 +630,17 @@ function renderPreview(){
   { const [hx,hy]=pr(0,dy+ds-10,100);o+=`<circle cx="${hx}" cy="${hy}" r="3" fill="#b89b62"/>`; }
   /* furniture as simple solids, placed from the plan */
   const boxes=[],shadows=[];let ghosts=0;
-  p.items.forEach(i=>{const c=byId(i.id);if(!c)return;const pc=RoomPlannedCatalogue.product(i.id)||{};const sh=pc.shape||'';const fp=foot(i),h=c.dims[2],r=((i.r%360)+360)%360,base=c.colour;
+  p.items.forEach(i=>{const c=byId(i.id);if(!c)return;const pc=RoomPlannedCatalogue.product(i.id)||{};const sh=pc.shape||'';const fp=foot(i),h=c.dims[2],r=((i.r%360)+360)%360,base=pieceColour(i);
     const map=(u,v)=>r===0?[i.x+u*fp.w,i.y+v*fp.d]:r===90?[i.x+(1-v)*fp.w,i.y+u*fp.d]:r===180?[i.x+(1-u)*fp.w,i.y+(1-v)*fp.d]:[i.x+v*fp.w,i.y+(1-u)*fp.d];
     const near=i.y+fp.d>L-15&&i.y>L*.5;   /* standing against the wall behind the viewer */if(near)ghosts++;
     const add=(u0,u1,v0,v1,z0,z1,fill,front)=>{const a=map(u0,v0),b=map(u1,v1);boxes.push({x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0]),y0:Math.min(a[1],b[1]),y1:Math.max(a[1],b[1]),z0,z1,fill,front:r===0&&!near?front:null,near})};
     if(!near)shadows.push([i.x-4,i.y-4,i.x+fp.w+4,i.y+fp.d+4]);
     const lw=c.dims[0],ld=c.dims[1];   /* local cm sizes before rotation */
-    if(/sofa|corner|armchair/.test(sh)){const seat=Math.min(44,h*.55),arm=Math.min(h*.8,seat+22);
+    if(sh==='chaise'){const F=pc.footprint,seat=Math.min(44,h*.55),arm=Math.min(h*.8,seat+22),bv=F.body/c.dims[1],cw=F.chaiseW/c.dims[0],right=(i.side||F.side)==='right';
+      /* approximate: an 81 cm sofa body and a 71 cm wide chaise on the side shown in the plan */
+      add(0,1,0,bv,4,seat,base);add(0,1,0,.24*bv,seat,h,shadeHex(base,-6));add(0,.07,.18*bv,bv,seat,arm,shadeHex(base,-4));add(.93,1,.18*bv,bv,seat,arm,shadeHex(base,-4));
+      add(right?1-cw:0,right?1:cw,bv,1,4,seat,shadeHex(base,6))}
+    else if(/sofa|corner|armchair/.test(sh)){const seat=Math.min(44,h*.55),arm=Math.min(h*.8,seat+22);
       add(0,1,0,1,4,seat,base);add(0,1,0,.24,seat,h,shadeHex(base,-6));add(0,.11,.18,1,seat,arm,shadeHex(base,-4));add(.89,1,.18,1,seat,arm,shadeHex(base,-4));
       if(lw>120){add(.13,.29,.2,.32,seat,seat+28,'#efe8da');add(.71,.87,.2,.32,seat,seat+28,'#6f7140')}}
     else if(sh==='bed'){add(0,1,0,.06,0,h,base);add(0,1,.05,1,0,30,shadeHex(base,-8));add(.02,.98,.06,.99,30,52,'#f3eee4');add(0,1,.68,.84,30,54,shadeHex(base,-18));
