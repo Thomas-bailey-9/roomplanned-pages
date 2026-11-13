@@ -336,7 +336,7 @@ const ROOMS = [...new Set(PRODUCTS.map(p=>p.room))];
 const PALETTE = [{n:'Neutral',hex:'#e6dfd2'},{n:'Green',hex:'#6d7f5f'},{n:'Grey',hex:'#a7a9ad'},{n:'Wood',hex:'#b98d55'},{n:'Blue',hex:'#4f6178'},{n:'Dark',hex:'#3a3836'}];
 const family = hex => {const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255,mx=Math.max(r,g,b),mn=Math.min(r,g,b);
   if(mx<90)return'Dark';if(mx-mn<14)return mx>200?'Neutral':'Grey';if(b>r&&b>g)return'Blue';if(g>=r&&g>b)return'Green';if(r-b>55&&mx<215)return'Wood';return'Neutral'};
-const fmt = n => '£'+n.toLocaleString('en-GB');
+const fmt=n=>'£'+Number(n).toLocaleString('en-GB',{minimumFractionDigits:Number(n)%1?2:0,maximumFractionDigits:2});  /* £74.50 keeps its pence */
 
 /* ---------- state ---------- */
 const state = {cat:'All',q:'',retailers:new Set(),rooms:new Set(),colour:null,max:1500,sort:'popular',saved:new Set(),bag:[]};
@@ -478,7 +478,8 @@ function pieceView(id){
         <ul class="facts">
           <li><span>Sold by</span><span>${p.url?`<a href="${p.url}" target="_blank" rel="noopener">${p.retailer}</a>`:p.retailer}</span></li>${p.brand?`
           <li><span>Brand</span><span>${p.brand}</span></li>`:''}
-          <li><span>Material</span><span>${p.material}</span></li>${p.notes?`
+          <li><span>Material</span><span>${p.material}</span></li>${(p.specs||[]).map(([k,v])=>`
+          <li><span>${k}</span><span>${v}</span></li>`).join('')}${p.notes?`
           <li><span>In the box</span><span>${p.notes}</span></li>`:''}
           <li><span>Delivery</span><span>${p.delivery}</span></li>
           <li><span>Returns</span><span>Handled by ${p.retailer}</span></li>
@@ -558,7 +559,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeBag();$('#menu
 $('#menuBtn').onclick=()=>{const m=$('#menu');m.hidden=!m.hidden;$('#menuBtn').setAttribute('aria-expanded',!m.hidden)};
 $('#searchJump').onclick=()=>{if(!location.hash.startsWith('#piece-')){$('#q')&&$('#q').focus()}else{location.hash='shop';setTimeout(()=>$('#q').focus(),0)}};
 
-function route(){const h=location.hash.slice(1);h.startsWith('piece-')?pieceView(h.slice(6)):shopView();window.scrollTo(0,0)}
+function route(){const h=location.hash.slice(1);
+  /* an old link to a retired sample piece opens its replacement */
+  if(h.startsWith('piece-')){const id=h.slice(6),to=RoomPlannedCatalogue.resolve(id);if(to!==id){history.replaceState(null,'','#piece-'+to);return route()}}
+  h.startsWith('piece-')?pieceView(h.slice(6)):shopView();window.scrollTo(0,0)}
 window.addEventListener('hashchange',route);
 updateBag();route();
 </script>

@@ -310,7 +310,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 <script src="catalogue.js"></script>
 <script>
 const $=s=>document.querySelector(s);
-const fmt=n=>'£'+n.toLocaleString('en-GB');
+const fmt=n=>'£'+Number(n).toLocaleString('en-GB',{minimumFractionDigits:Number(n)%1?2:0,maximumFractionDigits:2});  /* £74.50 keeps its pence */
 const ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
 const HEART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>';
 function shade(hex,amt){const n=parseInt(hex.slice(1),16);const c=v=>Math.max(0,Math.min(255,v));return'#'+((1<<24)+(c((n>>16)+amt)<<16)+(c((n>>8&255)+amt)<<8)+c((n&255)+amt)).toString(16).slice(1)}
@@ -496,7 +496,7 @@ function scene(styleName,room,H,opts={}){
     p(0,1,0,.06,0,116,c,seams(5));p(0,1,.05,1,0,30,shade(c,-10));p(.02,.98,.06,.99,30,52,'#f5f1e8');p(0,1,.34,1,48,56,'#f8f4ec');p(0,1,.72,.86,46,58,s.accent);
     p(.07,.46,.08,.2,52,66,'#fbf8f1');p(.54,.93,.08,.2,52,66,'#fbf8f1');p(.38,.62,.18,.26,52,64,shade(s.accent,20));
     box(62,8,108,48,56,s.wood,2);box(292,8,338,48,56,s.wood,2);const lp=tableLamp(85,28,56);tableLamp(315,28,56);plant(30,64,s.plant);
-    spots.push({x:pr(200,150,56),id:styleName==='Cottage'||styleName==='Dark & moody'?'rowan-bed':'veron-ottoman-bed'},{x:pr(85,48,14),id:'hollis-bedside'},{x:lp,id:'arlo-pendant'});
+    spots.push({x:pr(200,150,56),id:styleName==='Cottage'||styleName==='Dark & moody'?'rowan-bed':'veron-ottoman-bed'},{x:pr(85,48,14),id:'holden-bedside'},{x:lp,id:'arlo-pendant'});
   }else{
     art(62,170,122,192);rug(84,112,336,296);
     shadow(52,4,180,48,.18);cub(52,4,180,48,8,76,s.wood,(a,y,b,z0,z1)=>line([(a+b)/2,y,z0+2],[(a+b)/2,y,z1-2],'rgba(0,0,0,.25)',.8));cub(56,6,176,46,0,8,shade(s.wood,-34));

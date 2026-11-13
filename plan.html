@@ -295,7 +295,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 <script>
 const $=s=>document.querySelector(s);
 const NS='http://www.w3.org/2000/svg';
-const fmt=n=>'£'+n.toLocaleString('en-GB');
+const fmt=n=>'£'+Number(n).toLocaleString('en-GB',{minimumFractionDigits:Number(n)%1?2:0,maximumFractionDigits:2});  /* £74.50 keeps its pence */
 
 /* Floor-standing pieces from the shop catalogue (sample data). dims = width × depth × height in cm. */
 const CATALOGUE=RoomPlannedCatalogue.floor;
@@ -312,7 +312,7 @@ const DEFAULTS={
   'Living room':{w:420,l:360,door:{y:262,size:80},win:{x:110,size:200},items:[
     {id:'rhianna-sofa',x:99,y:6,r:0},{id:'earth-coffee-table',x:150,y:146,r:0},{id:'mabel-armchair',x:300,y:250,r:0},{id:'wren-bookcase',x:382,y:150,r:90}]},
   'Bedroom':{w:360,l:400,door:{y:300,size:80},win:{x:100,size:160},items:[
-    {id:'veron-ottoman-bed',x:105,y:6,r:0},{id:'hollis-bedside',x:52,y:6,r:0},{id:'hollis-bedside',x:260,y:6,r:0},{id:'grace-chest',x:150,y:349,r:0}]},
+    {id:'veron-ottoman-bed',x:105,y:6,r:0},{id:'holden-bedside',x:61,y:6,r:0},{id:'holden-bedside',x:260,y:6,r:0},{id:'grace-chest',x:150,y:349,r:0}]},
   'Dining room':{w:380,l:340,door:{y:240,size:80},win:{x:110,size:160},items:[
     {id:'fenwick-dining-table',x:110,y:125,r:0}]}
 };
@@ -542,7 +542,7 @@ let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clea
 
 /* Arriving from the shop's "Add to room" button: plan.html#add-<piece id> */
 /* pieces in sizes add the colour and size chosen in the shop: plan.html#add-<id>&colour=<colour>&size=<size> */
-function fromHash(){const h=location.hash.slice(1);if(!h.startsWith('add-'))return;const [id,...rest]=h.slice(4).split('&'),q=new URLSearchParams(rest.join('&')),c=byId(id);
+function fromHash(){const h=location.hash.slice(1);if(!h.startsWith('add-'))return;const [raw,...rest]=h.slice(4).split('&'),id=RPC.resolve(raw),q=new URLSearchParams(rest.join('&')),c=byId(id);  /* an old retired id adds its replacement */
   if(isCeil(id)){current=RPC.product(id).room;renderAdd();addPiece(id,false,{colour:q.get('colour'),size:q.get('size')})}
   else if(c){current=c.room;renderAdd();addPiece(c.id)}else toast('That piece has no floor footprint, so it isn’t shown on the plan.');
   try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
@@ -627,9 +627,9 @@ function renderPvChrome(){
   $('#pvStyles').innerHTML=Object.entries(PV_STYLES).map(([k,v])=>`<button type="button" class="pv-style" data-pvstyle="${k}" aria-pressed="${k===pvStyle}" style="--w:${v.wall};--f:${v.floor}"><i aria-hidden="true"></i>${k}</button>`).join('');
   const ids=[...new Set(p.items.map(i=>i.id))];
   $('#pvStrip').innerHTML=ids.length?ids.map(id=>{const pc=RoomPlannedCatalogue.product(id);if(!pc)return'';const qty=p.items.filter(i=>i.id===id).length;
-    return `<a class="pv-item" href="shop.html#piece-${id}"><span class="pimg">${RoomPlannedCatalogue.art(pc)}</span><b>${qty>1?qty+' × ':''}${pc.name}</b><small>${pc.retailer} · ${pc.price===null?'Price to check':'£'+(pc.price*qty).toLocaleString('en-GB')}</small></a>`}).join(''):'';
+    return `<a class="pv-item" href="shop.html#piece-${id}"><span class="pimg">${RoomPlannedCatalogue.art(pc)}</span><b>${qty>1?qty+' × ':''}${pc.name}</b><small>${pc.retailer} · ${pc.price===null?'Price to check':fmt(pc.price*qty)}</small></a>`}).join(''):'';
   const cg={};p.ceiling.forEach(i=>{const c=spec(i),k=`${i.id}|${c.colourName}|${c.sizeName}`;(cg[k]=cg[k]||{c,n:0}).n++});
-  $('#pvStrip').innerHTML+=Object.values(cg).map(({c,n})=>`<a class="pv-item" href="shop.html#piece-${c.id}"><span class="pimg">${RoomPlannedCatalogue.art(RPC.product(c.id),c.colour)}</span><b>${n>1?n+' × ':''}${c.name}</b><small>${c.colourName} · ${c.sizeName} · £${(c.price*n).toLocaleString('en-GB')}</small></a>`).join('');
+  $('#pvStrip').innerHTML+=Object.values(cg).map(({c,n})=>`<a class="pv-item" href="shop.html#piece-${c.id}"><span class="pimg">${RoomPlannedCatalogue.art(RPC.product(c.id),c.colour)}</span><b>${n>1?n+' × ':''}${c.name}</b><small>${c.colourName} · ${c.sizeName} · ${fmt(c.price*n)}</small></a>`).join('');
   if(!$('#pvStrip').innerHTML)$('#pvStrip').innerHTML='<p class="pv-note">No pieces yet.</p>';
 }
 function openPreview(){

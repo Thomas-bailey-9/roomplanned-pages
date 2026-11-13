@@ -210,7 +210,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 <script src="catalogue.js"></script>
 <script>
 const $=s=>document.querySelector(s);
-const fmt=n=>'£'+Math.round(n).toLocaleString('en-GB');
+const fmt=n=>'£'+Number(n).toLocaleString('en-GB',{minimumFractionDigits:Number(n)%1?2:0,maximumFractionDigits:2});  /* £74.50 keeps its pence */
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* ===== shared data copied from the other pages ===== */
 const CATALOGUE=RoomPlannedCatalogue.floor;
@@ -221,7 +221,7 @@ const DEFAULTS={
   'Living room':{w:420,l:360,door:{y:262,size:80},win:{x:110,size:200},items:[
     {id:'rhianna-sofa',x:99,y:6,r:0},{id:'earth-coffee-table',x:150,y:146,r:0},{id:'mabel-armchair',x:300,y:250,r:0},{id:'wren-bookcase',x:382,y:150,r:90}]},
   'Bedroom':{w:360,l:400,door:{y:300,size:80},win:{x:100,size:160},items:[
-    {id:'veron-ottoman-bed',x:105,y:6,r:0},{id:'hollis-bedside',x:52,y:6,r:0},{id:'hollis-bedside',x:260,y:6,r:0},{id:'grace-chest',x:150,y:349,r:0}]},
+    {id:'veron-ottoman-bed',x:105,y:6,r:0},{id:'holden-bedside',x:61,y:6,r:0},{id:'holden-bedside',x:260,y:6,r:0},{id:'grace-chest',x:150,y:349,r:0}]},
   'Dining room':{w:380,l:340,door:{y:240,size:80},win:{x:110,size:160},items:[
     {id:'fenwick-dining-table',x:110,y:125,r:0}]}
 };
@@ -253,7 +253,7 @@ function reset(){S={step:0,room:null,w:null,l:null,needs:[],budget:null,style:nu
 function pickPiece(need){
   const dark=['Dark & moody','Mid-century'].includes(S.style),cosy=['Cottage','Dark & moody'].includes(S.style);
   return {sofa:(dark&&S.w>=420&&S.l>=380)?'sienna-corner-sofa':'rhianna-sofa',armchair:'mabel-armchair',coffee:'earth-coffee-table',bookcase:'wren-bookcase',
-    bed:cosy?'rowan-bed':'veron-ottoman-bed',bedsides:'hollis-bedside',chest:'grace-chest',table:'fenwick-dining-table'}[need]}
+    bed:cosy?'rowan-bed':'veron-ottoman-bed',bedsides:'holden-bedside',chest:'grace-chest',table:'fenwick-dining-table'}[need]}
 const door=()=>({y:S.l-98,size:80});
 const win=()=>({x:Math.round(S.w*.25),size:Math.round(S.w*.45)});
 function foot(i){const c=cat(i.id);return i.r%180?{w:c.dims[1],d:c.dims[0]}:{w:c.dims[0],d:c.dims[1]}}
@@ -270,8 +270,8 @@ function layout(){
     if(has('bookcase')){const c=cat('wren-bookcase');add('wren-bookcase',W-c.dims[1]-4,Math.max(sofaBottom+10,120),90)}
   }else if(S.room==='Bedroom'){
     const bid=pickPiece('bed'),bc=cat(bid);const bed=has('bed')?add(bid,(W-bc.dims[0])/2,6):null;
-    if(has('bedsides')){const sc=cat('hollis-bedside'),bx=bed?bed.x:(W-bc.dims[0])/2,bw=bed?bc.dims[0]:bc.dims[0];
-      if(bx-sc.dims[0]-4>=0){add('hollis-bedside',bx-sc.dims[0]-4,6);add('hollis-bedside',bx+bw+4,6)}
+    if(has('bedsides')){const sc=cat('holden-bedside'),bx=bed?bed.x:(W-bc.dims[0])/2,bw=bed?bc.dims[0]:bc.dims[0];
+      if(bx-sc.dims[0]-4>=0){add('holden-bedside',bx-sc.dims[0]-4,6);add('holden-bedside',bx+bw+4,6)}
       else notes.push({t:'warn',m:`There’s only ${Math.max(0,Math.round(bx))} cm either side of the bed, so I left the bedside tables out. A wall shelf would work.`})}
     if(has('chest')){const c=cat('grace-chest');add('grace-chest',Math.max(90,(W-c.dims[0])/2),L-c.dims[1]-4)}
   }else{
@@ -286,7 +286,7 @@ function layout(){
   items.forEach(i=>{const f=foot(i);if(f.w>W||f.d>L){notes.push({t:'bad',m:`The ${cat(i.id).short.toLowerCase()} is bigger than the room, so I left it out.`});return}
     if(kept.some(k=>ov(box(k),box(i)))||ov(box(i),dz)){notes.push({t:'warn',m:`The ${cat(i.id).short.toLowerCase()} didn’t fit without blocking something, so I left it out.`});return}kept.push(i)});
   /* budget: drop the least essential pieces until it fits */
-  const order=['wren-bookcase','mabel-armchair','grace-chest','hollis-bedside','earth-coffee-table'];
+  const order=['wren-bookcase','mabel-armchair','grace-chest','holden-bedside','earth-coffee-table'];
   const cost=()=>kept.reduce((s,i)=>s+(cat(i.id).price||0),0);
   for(const id of order){if(cost()<=S.budget)break;const idx=kept.map(k=>k.id).lastIndexOf(id);if(idx>-1){kept.splice(idx,1);notes.push({t:'warn',m:`I dropped the ${cat(id).short.toLowerCase()} to keep you under ${fmt(S.budget)}. Add it back later if the budget stretches.`})}}
   if(cost()>S.budget&&kept.some(k=>k.id==='sienna-corner-sofa')){kept.find(k=>k.id==='sienna-corner-sofa').id='rhianna-sofa';notes.push({t:'warn',m:'I swapped the corner sofa for the Rhianna 3 seater to stay on budget.'})}

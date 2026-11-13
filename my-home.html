@@ -267,7 +267,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 <script src="catalogue.js"></script>
 <script>
 const $=s=>document.querySelector(s);
-const fmt=n=>'£'+Math.round(n).toLocaleString('en-GB');
+const fmt=n=>'£'+Number(n).toLocaleString('en-GB',{minimumFractionDigits:Number(n)%1?2:0,maximumFractionDigits:2});  /* £74.50 keeps its pence */
 const ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
 
 /* ===== shared data copied from the other pages ===== */
@@ -286,7 +286,7 @@ const DEFAULTS={
   'Living room':{w:420,l:360,door:{y:262,size:80},win:{x:110,size:200},items:[
     {id:'rhianna-sofa',x:99,y:6,r:0},{id:'earth-coffee-table',x:150,y:146,r:0},{id:'mabel-armchair',x:300,y:250,r:0},{id:'wren-bookcase',x:382,y:150,r:90}]},
   'Bedroom':{w:360,l:400,door:{y:300,size:80},win:{x:100,size:160},items:[
-    {id:'veron-ottoman-bed',x:105,y:6,r:0},{id:'hollis-bedside',x:52,y:6,r:0},{id:'hollis-bedside',x:260,y:6,r:0},{id:'grace-chest',x:150,y:349,r:0}]},
+    {id:'veron-ottoman-bed',x:105,y:6,r:0},{id:'holden-bedside',x:61,y:6,r:0},{id:'holden-bedside',x:260,y:6,r:0},{id:'grace-chest',x:150,y:349,r:0}]},
   'Dining room':{w:380,l:340,door:{y:240,size:80},win:{x:110,size:160},items:[
     {id:'fenwick-dining-table',x:110,y:125,r:0}]}
 };
@@ -373,7 +373,7 @@ function scene(styleName,room,H,opts={}){
     P.push(`<path d="M${bx-14} ${fy+24}H${bx+bw+14}L${bx+bw+20} ${fy+50}H${bx-20}Z" fill="${s.accent}"/><rect x="${bx-22}" y="${fy+56}" width="${bw+44}" height="20" rx="4" fill="${shade(s.sofa,-10)}"/>`);
     const side=x=>shadow(x+24,fy+28,30)+`<rect x="${x}" y="${fy-30}" width="48" height="56" rx="3" fill="${s.wood}"/><path d="M${x+4} ${fy-2}h40" stroke="${shade(s.wood,-25)}"/><rect x="${x+18}" y="${fy-18}" width="12" height="3" rx="1.5" fill="${shade(s.wood,-30)}"/><path d="M${x+24} ${fy-30}v-18" stroke="${s.accent}" stroke-width="6" stroke-linecap="round"/><path d="M${x+8} ${fy-48}l6-22h20l6 22Z" fill="#f2ead9"/><ellipse cx="${x+24}" cy="${fy-48}" rx="16" ry="3" fill="#ffe8a8" opacity=".8"/>`;
     P.push(side(30),side(320));
-    spots.push({x:bx+bw/2,y:fy+20,id:styleName==='Cottage'||styleName==='Dark & moody'?'rowan-bed':'veron-ottoman-bed'},{x:54,y:fy-6,id:'hollis-bedside'},{x:54,y:fy-60,id:'arlo-pendant'});
+    spots.push({x:bx+bw/2,y:fy+20,id:styleName==='Cottage'||styleName==='Dark & moody'?'rowan-bed':'veron-ottoman-bed'},{x:54,y:fy-6,id:'holden-bedside'},{x:54,y:fy-60,id:'arlo-pendant'});
   } else {
     const tx=200,ty=fy+28;
     const chairBack=x=>`<path d="M${x-20} ${ty+4}V${fy-36}a20 20 0 0 1 40 0V${ty+4}" fill="none" stroke="${s.accent}" stroke-width="7"/><path d="M${x-20} ${ty+4}v40M${x+20} ${ty+4}v40" stroke="${shade(s.wood,-10)}" stroke-width="4"/>`;
@@ -434,7 +434,7 @@ const POSTS=[
 const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}};
 const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const shop=read('rp-shop'),plan=read('rp-plan'),insp=read('rp-insp'),comm=read('rp-comm'),home=read('rp-home')||{};
-const EX={saved:['rhianna-sofa','arlo-pendant','hollis-bedside','ida-vase'],bag:[{id:'earth-coffee-table',colour:'Natural oak',hex:'#c39a62',qty:1}],liked:[0,3,7],style:'Japandi',commSaved:[2],following:['owl','box','salt']};
+const EX={saved:['rhianna-sofa','arlo-pendant','holden-bedside','ida-vase'],bag:[{id:'earth-coffee-table',colour:'Natural oak',hex:'#c39a62',qty:1}],liked:[0,3,7],style:'Japandi',commSaved:[2],following:['owl','box','salt']};
 const live={
   saved:!!(shop&&shop.saved&&shop.saved.length),bag:!!(shop&&shop.bag&&shop.bag.length),
   plans:!!(plan&&plan.plans),liked:!!(insp&&insp.liked&&insp.liked.length),style:!!(insp&&insp.style),

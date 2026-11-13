@@ -24,7 +24,16 @@
     {id:'mabel-armchair',name:'Mabel Natural Boucle Swivel Armchair',short:'Armchair',retailer:'Homebase',brand:'Kyoto Futons',cat:'Sofas',room:'Living room',price:545,shape:'armchair',colours:[{n:'Natural',hex:'#a49e94'}],dims:[74,80,75.5],material:'Boucle (95% polyester, 5% cotton), rubber wood and plywood',delivery:'Check with retailer',popular:10,url:'https://www.homebase.co.uk/en-uk/mabel-natural-boucle-swivel-armchair/p/0806851'},
     {id:'sienna-corner-sofa',name:'Sienna Velvet Corner Sofa',short:'Corner sofa',retailer:'Linden & Co',cat:'Sofas',room:'Living room',price:1499,shape:'corner',colours:[{n:'Olive',hex:'#6d6b3c'},{n:'Dusk blue',hex:'#4f6178'}],dims:[268,180,84],material:'Recycled velvet, pocket-sprung seat',delivery:'6–8 weeks',popular:6},
     {id:'fenwick-dining-table',name:'Fenwick 4 Seat Dining Table',short:'Dining table',retailer:'Oakhaven Home',cat:'Tables',room:'Dining room',price:649,shape:'dining',colours:[{n:'Walnut',hex:'#8a6440'},{n:'Light oak',hex:'#c9a777'}],dims:[160,90,76],material:'Walnut veneer, solid legs',delivery:'2–4 weeks',popular:6},
-    {id:'hollis-bedside',name:'Hollis Oak Bedside Table',short:'Bedside',retailer:'Oakhaven Home',cat:'Storage',room:'Bedroom',price:179,shape:'bedside',colours:[{n:'Oak',hex:'#c49a6c'},{n:'Black',hex:'#3a3836'}],dims:[48,40,58],material:'Solid oak, two drawers',delivery:'1–2 weeks',popular:8},
+    /* Holden: details and price checked on dunelm.com on 13 November 2026. Not a live price, stock or delivery check.
+       One finish only. dims are the product itself; drawer and packaging sizes are kept separately in specs. */
+    {id:'holden-bedside',name:'Holden 1 Drawer Bedside Table, Oak',short:'Bedside',retailer:'Dunelm',brand:'Dunelm',cat:'Storage',room:'Bedroom',price:74.5,shape:'bedside',
+      colours:[{n:'Oak',hex:'#c79f6f'}],dims:[39,35,59],
+      material:'Oak, rubber wood, pine and MDF, with oak veneers (as listed by Dunelm)',delivery:'Check with retailer',popular:8,url:'https://www.dunelm.com/product/holden-1-drawer-bedside-table-1000280175',
+      desc:'A compact oak bedside table with a white-washed finish, one drawer, an open shelf and a long metal handle.',
+      notes:'1 × bedside table, ready assembled.',
+      specs:[['Finish','Oak, white-washed with natural wood grain (as described by Dunelm)'],['Storage','1 drawer and 1 open shelf'],['Assembly','Ready assembled'],
+        ['Drawer size','W 28.5 × D 29 × H 13.5 cm'],['Packaging','1 box: W 46 × D 66 × H 41 cm, 12 kg packed (box and contents)']],
+      checked:'Price checked on Dunelm, 13 November 2026'},
     {id:'wren-bookcase',name:'Wren Tall Bookcase',short:'Bookcase',retailer:'Oakhaven Home',cat:'Storage',room:'Living room',price:259,shape:'bookcase',colours:[{n:'Ash',hex:'#d7c2a0'}],dims:[80,32,180],material:'Ash veneer, adjustable shelves',delivery:'1–2 weeks',popular:4},
     /* Galley: prices, sizes and colours checked on dunelm.com on 12 November 2026. price is the lowest size ("From £8").
        Each size has its own price; each colour has its own photo. It hangs from the ceiling, so the planner keeps it apart from floor pieces. */
@@ -39,7 +48,7 @@
   ];
 
   /* Order pieces appear in the planner's "Add furniture" list */
-  const FLOOR_ORDER=['rhianna-sofa','sienna-corner-sofa','mabel-armchair','earth-coffee-table','wren-bookcase','veron-ottoman-bed','rowan-bed','hollis-bedside','grace-chest','fenwick-dining-table'];
+  const FLOOR_ORDER=['rhianna-sofa','sienna-corner-sofa','mabel-armchair','earth-coffee-table','wren-bookcase','veron-ottoman-bed','rowan-bed','holden-bedside','grace-chest','fenwick-dining-table'];
 
   /* ---------- photos ----------
      Add a link and that piece shows the photo on every page.
@@ -51,7 +60,8 @@
     'earth-coffee-table':'https://media.furniturevillage.co.uk/i/fv/PRODEATHCFTB--001_earth_coffee-table?$large$',
     'grace-chest':'https://media.furniturevillage.co.uk/i/fv/PRODZFRSP000000000054937_grace_6-drawer-wide-chest_white?$medium$&fmt=auto',
     'mabel-armchair':'images/products/mabel-natural-boucle-swivel-armchair.webp',
-    'arlo-pendant':'images/products/galley-pendant-shade-ivory.webp'
+    'arlo-pendant':'images/products/galley-pendant-shade-ivory.webp',
+    'holden-bedside':'images/products/holden-1-drawer-bedside-table-oak.webp'
   };
 
   /* ---------- drawings (used when there is no photo) ---------- */
@@ -83,6 +93,9 @@
     return `<span class="ph"><img src="${url}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('err')">${svg}</span>`;
   };
 
+  /* £1,095, or £74.50 when there are pence */
+  const money=v=>'£'+Number(v).toLocaleString('en-GB',{minimumFractionDigits:Number(v)%1?2:0,maximumFractionDigits:2});
+
   /* ---------- options: colour and size ----------
      A basket line, saved piece or planned piece can remember {colour, size} by name. */
   const sizeOf=(p,n)=>p&&p.sizes?(p.sizes.find(s=>s.n===n)||p.sizes[p.defaultSize||0]):null;
@@ -90,7 +103,7 @@
   const unitPrice=(p,size)=>{const s=sizeOf(p,size);return s?s.price:p.price};
   /* "From £8" when a piece comes in sizes at different prices and no size is chosen */
   const priceText=(p,size)=>{const v=size?unitPrice(p,size):p.price;if(v===null||v===undefined)return p.url?`Check price at ${p.retailer}`:'Price to check';
-    return (!size&&p.sizes?'From ':'')+'£'+v.toLocaleString('en-GB')};
+    return (!size&&p.sizes?'From ':'')+money(v)};
   /* bring a line saved before a product changed up to date: unknown colours become the first colour, a missing size the default size */
   const fixVariant=l=>{const p=byId[l.id];if(!p||!p.sizes)return l;const c=colourOf(p,l.colour);l.colour=c.n;l.hex=c.hex;l.size=sizeOf(p,l.size).n;return l};
 
@@ -99,12 +112,66 @@
   /* pieces that hang from the ceiling (shown on the plan, but not counted as floor space) */
   const CEILING=PRODUCTS.filter(p=>p.ceiling).map(p=>p.id);
 
+  /* ---------- retired sample pieces ----------
+     Sample products that were replaced by real ones. Old ids still saved in visitors' browsers are moved to the
+     replacement once (plans keep their position, rotation and count; basket lines keep their quantity), and a
+     one-time notice explains what changed, because the size and price differ. */
+  const RETIRED={'hollis-bedside':{to:'holden-bedside',name:'Hollis Oak Bedside Table',retailer:'Oakhaven Home',price:179,dims:[48,40,58]}};
+  const resolve=id=>RETIRED[id]?RETIRED[id].to:id;
+  const NOTICE_KEY='rp-notices';
+  function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+  function load(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+  function migrate(){
+    const where=new Set();
+    /* room plans: swap the id in place */
+    const plan=load('rp-plan');
+    if(plan&&plan.plans&&typeof plan.plans==='object'){let n=0;
+      Object.values(plan.plans).forEach(r=>(r&&Array.isArray(r.items)?r.items:[]).forEach(i=>{if(i&&RETIRED[i.id]){i.id=RETIRED[i.id].to;n++}}));
+      if(n&&store('rp-plan',plan))where.add('plan')}
+    /* shop: saved pieces, their saved options, and basket lines (same piece and colour are merged, quantities added) */
+    const shop=load('rp-shop');
+    if(shop&&typeof shop==='object'){let n=0;
+      if(Array.isArray(shop.saved)&&shop.saved.some(id=>RETIRED[id])){shop.saved=[...new Set(shop.saved.map(resolve))];n++}
+      if(shop.savedVar&&typeof shop.savedVar==='object')Object.keys(shop.savedVar).forEach(id=>{if(RETIRED[id]){const to=RETIRED[id].to;if(!shop.savedVar[to])shop.savedVar[to]={colour:byId[to].colours[0].n};delete shop.savedVar[id];n++}});
+      if(Array.isArray(shop.bag)&&shop.bag.some(l=>l&&RETIRED[l.id])){const out=[];
+        shop.bag.forEach(l=>{if(!l)return;if(RETIRED[l.id]){const p=byId[RETIRED[l.id].to],c=p.colours[0];l={id:p.id,colour:c.n,hex:c.hex,qty:Math.max(1,+l.qty||1)}}
+          const same=out.find(o=>o.id===l.id&&o.colour===l.colour&&o.size===l.size);same?same.qty+=l.qty:out.push(l)});
+        shop.bag=out;n++}
+      if(n&&store('rp-shop',shop))where.add('shop')}
+    /* saved renders keep a list of the piece ids in the room */
+    const rend=load('rp-renders');
+    if(Array.isArray(rend)){let n=0;rend.forEach(r=>{if(r&&r.snap&&Array.isArray(r.snap.items))r.snap.items=r.snap.items.map(id=>{if(RETIRED[id]){n++;return RETIRED[id].to}return id})});
+      if(n&&store('rp-renders',rend))where.add('renders')}
+    if(where.size){const notes=load(NOTICE_KEY)||{};const k='hollis-bedside';
+      notes[k]={where:[...new Set([...(notes[k]&&!notes[k].seen?notes[k].where:[]),...where])],seen:false,at:Date.now()};store(NOTICE_KEY,notes)}
+  }
+  migrate();
+
+  /* one-time notice, shown on any page that loads the catalogue, until the visitor dismisses it */
+  function showNotice(){
+    const notes=load(NOTICE_KEY);const n=notes&&notes['hollis-bedside'];if(!n||n.seen||document.getElementById('rpNotice'))return;
+    const o=RETIRED['hollis-bedside'],p=byId[o.to],d=a=>`${a[0]} × ${a[1]} × ${a[2]} cm`;
+    const parts={plan:'your room plans',shop:'your saved pieces and basket',renders:'your saved renders'};
+    const box=document.createElement('div');box.id='rpNotice';box.setAttribute('role','status');
+    box.style.cssText='position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:120;width:min(560px,calc(100% - 24px));'+
+      'background:var(--surface,#fff);color:var(--ink,#16251f);border:1px solid var(--line,#e3e1da);border-left:5px solid var(--green,#2c4a3b);border-radius:14px;'+
+      'box-shadow:0 10px 30px rgba(0,0,0,.18);padding:14px 16px;font:14px/1.45 var(--font,system-ui,sans-serif);display:flex;gap:12px;align-items:flex-start';
+    box.innerHTML=`<div style="flex:1;min-width:0"><b style="display:block;margin-bottom:2px">We’ve replaced a sample piece</b>`+
+      `The ${o.name} was example data. In ${n.where.map(w=>parts[w]).join(', ').replace(/, ([^,]*)$/,' and $1')} it’s now the real ${p.name} from ${p.retailer}. `+
+      `It’s a different size (${d(p.dims)}, was ${d(o.dims)}) and price (${money(p.price)}, was ${money(o.price)}). It comes in one finish, ${p.colours[0].n}, so any other colour you’d chosen is now ${p.colours[0].n}. Positions and quantities are unchanged, so check your room’s fit notes and totals.`+
+      `</div><button type="button" style="flex:none;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--green,#2c4a3b);background:var(--green,#2c4a3b);color:var(--green-ink,#fff);font:600 14px var(--font,system-ui,sans-serif);cursor:pointer">OK</button>`;
+    box.querySelector('button').addEventListener('click',()=>{const cur=load(NOTICE_KEY)||{};if(cur['hollis-bedside'])cur['hollis-bedside'].seen=true;store(NOTICE_KEY,cur);box.remove()});
+    document.body.appendChild(box);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showNotice);else showNotice();
+
   window.RoomPlannedCatalogue={
     products:PRODUCTS,
     floor:FLOOR,
     photos:PHOTOS,
     ceiling:CEILING,
-    product:id=>byId[id]||null,
+    product:id=>byId[resolve(id)]||null,
+    resolve,retired:RETIRED,money,
     art,sizeOf,colourOf,unitPrice,priceText,fixVariant
   };
 })();

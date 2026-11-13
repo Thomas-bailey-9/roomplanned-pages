@@ -291,7 +291,7 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 
 <script>
 const $=s=>document.querySelector(s);
-const fmt=n=>'£'+n.toLocaleString('en-GB');
+const fmt=n=>'£'+Number(n).toLocaleString('en-GB',{minimumFractionDigits:Number(n)%1?2:0,maximumFractionDigits:2});  /* £74.50 keeps its pence */
 function shade(hex,amt){const n=parseInt(hex.slice(1),16);const c=v=>Math.max(0,Math.min(255,v));return'#'+((1<<24)+(c((n>>16)+amt)<<16)+(c((n>>8&255)+amt)<<8)+c((n&255)+amt)).toString(16).slice(1)}
 const lum=hex=>{const n=parseInt(hex.slice(1),16);return .299*(n>>16)+.587*(n>>8&255)+.114*(n&255)};
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -381,7 +381,7 @@ function scene(styleName,room,H,opts={}){
     P.push(`<path d="M${bx-14} ${fy+24}H${bx+bw+14}L${bx+bw+20} ${fy+50}H${bx-20}Z" fill="${s.accent}"/><rect x="${bx-22}" y="${fy+56}" width="${bw+44}" height="20" rx="4" fill="${shade(s.sofa,-10)}"/>`);
     const side=x=>shadow(x+24,fy+28,30)+`<rect x="${x}" y="${fy-30}" width="48" height="56" rx="3" fill="${s.wood}"/><path d="M${x+4} ${fy-2}h40" stroke="${shade(s.wood,-25)}"/><rect x="${x+18}" y="${fy-18}" width="12" height="3" rx="1.5" fill="${shade(s.wood,-30)}"/><path d="M${x+24} ${fy-30}v-18" stroke="${s.accent}" stroke-width="6" stroke-linecap="round"/><path d="M${x+8} ${fy-48}l6-22h20l6 22Z" fill="#f2ead9"/><ellipse cx="${x+24}" cy="${fy-48}" rx="16" ry="3" fill="#ffe8a8" opacity=".8"/>`;
     P.push(side(30),side(320));
-    spots.push({x:bx+bw/2,y:fy+20,id:styleName==='Cottage'||styleName==='Dark & moody'?'rowan-bed':'veron-ottoman-bed'},{x:54,y:fy-6,id:'hollis-bedside'},{x:54,y:fy-60,id:'arlo-pendant'});
+    spots.push({x:bx+bw/2,y:fy+20,id:styleName==='Cottage'||styleName==='Dark & moody'?'rowan-bed':'veron-ottoman-bed'},{x:54,y:fy-6,id:'holden-bedside'},{x:54,y:fy-60,id:'arlo-pendant'});
   } else {
     const tx=200,ty=fy+28;
     const chairBack=x=>`<path d="M${x-20} ${ty+4}V${fy-36}a20 20 0 0 1 40 0V${ty+4}" fill="none" stroke="${s.accent}" stroke-width="7"/><path d="M${x-20} ${ty+4}v40M${x+20} ${ty+4}v40" stroke="${shade(s.wood,-10)}" stroke-width="4"/>`;
