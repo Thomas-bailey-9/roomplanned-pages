@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
 <style>
-/* Layout: sticky site header → page intro + search + chips → sidebar filters | product grid. Piece view and basket drawer reuse the same cards and buttons. */
+/* Layout: sticky site header → opening banner with heading + search → chips → sidebar filters | product grid. Piece view and basket drawer reuse the same cards and buttons. */
 :root{
   --bg:#f7f6f2;          /* page ground, warm off-white from the site */
   --surface:#ffffff;     /* cards, header, drawer */
@@ -74,10 +74,44 @@ header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;backgrou
 /* breadcrumb + intro */
 .crumbs{font-size:13px;color:var(--muted);padding-top:22px;display:flex;gap:8px}
 .crumbs a{text-decoration:none}.crumbs a:hover{color:var(--ink)}
-.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-block:14px 22px;flex-wrap:wrap}
-.intro h1{font-size:clamp(34px,5vw,48px);font-weight:700;line-height:1.05}
-.intro h1 em{font-style:normal;color:var(--sage)}
-.intro p{margin:8px 0 0;color:var(--muted);font-size:16px}
+/* opening banner: cream ground, delivery photo on the right blended in with CSS masks */
+.shop-hero{--cream:#f6eee2;position:relative;height:340px;margin-top:14px;border-radius:24px;overflow:hidden;isolation:isolate;
+  background:radial-gradient(120% 140% at 12% 40%,#fbf6ee 0%,var(--cream) 55%,#f1e5d5 100%)}
+.shop-hero::after{content:"";position:absolute;inset:auto 0 0 0;height:30%;background:linear-gradient(to bottom,rgba(246,238,226,0),var(--bg));pointer-events:none;z-index:2}
+.sh-copy{position:relative;z-index:3;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 0 22px clamp(24px,4.5vw,56px);max-width:min(calc(100% - 500px),640px)}
+.sh-copy h1{color:#1d3328;font-size:clamp(36px,4.4vw,62px);font-weight:800;line-height:1;letter-spacing:-.035em}
+.sh-copy p{margin:12px 0 0;color:#5a7363;font-size:clamp(17px,1.8vw,22px);font-weight:600;line-height:1.3;text-wrap:balance}
+.shop-hero .search{margin-top:24px;background:#fff;color:#16251f;box-shadow:0 2px 10px rgba(60,45,25,.10);border:1px solid rgba(60,45,25,.08);max-width:520px}
+.shop-hero .search svg{color:#16251f}
+.shop-hero .search input{color:#16251f}
+.shop-hero .search input::placeholder{color:#6f7a73}
+.shop-hero .search:focus-within{box-shadow:0 0 0 2px #fff,0 0 0 4px #6b8068}
+.sh-art{position:absolute;z-index:1;top:-9%;right:0;bottom:-9%}
+/* the photo keeps its own proportions, anchored right; only its window edge fades, so both workers stay fully visible */
+.sh-art img{display:block;height:100%;width:auto;
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 10%),linear-gradient(to bottom,#000 80%,transparent 100%);-webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to right,transparent 0,#000 10%),linear-gradient(to bottom,#000 80%,transparent 100%);mask-composite:intersect}
+/* dark theme: the banner stays a cream card rather than fading into the dark page */
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .shop-hero::after{display:none}}
+:root[data-theme="dark"] .shop-hero::after{display:none}
+@media (max-width:860px){.shop-hero{height:300px}.sh-art{top:0;bottom:0}.sh-copy{max-width:calc(100% - 372px)}.sh-copy h1{font-size:38px}}
+/* small tablets and phones: heading and search first, then the scene below */
+@media (max-width:760px){
+  .shop-hero{height:auto;border-radius:20px}
+  .sh-copy{height:auto;max-width:none;padding:26px 20px 6px}
+  .sh-copy h1{font-size:clamp(34px,9vw,44px)}
+  .shop-hero .search{margin-top:18px;max-width:none}
+  .sh-art{position:relative;inset:auto;display:flex;justify-content:center;height:280px;margin:4px 0 0}
+  .sh-art img{height:100%;width:auto;
+    -webkit-mask-image:linear-gradient(to right,transparent 0,#000 12%,#000 88%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 18%,#000 80%,transparent 100%);-webkit-mask-composite:source-in;
+    mask-image:linear-gradient(to right,transparent 0,#000 12%,#000 88%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 18%,#000 80%,transparent 100%);mask-composite:intersect}
+  .shop-hero::after{height:22%}
+}
+/* phones: a shorter crop that fills the width */
+@media (max-width:480px){
+  .sh-art{display:block;height:220px}
+  .sh-art img{width:100%;height:100%;object-fit:cover;object-position:50% 55%;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 22%,#000 78%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 22%,#000 78%,transparent 100%)}
+}
 .search{display:flex;align-items:center;gap:12px;background:var(--soft);border-radius:var(--r-pill);padding:0 18px;height:52px;max-width:760px}
 .search svg{width:20px;height:20px;color:var(--ink);flex:none}
 .search input{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:15px}
@@ -351,9 +385,13 @@ function shopView(){
   $('#app').innerHTML = `
   <div class="wrap">
     <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>Shop furniture</span></nav>
-    <div class="intro"><div><h1>Shop <em>furniture.</em></h1><p>From the UK’s top retailers, all in one place.</p></div></div>
-    <form class="search" id="searchForm" role="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Search furniture, brands or styles" value="${state.q.replace(/"/g,'&quot;')}" aria-label="Search furniture"></form>
+    <!-- Opening banner: one still, decorative photo; the heading and the working search are real HTML -->
+    <section class="shop-hero" aria-labelledby="shopTitle">
+      <div class="sh-copy"><h1 id="shopTitle">Shop furniture.</h1><p>Find the pieces that make it yours.</p>
+        <form class="search" id="searchForm" role="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Search furniture, brands or styles" value="${state.q.replace(/"/g,'&quot;')}" aria-label="Search furniture"></form></div>
+      <div class="sh-art" aria-hidden="true"><img src="images/shop/shop-delivery-1062.webp" srcset="images/shop/shop-delivery-640.webp 640w, images/shop/shop-delivery-1062.webp 1062w" sizes="(max-width:640px) 100vw, 560px" width="1062" height="887" alt="" decoding="async" fetchpriority="high"></div>
+    </section>
     <div class="chipbar">
       <div class="chips" role="group" aria-label="Category">${CATS.map(c=>`<button class="chip" data-cat="${c}" aria-pressed="${state.cat===c}">${c}</button>`).join('')}</div>
       <button class="filters-btn" id="filtersBtn" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Filters</button>
