@@ -61,11 +61,33 @@ header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;backgrou
 
 .crumbs{font-size:13px;color:var(--muted);padding-top:22px;display:flex;gap:8px}
 .crumbs a{text-decoration:none}
-.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-block:14px 18px;flex-wrap:wrap}
-.intro h1{font-size:clamp(34px,5vw,48px);font-weight:700;line-height:1.05}
-.intro h1 em{font-style:normal;color:var(--sage)}
-.intro p{margin:8px 0 0;color:var(--muted);font-size:16px;max-width:60ch}
-.chips{display:flex;gap:10px;flex-wrap:wrap;padding-bottom:22px}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.room-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-block:18px 22px}
+/* opening banner: cream ground, room artwork on the right, blended in with gradients */
+.plan-hero{--cream:#f6eee2;position:relative;height:320px;margin-top:14px;border-radius:24px;overflow:hidden;
+  background:radial-gradient(120% 140% at 15% 40%,#fbf6ee 0%,var(--cream) 55%,#f1e5d5 100%);isolation:isolate}
+.plan-hero::after{content:"";position:absolute;inset:auto 0 0 0;height:34%;background:linear-gradient(to bottom,rgba(246,238,226,0),var(--bg));pointer-events:none;z-index:2}
+.ph-copy{position:relative;z-index:3;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 0 18px clamp(24px,4.5vw,56px);max-width:52%}
+.ph-copy h1{color:#1d3328;font-size:clamp(40px,5.4vw,66px);font-weight:800;line-height:1;letter-spacing:-.035em}
+.ph-copy p{margin:12px 0 0;color:#4f6656;font-size:clamp(17px,1.9vw,22px);line-height:1.35;text-wrap:balance}
+.ph-art{position:absolute;z-index:1;top:-22px;right:-10px;bottom:-30px;width:min(62%,640px)}
+.ph-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 30%;
+  /* fade the picture's own edges so it melts into the cream: left edge and bottom */
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 34%),linear-gradient(to bottom,#000 72%,transparent 100%);-webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to right,transparent 0,#000 34%),linear-gradient(to bottom,#000 72%,transparent 100%);mask-composite:intersect}
+/* dark theme: the banner stays a cream card, so it isn't faded into the dark page */
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .plan-hero::after{display:none}}
+:root[data-theme="dark"] .plan-hero::after{display:none}
+@media (max-width:860px){.plan-hero{height:290px}.ph-copy{max-width:56%}.ph-art{width:64%}}
+/* phones: heading first, then a shorter crop of the room */
+@media (max-width:640px){
+  .plan-hero{height:auto;border-radius:20px}
+  .ph-copy{height:auto;max-width:none;padding:26px 22px 4px}
+  .ph-art{position:relative;inset:auto;width:auto;height:210px;margin:0 -24px -10px}
+  .ph-art img{object-position:55% 42%;
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 26%,#000 76%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 26%,#000 76%,transparent 100%)}
+  .plan-hero::after{height:26%}
+}
 .chip{height:40px;padding:0 20px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--surface);font-weight:500;font-size:14px;color:var(--ink)}
 .chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--green-ink)}
 
@@ -213,9 +235,13 @@ footer.site-foot .wrap{padding-block:28px;display:flex;justify-content:space-bet
 
 <main class="wrap">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>Plan a room</span></nav>
-  <div class="intro"><div><h1>Plan a <em>room.</em></h1><p>Set your room size, drag pieces into place and Roo will tell you what fits before you buy.</p></div>
+  <!-- Opening banner: a still, decorative illustration. It never changes with the plan below. -->
+  <section class="plan-hero" aria-labelledby="planTitle">
+    <div class="ph-copy"><h1 id="planTitle">Plan a room.</h1><p>Shape your space before you buy.</p></div>
+    <div class="ph-art" aria-hidden="true"><img src="images/plan/plan-room-hero-1102.webp" srcset="images/plan/plan-room-hero-700.webp 700w, images/plan/plan-room-hero-1102.webp 1102w" sizes="(max-width:640px) 100vw, 620px" width="1102" height="744" alt="" decoding="async" fetchpriority="high"></div>
+  </section>
+  <div class="room-bar"><div class="chips" role="group" aria-label="Room" id="roomChips"></div>
     <button class="btn" id="reset">Reset this room</button></div>
-  <div class="chips" role="group" aria-label="Room" id="roomChips"></div>
 
   <div class="work">
     <section class="canvas-card" aria-label="Floor plan">
